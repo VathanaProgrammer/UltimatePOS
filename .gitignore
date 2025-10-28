@@ -1,0 +1,50 @@
+# Laravel & PHP
+/vendor
+/node_modules
+/.idea
+/.vscode
+/.phpunit.result.cache
+/.env
+/.env.local
+/.env.*.backup
+/public/storage
+/storage/*.key
+/storage/debugbar
+/storage/framework/cache/data
+/storage/logs/*.log
+/storage/debugbar/*.php
+/storage/framework/sessions/*.php
+/storage/framework/views/*.php
+Homestead.json
+Homestead.yaml
+*.sqlite
+*.sql
+*.sqlite3
+*.log
+*.cache
+
+# Composer
+composer.lock
+
+# Node / Next.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.next
+out
+/dist
+
+# Mac / OS
+.DS_Store
+Thumbs.db
+
+# IDE
+*.sublime-project
+*.sublime-workspace
+*.phpstorm.meta.php
+
+# Optional\
+.env.testing
+.env.production
