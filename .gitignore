@@ -1,4 +1,6 @@
 # Laravel & PHP
+/public/uploads/media
+/public/uploads/img/
 /vendor
 /node_modules
 /.idea

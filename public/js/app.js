@@ -1,3 +1,4 @@
+
 $(document).ready(function() {
     getTotalUnreadNotifications();
     $('body').on('click', 'label', function(e) {

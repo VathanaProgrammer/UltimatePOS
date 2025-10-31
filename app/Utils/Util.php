@@ -1493,7 +1493,9 @@ class Util
 
         $business = session()->has('business') ? session('business') : Business::find($business_id);
 
-        date_default_timezone_set($business->time_zone);
+        $timeZone = data_get(session('business') ?? $business, 'time_zone', 'UTC');
+        date_default_timezone_set($timeZone);
+
 
         $activity = activity()
             ->performedOn($on)

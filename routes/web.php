@@ -59,6 +59,9 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariationTemplateController;
 use App\Http\Controllers\WarrantyController;
+use App\Http\Controllers\ProductOnlineController;
+use App\Http\Controllers\CatologController;
+use App\Http\Controllers\Category_EController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -81,6 +84,8 @@ Route::middleware(['setData'])->group(function () {
 
     Auth::routes();
 
+    //
+
     Route::get('/business/register', [BusinessController::class, 'getRegister'])->name('business.getRegister');
     Route::post('/business/register', [BusinessController::class, 'postRegister'])->name('business.postRegister');
     Route::post('/business/register/check-username', [BusinessController::class, 'postCheckUsername'])->name('business.postCheckUsername');
@@ -99,6 +104,12 @@ Route::middleware(['setData'])->group(function () {
 
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
+        //
+    Route::get("/e_commerce/product", [ProductOnlineController::class, 'index'])->name('product.online.index');
+    Route::get('/e_commerce/catolog/{id}', [CatologController::class, 'showByCategory'])->name("catolog.show");
+    Route::get('/e_commerce/catolog', [CatologController::class, 'showByCategory'])->name("catolog.store");
+    Route::post('/e_commerce/catolog/category/create', [Category_EController::class, 'store'])->name("category_e.store");
+
     Route::get('pos/payment/{id}', [SellPosController::class, 'edit'])->name('edit-pos-payment');
     Route::get('service-staff-availability', [SellPosController::class, 'showServiceStaffAvailibility']);
     Route::get('pause-resume-service-staff-timer/{user_id}', [SellPosController::class, 'pauseResumeServiceStaffTimer']);
@@ -156,6 +167,11 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::get('taxonomies-ajax-index-page', [TaxonomyController::class, 'getTaxonomyIndexPage']);
     Route::resource('taxonomies', TaxonomyController::class);
+
+    // E-Commerce: Catalogs (catologs is used in this project for DB/table/controller)
+    Route::resource('catologs', CatologController::class);
+    // route used by views to show catalog page by category
+    Route::get('/catologs/show-by-category', [CatologController::class, 'showByCategory'])->name('catologs.show_by_category');
 
     Route::resource('variation-templates', VariationTemplateController::class);
 

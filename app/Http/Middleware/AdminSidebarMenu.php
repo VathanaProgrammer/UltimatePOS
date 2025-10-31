@@ -138,6 +138,36 @@ class AdminSidebarMenu
                 )->order(15);
             }
 
+            // E-Commerce plugin dropdown (placed above Products)
+            if (auth()->user()->can('product.view') || auth()->user()->can('product.create')) {
+                $menu->dropdown(
+                    'E-Commerce',
+                    function ($sub) {
+                        // Catalogs (catologs controller/table spelling preserved)
+                        $sub->url(
+                            action([\App\Http\Controllers\CatologController::class, 'index']),
+                            'Catalogs',
+                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
+                        );
+
+                        // E-commerce product listing (if you have a dedicated controller/route)
+                        // Fallback to product online page
+                        $sub->url(
+                            route("product.online.index"),
+                            'Products (E-Commerce)',
+                            ['icon' => '', 'active' => request()->segment(1) == 'products']
+                        );
+                    },
+                    ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M3 7h18"></path>
+                        <path d="M6 7v13"></path>
+                        <path d="M18 7v13"></path>
+                        <path d="M3 12h18"></path>
+                      </svg>', 'id' => 'ecom_plugin']
+                )->order(18);
+            }
+
             //Products dropdown
             if (auth()->user()->can('product.view') || auth()->user()->can('product.create') ||
                 auth()->user()->can('brand.view') || auth()->user()->can('unit.view') ||
