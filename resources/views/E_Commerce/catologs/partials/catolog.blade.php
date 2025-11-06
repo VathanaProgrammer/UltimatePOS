@@ -5,19 +5,25 @@
 @section('content')
     <section class="content-header py-4">
 
-        <header>
+        <header class="flex justify-between">
             <h1 class="text-3xl font-semibold text-gray-800">
-                Catalog: <span class="text-blue-600">{{ $catolog->name ?? '--' }}</span>
+                Catalog: <span class="text-blue-600">{{ $catalog->name ?? '--' }}</span>
             </h1>
+            <div>
 
-            <button type="button" class="px-4 py-2 text-md font-medium bg-blue-600 text-white rounded hover:bg-blue-700"
-                data-toggle="modal" data-target="#categoryModal">
-                <i class="fa fa-plus mr-2"></i> Add Category
-            </button>
+                <button type="button" class="px-4 py-2 text-md font-medium bg-blue-600 text-white rounded hover:bg-blue-700"
+                    data-toggle="modal" data-target="#categoryModal">
+                    <i class="fa fa-plus mr-2"></i> Add Category
+                </button>
+                <a href="{{ route('importExistingProduct.show')}}"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-md font-medium">
+                    <i class="fa fa-download mr-2"></i> Use Existing Products
+                </a>
+            </div>
         </header>
 
         <section class="mt-6 space-y-4">
-            @forelse ($categories as $category)
+            @forelse ($catalog->categories as $category)
                 <div x-data="{ open: false }" class="border border-gray-200 shadow-sm rounded-xl bg-white overflow-hidden">
                     <!-- Category Header -->
                     <div @click="open = !open"
@@ -45,15 +51,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {{-- @forelse ($category->products as $product)
+                                @forelse ($category->product_e as $productE)
                                     <tr class="border-b hover:bg-gray-50">
-                                        <td class="px-4 py-2 font-medium">{{ $product->name }}</td>
-                                        <td class="px-4 py-2">${{ number_format($product->price, 2) }}</td>
-                                        <td class="px-4 py-2">{{ $product->stock }}</td>
+                                        <td class="px-4 py-2 font-medium">{{ $productE->product->name }}</td>
+                                        <td class="px-4 py-2">${{ number_format($productE->price, 2) }}</td>
+                                        <td class="px-4 py-2">{{ $productE->stock }}</td>
                                         <td class="px-4 py-2">
                                             <span
-                                                class="{{ $product->status === 'active' ? 'text-green-600' : 'text-gray-500' }}">
-                                                {{ ucfirst($product->status) }}
+                                                class="{{ $productE->status === 'active' ? 'text-green-600' : 'text-gray-500' }}">
+                                                {{ ucfirst($productE->status) }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-2 flex gap-2">
@@ -67,7 +73,7 @@
                                         <td colspan="5" class="px-4 py-3 text-center text-gray-500">No products in this
                                             category.</td>
                                     </tr>
-                                @endforelse --}}
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

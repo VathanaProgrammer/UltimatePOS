@@ -62,6 +62,7 @@ use App\Http\Controllers\WarrantyController;
 use App\Http\Controllers\ProductOnlineController;
 use App\Http\Controllers\CatologController;
 use App\Http\Controllers\Category_EController;
+use App\Http\Controllers\ImportExistProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -105,10 +106,15 @@ Route::middleware(['setData'])->group(function () {
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
         //
-    Route::get("/e_commerce/product", [ProductOnlineController::class, 'index'])->name('product.online.index');
-    Route::get('/e_commerce/catolog/{id}', [CatologController::class, 'showByCategory'])->name("catolog.show");
-    Route::get('/e_commerce/catolog', [CatologController::class, 'showByCategory'])->name("catolog.store");
-    Route::post('/e_commerce/catolog/category/create', [Category_EController::class, 'store'])->name("category_e.store");
+    Route::get("/e-commerce/product", [ProductOnlineController::class, 'index'])->name('product.online.index');
+    Route::get('/e-commerce/catolog/{id}', [CatologController::class, 'showByCategory'])->name("catolog.show");
+    Route::post('/e-commerce/catolog', [CatologController::class, 'store'])->name("catolog.store");
+    Route::post('/e-commerce/catolog/category/create', [Category_EController::class, 'store'])->name("category_e.store");
+
+    Route::get('/e-commerce/import-existing-produts', [ImportExistProductController::class, 'index'])->name('importExistingProduct.show');
+    Route::post('/e-commerce/import-existing-produts', [ImportExistProductController::class, 'importToEcommerce'])->name('importExistingProduct.store');
+
+    Route::get('/e-commerce/categoies', [Category_EController::class, "index"])->name("category_e.show");
 
     Route::get('pos/payment/{id}', [SellPosController::class, 'edit'])->name('edit-pos-payment');
     Route::get('service-staff-availability', [SellPosController::class, 'showServiceStaffAvailibility']);

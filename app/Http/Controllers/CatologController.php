@@ -21,11 +21,12 @@ class CatologController extends Controller
 
     public function showByCategory($id)
     {
-                // using find or fail
-        $catolog = Catalog::findOrFail($id);
-        $categories = $catolog->categories;
+        // Get catalog with nested relationships
+        $catalog = Catalog::with('categories.product_e.product')->findOrFail($id);
 
-        return view('E_Commerce.catologs.partials.catolog', compact('catolog', 'categories'));
+        // Now you can access everything
+        // Example: $catalog->categories[0]->product_e[0]->product
+        return view('E_Commerce.catologs.partials.catolog', compact('catalog'));
     }
 
     public function store(Request $request)

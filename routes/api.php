@@ -14,10 +14,18 @@ use Illuminate\Http\Request;
 */
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CategoryController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/product/all', [ProductController::class, "all"])->name('api.product.all');
+Route::get("/category/all", [CategoryController::class, "all"])->name('api.category.all');
 
-Route::middleware(['jwt.cookie', 'auth:api'])->get('/user', [AuthController::class, 'user']);
+Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+
+Route::middleware(['jwt.cookie', 'auth:api'])->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
 

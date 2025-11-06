@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\ApiModel\Categories_E;
+use App\ApiModel\Catalog;
 
 class Category_EController extends Controller
 {
@@ -18,7 +19,7 @@ class Category_EController extends Controller
         ]);
 
 
-Categories_E::create($validatedData);
+        Categories_E::create($validatedData);
 
         $output = [
             'sucess' => true,
@@ -27,5 +28,12 @@ Categories_E::create($validatedData);
 
         return redirect()->back()->with("status", $output);
 
+    }
+
+    public function index(){
+        $categories = Categories_E::all();
+        $catalogs = Catalog::all()->pluck('name', 'id');
+        
+        return view('E_Commerce.category.index', compact('categories', 'catalogs'));
     }
 }

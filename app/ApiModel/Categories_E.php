@@ -4,6 +4,7 @@ namespace App\ApiModel;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\ApiModel\ProductE;
 
 class Categories_E extends Model
 {
@@ -18,5 +19,9 @@ class Categories_E extends Model
 
     public function catolog(){
         return $this->belongTo(Catolog::class, 'catolog_id', 'id');
+    }
+
+    public function product_e(){
+        return $this->hasMany(ProductE::class, 'category_id', 'id');
     }
 }

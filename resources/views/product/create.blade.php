@@ -78,7 +78,7 @@
                     </div>
                 </div>
 
-                <div class="col-sm-4">
+                {{-- <div class="col-sm-4">
                     <div class="form-group">
                         {!! Form::label('category_id', __('Category') . ':*') !!}
                         <div class="input-group">
@@ -103,7 +103,7 @@
                             </span>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 @if (!empty($common_settings['enable_secondary_unit']))
                     <div class="col-sm-4">

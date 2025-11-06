@@ -143,19 +143,25 @@ class AdminSidebarMenu
                 $menu->dropdown(
                     'E-Commerce',
                     function ($sub) {
-                        // Catalogs (catologs controller/table spelling preserved)
+                        $sub->url(
+                            route("product.online.index"),
+                            'List Products',
+                            ['icon' => '', 'active' => request()->segment(1) == 'products']
+                        );
                         $sub->url(
                             action([\App\Http\Controllers\CatologController::class, 'index']),
                             'Catalogs',
                             ['icon' => '', 'active' => request()->segment(1) == 'catologs']
                         );
-
-                        // E-commerce product listing (if you have a dedicated controller/route)
-                        // Fallback to product online page
                         $sub->url(
-                            route("product.online.index"),
-                            'Products (E-Commerce)',
-                            ['icon' => '', 'active' => request()->segment(1) == 'products']
+                            action([\App\Http\Controllers\ImportExistProductController::class, 'index']),
+                            'Import Existing Product',
+                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
+                        );
+                        $sub->url(
+                            route('category_e.show'),
+                            'Categories',
+                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
                         );
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">

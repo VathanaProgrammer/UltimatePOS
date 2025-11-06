@@ -21,4 +21,10 @@ class ProductE extends Model
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');
     }
+
+    public function category()
+    {
+        return $this->belongsTo(Categories_E::class, 'category_id', 'id');
+    }
+
 }
