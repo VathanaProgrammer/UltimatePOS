@@ -63,7 +63,10 @@ use App\Http\Controllers\ProductOnlineController;
 use App\Http\Controllers\CatologController;
 use App\Http\Controllers\Category_EController;
 use App\Http\Controllers\ImportExistProductController;
+use App\Http\Controllers\SaleOnlineController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -105,7 +108,15 @@ Route::middleware(['setData'])->group(function () {
 
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
-        //
+    
+    // Blade page
+    Route::get('/e-commerce/sale-online', [SaleOnlineController::class, "index"])
+        ->name("E_Commerce.sale_online.index");
+
+    // DataTables AJAX
+    Route::get('/sale_online/data', [SaleOnlineController::class, 'getData'])
+        ->name('sale_online.data');
+
     Route::get("/e-commerce/product", [ProductOnlineController::class, 'index'])->name('product.online.index');
     Route::get('/e-commerce/catolog/{id}', [CatologController::class, 'showByCategory'])->name("catolog.show");
     Route::post('/e-commerce/catolog', [CatologController::class, 'store'])->name("catolog.store");
@@ -495,7 +506,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('warranties', WarrantyController::class);
 
     Route::resource('dashboard-configurator', DashboardConfiguratorController::class)
-    ->only(['edit', 'update']);
+        ->only(['edit', 'update']);
 
     Route::get('view-media/{model_id}', [SellController::class, 'viewMedia']);
 

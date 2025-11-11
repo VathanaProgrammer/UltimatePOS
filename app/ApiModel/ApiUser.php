@@ -8,8 +8,16 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class ApiUser extends Authenticatable implements JWTSubject
 {
     protected $fillable = [
-        "username", "phone"
+        "name",
+        "phone",
+        'contact_id'
     ];
+
+    public function contact()
+    {
+        return $this->belongsTo(\App\Contact::class);
+        // Make sure the namespace matches where your Contact model is
+    }
 
     // 🔹 Required by JWTAuth
     public function getJWTIdentifier()

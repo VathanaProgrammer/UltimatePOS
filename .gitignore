@@ -24,6 +24,7 @@ Homestead.yaml
 *.sqlite3
 *.log
 *.cache
+storage/logs/
 
 # Composer
 composer.lock

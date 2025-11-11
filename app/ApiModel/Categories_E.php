@@ -4,7 +4,7 @@ namespace App\ApiModel;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\ApiModel\ProductE;
+use App\ApiModel;
 
 class Categories_E extends Model
 {
@@ -18,7 +18,7 @@ class Categories_E extends Model
     ];
 
     public function catolog(){
-        return $this->belongTo(Catolog::class, 'catolog_id', 'id');
+        return $this->belongTo(Catalog::class, 'catolog_id', 'id');
     }
 
     public function product_e(){
