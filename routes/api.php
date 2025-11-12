@@ -29,7 +29,7 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::middleware(['jwt.cookie', 'auth:api'])->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/api_logout', [AuthController::class, 'api.logout']);
 
     Route::post('/store-order', [OrderController::class, 'store']);
 

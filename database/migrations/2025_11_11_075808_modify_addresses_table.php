@@ -55,10 +55,6 @@ return new class extends Migration
                 $table->dropColumn('country');
             }
 
-            if (Schema::hasColumn('api_user_addresses', 'country_code')) {
-                $table->dropColumn('country_code');
-            }
-
             // Add new columns only if they do NOT exist
             if (!Schema::hasColumn('api_user_addresses', 'phone')) {
                 Schema::table('api_user_addresses', function (Blueprint $table) {
