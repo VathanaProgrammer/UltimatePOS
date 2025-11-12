@@ -45,9 +45,9 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'OTP generated',
             'otp' => $otp
-        ])->cookie('token', $token, 60, '/', null, false, true);
+        ])->cookie('token', $token, 60, '/', '.syspro.asia', true, true, false, 'None');
+        //->cookie('token', $token, 60, '/', null, false, true);
     }
-
     public function login(Request $request)
     {
         $credentials = $request->validate([
