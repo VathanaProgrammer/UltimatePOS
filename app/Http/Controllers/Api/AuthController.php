@@ -27,9 +27,9 @@ class AuthController extends Controller
             ['mobile' => $validatedData['phone']],
             [
                 'name' => $validatedData['name'],
-                'business_id' => 1,
+                'business_id' => 6,
                 'type' => 'customer',
-                'created_by' => 1,
+                'created_by' => 6,
             ]
         );
 
