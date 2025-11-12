@@ -35,6 +35,11 @@ return new class extends Migration
 
     public function down()
     {
+        Schema::table('order_online_details', function (Blueprint $table) {
+            $table->dropForeign(['order_online_id']); // drop FK first
+            $table->dropForeign(['product_id']);     // drop other FKs
+        });
+
         Schema::dropIfExists('order_online_details');
     }
 };
