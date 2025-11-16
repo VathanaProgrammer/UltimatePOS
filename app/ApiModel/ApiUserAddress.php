@@ -17,6 +17,7 @@ class ApiUserAddress extends Model
         'details',
         'phone',
         'coordinates',
+        'short_address'
     ];
 
     // Relationship to user

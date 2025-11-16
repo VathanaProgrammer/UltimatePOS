@@ -13,20 +13,10 @@ class ProductController extends Controller
         $category = $request->query('category'); // category name or ID
         $search = $request->query('search'); // search query
 
-            \Log::info('Filtering products', ['category' => $category, 'search' => $search]);
-            \Log::info('Incoming request', [
-        'method' => $request->method(),
-        'all' => $request->all(),
-        'query' => $request->query()
-    ]);
-
 
     $query = ProductE::with(['product.variations' => function ($q) {
         $q->select('id', 'product_id', 'default_sell_price', 'sell_price_inc_tax');
     }, 'product']);
-
-        \Log::info($query->toSql());
-        \Log::info($query->getBindings());
 
     // Filter by category if provided
     if ($category && $category !== 'All') {

@@ -66,6 +66,7 @@ use App\Http\Controllers\ImportExistProductController;
 use App\Http\Controllers\SaleOnlineController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Api\OrderController;
 
 
 /*
@@ -108,6 +109,8 @@ Route::middleware(['setData'])->group(function () {
 
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
+
+    Route::post('/convert-to-sale-order', [SaleOnlineController::class, "create_sale_order_from_online"]);
     
     // Blade page
     Route::get('/e-commerce/sale-online', [SaleOnlineController::class, "index"])
@@ -116,6 +119,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     // DataTables AJAX
     Route::get('/sale_online/data', [SaleOnlineController::class, 'getData'])
         ->name('sale_online.data');
+    
+    Route::get('/test', [OrderController::class, 'test'])
+        ->name('s');
 
     Route::get("/e-commerce/product", [ProductOnlineController::class, 'index'])->name('product.online.index');
     Route::get('/e-commerce/catolog/{id}', [CatologController::class, 'showByCategory'])->name("catolog.show");

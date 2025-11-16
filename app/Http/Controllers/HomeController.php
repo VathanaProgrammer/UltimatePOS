@@ -463,14 +463,38 @@ class HomeController extends Controller
         }
     }
 
-    public function loadMoreNotifications()
+    // public function loadMoreNotifications()
+    // {
+    //     $notifications = auth()->user()->notifications()->orderBy('created_at', 'DESC')->paginate(10);
+
+    //     if (request()->input('page') == 1) {
+    //         auth()->user()->unreadNotifications->markAsRead();
+    //     }
+    //     $notifications_data = $this->commonUtil->parseNotifications($notifications);
+
+    //     return view('layouts.partials.notification_list', compact('notifications_data'));
+    // }
+
+        public function loadMoreNotifications()
     {
-        $notifications = auth()->user()->notifications()->orderBy('created_at', 'DESC')->paginate(10);
+        $notifications = auth()->user()->notifications()
+            ->orderBy('created_at', 'DESC')
+            ->paginate(10);
 
         if (request()->input('page') == 1) {
             auth()->user()->unreadNotifications->markAsRead();
         }
-        $notifications_data = $this->commonUtil->parseNotifications($notifications);
+
+        $notifications_data = $notifications->map(function($notif) {
+            return [
+                'msg' => $notif->data['msg'] ?? '',
+                'link' => $notif->data['link'] ?? '#',
+                'icon_class' => $notif->data['icon_class'] ?? 'fa fa-bell',
+                'created_at' => $notif->created_at->format('d/m/Y H:i A'),
+                'read_at' => $notif->read_at,
+                'show_popup' => $notif->data['show_popup'] ?? null,
+            ];
+        });
 
         return view('layouts.partials.notification_list', compact('notifications_data'));
     }

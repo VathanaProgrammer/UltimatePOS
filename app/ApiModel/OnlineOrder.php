@@ -15,24 +15,14 @@ class OnlineOrder extends Model
     protected $fillable = [
         'api_user_id',
         'saved_address_id',
-        'address_type', // current or saved
-        // Current address fields
-        'current_house_number',
-        'current_road',
-        'current_village',
-        'current_town',
-        'current_city',
-        'current_state',
-        'current_postcode',
-        'current_country',
-        'current_country_code',
-        // Payment
+        'current_address_id',
+        'address_type', // 'current' or 'saved'
         'payment',
         'total_qty',
         'total',
-        // Items stored as JSON
         'items',
         'status',
+        'short_address'
     ];
 
     // Cast items to array automatically
@@ -52,9 +42,14 @@ class OnlineOrder extends Model
         return $this->belongsTo(ApiUser::class, 'api_user_id');
     }
 
-        // Relationship to order details
+    // Relationship to order details
     public function order_online_details()
     {
         return $this->hasMany(OrderOnlineDetails::class, 'order_online_id');
+    }
+
+    public function currentAddress()
+    {
+        return $this->belongsTo(ApiCurrentUserAddress::class, 'current_address_id');
     }
 }

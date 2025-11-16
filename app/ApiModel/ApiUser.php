@@ -7,10 +7,13 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class ApiUser extends Authenticatable implements JWTSubject
 {
+    protected $table = "api_users";
+    
     protected $fillable = [
-        "name",
-        "phone",
-        'contact_id'
+        'telegram_chat_id',
+        'contact_id',
+        'profile_url',
+        'password'
     ];
 
     public function contact()
