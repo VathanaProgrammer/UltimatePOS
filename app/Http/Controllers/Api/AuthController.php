@@ -30,9 +30,9 @@ class AuthController extends Controller
             ['mobile' => $validatedData['phone']],
             [
                 'name' => $validatedData['name'],
-                'business_id' => 6,
+                'business_id' => 1,
                 'type' => 'customer',
-                'created_by' => 6,
+                'created_by' => 1,
             ]
         );
         Log::info('Contact found or created', ['contact_id' => $contact->id]);
@@ -52,19 +52,19 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'OTP generated',
             'otp' => $otp
-         ])//->cookie(
-        //     'token',
-        //     $token,
-        //     60,
-        //     '/',
-        //     '.syspro.asia',  // must match your production domain
-        //     true,             // Secure (for HTTPS)
-        //     true,             // HttpOnly
-        //     false,            // Raw
-        //     'None'            // SameSite=None for cross-site cookie
-        // );
+         ])->cookie(
+            'token',
+            $token,
+            60,
+            '/',
+            '.syspro.asia',  // must match your production domain
+            true,             // Secure (for HTTPS)
+            true,             // HttpOnly
+            false,            // Raw
+            'None'            // SameSite=None for cross-site cookie
+        );
 
-        ->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
+        //->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
     }
 
     public function login(Request $request)
@@ -96,18 +96,18 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Login successful',
             'user' => $user,
-         ])//->cookie(
-        //     'token',
-        //     $token,
-        //     60,
-        //     '/',
-        //     '.syspro.asia',
-        //     true,
-        //     true,
-        //     false,
-        //     'None'
-        // );
-        ->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
+         ])->cookie(
+            'token',
+            $token,
+            60,
+            '/',
+            '.syspro.asia',
+            true,
+            true,
+            false,
+            'None'
+        );
+        //->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
     }
 
     // 🔹 Get user from JWT token
