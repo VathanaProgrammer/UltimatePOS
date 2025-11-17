@@ -146,11 +146,6 @@ if ($template) {
 }
 
 
-
-        // Send message
-        TelegramService::sendMessageToUser($order->api_user, $messageText);
-    }
-
     $telegramLink = "https://t.me/sysproasiabot";
 }
 
