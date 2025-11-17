@@ -140,15 +140,16 @@ class OrderController extends Controller
             'business_phone' => "099923333",
         ];
 
-        // Replace placeholders in {key} format
-        foreach ($placeholders as $key => $value) {
-            // Replace any variant: @{{ key }}, {{ key }}, {key}
-            $messageText = str_replace(
-                ["@{{ $key }}", "{{ $key }}", "{ $key }", "{${key}}"],
-                $value,
-                $messageText
-            );
-        }
+foreach ($placeholders as $key => $value) {
+    $variants = [
+        "@{{$key}}",   // matches @{{order_id}}
+        "{{$key}}",    // matches {{order_id}}
+        "{".$key."}"   // matches {order_id} safely
+    ];
+
+    $messageText = str_replace($variants, $value, $messageText);
+}
+
 
         // Send message
         TelegramService::sendMessageToUser($order->api_user, $messageText);
