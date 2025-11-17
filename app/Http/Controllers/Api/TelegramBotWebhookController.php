@@ -60,31 +60,32 @@ class TelegramBotWebhookController extends Controller
                 // Fetch the template (e.g., 'new_order')
                 $template = TelegramTemplate::where('name', 'new_order')->first();
 
-                if ($template) {
-                    // Strip HTML from body for Telegram
-                    $bodyText = strip_tags($template->body);
+if ($template) {
+    // 1️⃣ Strip all HTML
+    $bodyText = strip_tags($template->body);
 
-                    // Combine greeting, body, footer
-                    $messageText = trim($template->greeting) . "\n\n" .
-                                trim($bodyText) . "\n\n" .
-                                trim($template->footer);
+    // 2️⃣ Combine greeting, body, footer
+    $messageText = trim(strip_tags($template->greeting)) . "\n\n" .
+                   trim($bodyText) . "\n\n" .
+                   trim(strip_tags($template->footer));
 
-                    // Replace placeholders
-                    $placeholders = [
-                        'user_name'      => $order->api_user->contact->name ?? $name,
-                        'order_id'       => $order->id,
-                        'business_name'  => "SOB",
-                        'amount'         => number_format($order->total, 2),
-                        'business_phone' => "099923333",
-                    ];
+    // 3️⃣ Replace **both** @{{key}} and {{key}}
+    $placeholders = [
+        'user_name'      => $order->api_user->contact->name ?? 'Customer',
+        'order_id'       => $order->id,
+        'business_name'  => "SOB",
+        'amount'         => number_format($order->total, 2),
+        'business_phone' => "099923333",
+    ];
 
-                    foreach ($placeholders as $key => $value) {
-                        $messageText = str_replace("@{{ $key }}", $value, $messageText);
-                    }
+    foreach ($placeholders as $key => $value) {
+        $messageText = str_replace(["@{{ $key }}", "{{ $key }}"], $value, $messageText);
+    }
 
-                    // Send message
-                    TelegramService::sendMessageToUser($order->api_user, $messageText);
-                }
+    // 4️⃣ Send cleaned message
+    TelegramService::sendMessageToUser($order->api_user, $messageText);
+}
+
 
             }
 
