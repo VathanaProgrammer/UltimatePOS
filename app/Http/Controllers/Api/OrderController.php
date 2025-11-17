@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use App\ApiModel\TelegramStartToken;
 use App\User;
 use App\ApiModel\ApiUser;
+use App\TelegramTemplate;
 use App\Services\TelegramService;
 
 class OrderController extends Controller
@@ -118,23 +119,44 @@ class OrderController extends Controller
             // --- TELEGRAM INTEGRATION ---
             $user = ApiUser::find($data['api_user_id']);
 
-            if (!$user->telegram_chat_id) {
-                // First time: generate start link
-                $telegramLink = TelegramService::generateStartLink(
-                    $user->id,
-                    $order->id
-                );
-            } else {
+            if ($user->telegram_chat_id) {
                 \Log::info('Saved chat id for user', ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]);
 
-                // Already registered → send instantly
-                TelegramService::sendMessageToUser(
-                    $user,
-                    "Hi {$user->contact->name}! 👋 Your order #{$order->id} is confirmed. Total: $" . number_format($order->total, 2)
-                );
+                // Fetch template from DB
+                $template = TelegramTemplate::where('name', 'new_order')->first();
+
+                if ($template) {
+                    // Combine greeting, body, footer
+                    $messageText = trim($template->greeting) . "\n\n" .
+                                trim($template->body) . "\n\n" .
+                                trim($template->footer);
+
+                    // Replace placeholders
+                    $placeholders = [
+                        'user_name' => $user->contact->name ?? 'Customer',
+                        'order_id' => $order->id,
+                        'business_name' => 'SOB',
+                        'amount' => number_format($order->total, 2),
+                        'business_phone' => '099923333',
+                    ];
+
+                    foreach ($placeholders as $key => $value) {
+                        $messageText = str_replace("@{{ $key }}", $value, $messageText);
+                    }
+
+                    // Send message using Telegram service
+                    TelegramService::sendMessageToUser($user, $messageText);
+                } else {
+                    // Fallback if template not found
+                    TelegramService::sendMessageToUser(
+                        $user,
+                        "Hi {$user->contact->name}! 👋 Your order #{$order->id} is confirmed. Total: $" . number_format($order->total, 2)
+                    );
+                }
 
                 $telegramLink = "https://t.me/sysproasiabot";
             }
+
 
             return response()->json([
                 'success' => true,
