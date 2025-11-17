@@ -129,23 +129,23 @@ class OrderController extends Controller
                     // Strip HTML from body for Telegram
                     $bodyText = strip_tags($template->body);
 
-                    // Combine greeting, body, footer
-                    $messageText = trim($template->greeting) . "\n\n" .
-                                trim($bodyText) . "\n\n" .
-                                trim($template->footer);
+$messageText = trim($template->greeting) . "\n\n" .
+               trim(strip_tags($template->body)) . "\n\n" .
+               trim($template->footer);
 
-                    // Replace placeholders
-                    $placeholders = [
-                        'user_name'      => $order->api_user->contact->name ?? "Customer",
-                        'order_id'       => $order->id,
-                        'business_name'  => "SOB",
-                        'amount'         => number_format($order->total, 2),
-                        'business_phone' => "099923333",
-                    ];
+$placeholders = [
+    'user_name'      => $order->api_user->contact->name ?? "Customer",
+    'order_id'       => $order->id,
+    'business_name'  => "SOB",
+    'amount'         => number_format($order->total, 2),
+    'business_phone' => "099923333",
+];
 
-                    foreach ($placeholders as $key => $value) {
-                        $messageText = str_replace("@{{ $key }}", $value, $messageText);
-                    }
+// Replace both {{key}} and @{{key}} just in case
+foreach ($placeholders as $key => $value) {
+    $messageText = str_replace(["@{{ $key }}", "{{{$key}}}"], $value, $messageText);
+}
+
 
                     // Send message
                     TelegramService::sendMessageToUser($order->api_user, $messageText);
