@@ -125,30 +125,26 @@ class OrderController extends Controller
     // Fetch template from DB
     $template = TelegramTemplate::where('name', 'new_order')->first();
 
-    if ($template) {
-        // Combine greeting, body, footer (strip HTML for Telegram)
-        $messageText = trim($template->greeting) . "\n\n" .
-                       trim(strip_tags($template->body)) . "\n\n" .
-                       trim($template->footer);
+if ($template) {
+    $messageText = trim($template->greeting) . "\n\n" .
+                   trim(strip_tags($template->body)) . "\n\n" .
+                   trim($template->footer);
 
-        // Placeholders
-        $placeholders = [
-            'user_name'      => $order->api_user->contact->name ?? "Customer",
-            'order_id'       => $order->id,
-            'business_name'  => "SOB",
-            'amount'         => number_format($order->total, 2),
-            'business_phone' => "099923333",
-        ];
-
-foreach ($placeholders as $key => $value) {
-    $variants = [
-        "@{{$key}}",   // matches @{{order_id}}
-        "{{$key}}",    // matches {{order_id}}
-        "{".$key."}"   // matches {order_id} safely
+    $placeholders = [
+        'user_name'      => $order->api_user->contact->name ?? "Customer",
+        'order_id'       => $order->id,
+        'business_name'  => "SOB",
+        'amount'         => number_format($order->total, 2),
+        'business_phone' => "099923333",
     ];
 
-    $messageText = str_replace($variants, $value, $messageText);
+    foreach ($placeholders as $key => $value) {
+        $messageText = str_replace("{".$key."}", $value, $messageText);
+    }
+
+    TelegramService::sendMessageToUser($order->api_user, $messageText);
 }
+
 
 
         // Send message
