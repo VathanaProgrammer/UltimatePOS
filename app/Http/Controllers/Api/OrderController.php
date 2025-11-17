@@ -119,40 +119,44 @@ class OrderController extends Controller
             // --- TELEGRAM INTEGRATION ---
             $user = ApiUser::find($data['api_user_id']);
 
-            if ($user->telegram_chat_id) {
-                \Log::info('Saved chat id for user', ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]);
+           if ($user->telegram_chat_id) {
+    \Log::info('Saved chat id for user', ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]);
 
-                // Fetch template from DB
-                $template = TelegramTemplate::where('name', 'new_order')->first();
+    // Fetch template from DB
+    $template = TelegramTemplate::where('name', 'new_order')->first();
 
-               if ($template) {
-                    // Strip HTML from body for Telegram
-                    $bodyText = strip_tags($template->body);
+    if ($template) {
+        // Combine greeting, body, footer (strip HTML for Telegram)
+        $messageText = trim($template->greeting) . "\n\n" .
+                       trim(strip_tags($template->body)) . "\n\n" .
+                       trim($template->footer);
 
-$messageText = trim($template->greeting) . "\n\n" .
-               trim(strip_tags($template->body)) . "\n\n" .
-               trim($template->footer);
+        // Placeholders
+        $placeholders = [
+            'user_name'      => $order->api_user->contact->name ?? "Customer",
+            'order_id'       => $order->id,
+            'business_name'  => "SOB",
+            'amount'         => number_format($order->total, 2),
+            'business_phone' => "099923333",
+        ];
 
-$placeholders = [
-    'user_name'      => $order->api_user->contact->name ?? "Customer",
-    'order_id'       => $order->id,
-    'business_name'  => "SOB",
-    'amount'         => number_format($order->total, 2),
-    'business_phone' => "099923333",
-];
+        // Replace placeholders in {key} format
+        foreach ($placeholders as $key => $value) {
+            // Replace any variant: @{{ key }}, {{ key }}, {key}
+            $messageText = str_replace(
+                ["@{{ $key }}", "{{ $key }}", "{ $key }", "{${key}}"],
+                $value,
+                $messageText
+            );
+        }
 
-// Replace both {{key}} and @{{key}} just in case
-foreach ($placeholders as $key => $value) {
-    $messageText = str_replace(["@{{ $key }}", "{{{$key}}}"], $value, $messageText);
+        // Send message
+        TelegramService::sendMessageToUser($order->api_user, $messageText);
+    }
+
+    $telegramLink = "https://t.me/sysproasiabot";
 }
 
-
-                    // Send message
-                    TelegramService::sendMessageToUser($order->api_user, $messageText);
-                }
-
-                $telegramLink = "https://t.me/sysproasiabot";
-            }
 
 
             return response()->json([
