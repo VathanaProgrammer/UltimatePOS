@@ -46,10 +46,6 @@ class NotificationTemplate extends Model
     public static function customerNotifications()
     {
         return [
-            'new_online_order' => [
-                'name' => 'New Online Order Notification',
-                'extra_tags' => ['{invoice_no}', '{customer_name}', '{order_total}'],
-            ],
             'new_sale' => [
                 'name' => __('lang_v1.new_sale'),
                 'extra_tags' => [

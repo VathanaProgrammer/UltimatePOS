@@ -168,6 +168,11 @@ class AdminSidebarMenu
                             'Categories',
                             ['icon' => '', 'active' => request()->segment(1) == 'catologs']
                         );
+                        $sub->url(
+                            route('telegram_template.index'),
+                            'Notification Settings',
+                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
+                        );
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
@@ -347,7 +352,7 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => request()->segment(1) == 'sales-order']
                             );
                         }
-
+                        
                         if ($is_admin || auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'direct_sell.view', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'index']),

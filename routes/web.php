@@ -67,6 +67,7 @@ use App\Http\Controllers\SaleOnlineController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\TelegramTemplateController;
 
 
 /*
@@ -109,6 +110,9 @@ Route::middleware(['setData'])->group(function () {
 
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
+
+    Route::post('/e-commerce/telegram-template', [TelegramTemplateController::class, 'update'])->name('telegram_template.update');
+    Route::get('/e-commerce/telegram-template', [TelegramTemplateController::class, "index"])->name("telegram_template.index");
 
     Route::post('/convert-to-sale-order', [SaleOnlineController::class, "create_sale_order_from_online"]);
     

@@ -8,16 +8,16 @@ use App\Services\TelegramService;
 use App\ApiModel\ApiUser;
 use App\ApiModel\TelegramStartToken;
 use App\ApiModel\OnlineOrder;
+use App\TelegramTemplate;
 
 class TelegramBotWebhookController extends Controller
 {
     public function webhook(Request $request)
-    {   
-       \Log::info('Telegram webhook received', ['payload' => $request->all()]);
+    {
+        \Log::info('Telegram webhook received', ['payload' => $request->all()]);
 
         $update = $request->all();
         
-        // Telegram always sends POST with "message"
         if (!isset($update['message'])) return response('ok', 200);
 
         $message = $update['message'];
@@ -26,7 +26,6 @@ class TelegramBotWebhookController extends Controller
 
         // Handle /start <token>
         if (str_starts_with($text, '/start')) {
-
             $parts = explode(' ', $text, 2);
             $payload = $parts[1] ?? null;
 
@@ -36,16 +35,14 @@ class TelegramBotWebhookController extends Controller
                 ->where('used', false)
                 ->where(function ($q) {
                     $q->whereNull('expires_at')
-                        ->orWhere('expires_at', '>', now());
+                      ->orWhere('expires_at', '>', now());
                 })->first();
 
             if (!$token) return response('ok', 200);
 
-            // Mark token used
             $token->used = true;
             $token->save();
 
-            // Save user chat_id
             $user = null;
 
             if ($token->api_user_id) {
@@ -53,16 +50,37 @@ class TelegramBotWebhookController extends Controller
                 TelegramService::saveChatIdIfNotExist($user, $chatId);
             }
 
-            // Send order confirmation
+            // Send order confirmation using database template
             if ($token->order_online_id) {
                 $order = OnlineOrder::find($token->order_online_id);
 
                 $name = $order->api_user->contact->name ?? 'Customer';
 
-                TelegramService::sendMessageToUser(
-                    $order->api_user,
-                    "Hi {$name}! 👋 Your order #{$order->id} is confirmed. Total: $" . number_format($order->total, 2)
-                );
+                // Fetch the template (assuming template name is 'order_confirmation')
+                $template = TelegramTemplate::where('name', 'new_order')->first();
+
+                if ($template) {
+                    // Combine greeting, body, footer with spacing
+                    $messageText = trim($template->greeting) . "\n\n" .
+                                   trim($template->body) . "\n\n" .
+                                   trim($template->footer);
+
+                    // Replace placeholders
+                    $placeholders = [
+                        'user_name' => $name,
+                        'order_id' => $order->id,
+                        'business_name' => "SOB",
+                        'amount' => number_format($order->total, 2),
+                        'business_phone' => "099923333",
+                    ];
+                    
+                    foreach ($placeholders as $key => $value) {
+                        $messageText = str_replace("@{{ $key }}", $value, $messageText);
+                    }
+
+                    // Send message
+                    TelegramService::sendMessageToUser($order->api_user, $messageText);
+                }
             }
 
             return response('ok', 200);
