@@ -57,23 +57,27 @@ class TelegramBotWebhookController extends Controller
                 $name = $order->api_user->contact->name ?? 'Customer';
 
                 // Fetch the template (assuming template name is 'order_confirmation')
+                // Fetch the template (e.g., 'new_order')
                 $template = TelegramTemplate::where('name', 'new_order')->first();
 
                 if ($template) {
-                    // Combine greeting, body, footer with spacing
+                    // Strip HTML from body for Telegram
+                    $bodyText = strip_tags($template->body);
+
+                    // Combine greeting, body, footer
                     $messageText = trim($template->greeting) . "\n\n" .
-                                   trim($template->body) . "\n\n" .
-                                   trim($template->footer);
+                                trim($bodyText) . "\n\n" .
+                                trim($template->footer);
 
                     // Replace placeholders
                     $placeholders = [
-                        'user_name' => $name,
-                        'order_id' => $order->id,
-                        'business_name' => "SOB",
-                        'amount' => number_format($order->total, 2),
+                        'user_name'      => $order->api_user->contact->name ?? $name,
+                        'order_id'       => $order->id,
+                        'business_name'  => "SOB",
+                        'amount'         => number_format($order->total, 2),
                         'business_phone' => "099923333",
                     ];
-                    
+
                     foreach ($placeholders as $key => $value) {
                         $messageText = str_replace("@{{ $key }}", $value, $messageText);
                     }
@@ -81,6 +85,7 @@ class TelegramBotWebhookController extends Controller
                     // Send message
                     TelegramService::sendMessageToUser($order->api_user, $messageText);
                 }
+
             }
 
             return response('ok', 200);
