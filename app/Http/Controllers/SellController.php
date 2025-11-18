@@ -1796,7 +1796,7 @@ class SellController extends Controller
                         }
                         \Log::info('Step 10: Telegram message prepared', ['message' => $messageText]);
 
-                        TelegramService::sendMessageToUser($transaction->api_user, $messageText);
+                        TelegramService::sendMessageToUser($api_user, $messageText);
                         \Log::info('Step 11: Telegram message sent');
                     }
                 }
