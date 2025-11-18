@@ -1700,19 +1700,16 @@ class SellController extends Controller
     public function updateShipping(Request $request, $id)
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
-        \Log::info('Step 0: Checking admin & permissions', ['user_id' => auth()->id()]);
 
         if (! $is_admin && ! auth()->user()->hasAnyPermission([
             'access_shipping',
             'access_own_shipping',
             'access_commission_agent_shipping'
         ])) {
-            \Log::warning('Unauthorized action attempted', ['user_id' => auth()->id()]);
             abort(403, 'Unauthorized action.');
         }
 
         try {
-            \Log::info('Step 1: Receiving request input');
             $input = $request->only([
                 'shipping_details',
                 'shipping_address',
@@ -1725,32 +1722,22 @@ class SellController extends Controller
                 'shipping_custom_field_4',
                 'shipping_custom_field_5',
             ]);
-            \Log::info('Step 1: Input received', ['input' => $input]);
 
             $business_id = $request->session()->get('user.business_id');
-            \Log::info('Step 2: Business ID from session', ['business_id' => $business_id]);
 
             $transaction = Transaction::where('business_id', $business_id)
                 ->findOrFail($id);
-            \Log::info('Step 3: Transaction fetched', ['transaction_id' => $transaction->id]);
 
             // Backup before update
             $transaction_before = $transaction->replicate();
-            \Log::info('Step 4: Transaction backup created');
 
             // Perform update
             $transaction->update($input);
-            \Log::info('Step 5: Transaction updated', ['updated_input' => $input]);
 
             $old_status = $transaction_before->shipping_status;
             $new_status = $transaction->shipping_status;
-            \Log::info('Step 6: Shipping status checked', [
-                'old_status' => $old_status,
-                'new_status' => $new_status
-            ]);
 
             if ($old_status !== $new_status) {
-                \Log::info('Step 7: Shipping status changed, preparing Telegram message');
 
                 $template_name = match ($new_status) {
                     'ordered'   => 'new_order',
@@ -1760,26 +1747,20 @@ class SellController extends Controller
                     'cancelled' => 'order_cancelled',
                     default     => null,
                 };
-                \Log::info('Step 7: Template name determined', ['template_name' => $template_name]);
 
                 $contact = $transaction->contact;
                 $api_user = $contact?->api_user;
-
-                \Log::info('contact', ['data' =>$contact]);
-                \Log::info('api_user', ['data' =>$api_user]);
 
                 if ($template_name && $api_user?->telegram_chat_id) {
                     $template = \App\TelegramTemplate::where('name', $template_name)
                         ->where('business_id', $transaction->business_id)
                         ->first();
-                    \Log::info('Step 8: Template fetched', ['template_exists' => (bool)$template]);
 
                     if ($template) {
                         $business = DB::table('business')
                             ->select('name', 'phone')
                             ->where('id', $transaction->business_id)
                             ->first();
-                        \Log::info('Step 9: Business data fetched', ['business' => $business]);
 
                         $messageText = trim($template->greeting) . "\n\n" .
                             trim(strip_tags($template->body)) . "\n\n" .
@@ -1787,7 +1768,7 @@ class SellController extends Controller
 
                         $placeholders = [
                             'order_id'        => $transaction->id,
-                            'user_name'       => $transaction->api_user->contact->name ?? 'Customer',
+                            'user_name'       => $api_user->contact->name ?? 'Customer',
                             'amount'          => number_format($transaction->final_total, 2),
                             'shipping_status' => ucfirst(str_replace('_', ' ', $new_status)),
                             'business_name'   => $business->name ?? '',
@@ -1797,10 +1778,8 @@ class SellController extends Controller
                         foreach ($placeholders as $key => $value) {
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
-                        \Log::info('Step 10: Telegram message prepared', ['message' => $messageText]);
 
                         TelegramService::sendMessageToUser($api_user, $messageText);
-                        \Log::info('Step 11: Telegram message sent');
                     }
                 }
             }
@@ -1815,19 +1794,12 @@ class SellController extends Controller
                 $transaction_before,
                 $activity_property
             );
-            \Log::info('Step 12: Activity log recorded');
 
             $output = [
                 'success' => 1,
                 'msg' => trans('lang_v1.updated_success'),
             ];
         } catch (\Exception $e) {
-            \Log::error('Step 99: Exception caught', [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
 
             $output = [
                 'success' => 0,
