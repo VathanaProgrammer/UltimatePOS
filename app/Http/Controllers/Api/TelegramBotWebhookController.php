@@ -80,9 +80,8 @@ class TelegramBotWebhookController extends Controller
                     ];
 
                     foreach ($placeholders as $key => $value) {
-                        $messageText = str_replace("@{{ $key }}", $value, $messageText);
+                        $messageText = str_replace("{".$key."}", $value, $messageText);
                     }
-
                     // Send message
                     TelegramService::sendMessageToUser($order->api_user, $messageText);
                 }

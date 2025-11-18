@@ -118,14 +118,11 @@ class OrderController extends Controller
 
             // --- TELEGRAM INTEGRATION ---
             $user = ApiUser::find($data['api_user_id']);
-            $telegramLink = null; // default value
+            $telegramLink = null;
 
             if ($user->telegram_chat_id) {
-                \Log::info('Saved chat id for user', ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]);
-
-                // Fetch template from DB
+                // Send order message
                 $template = TelegramTemplate::where('name', 'new_order')->first();
-
                 if ($template) {
                     $messageText = trim($template->greeting) . "\n\n" .
                         trim(strip_tags($template->body)) . "\n\n" .
@@ -137,10 +134,10 @@ class OrderController extends Controller
                         ->first();
 
                     $placeholders = [
-                        'user_name'      => $order->api_user->contact->name ?? "Customer",
-                        'order_id'       => $order->id,
-                        'business_name'  => $businessObj->name ?? "SOB",
-                        'amount'         => number_format($order->total, 2),
+                        'user_name' => $order->api_user->contact->name ?? "Customer",
+                        'order_id' => $order->id,
+                        'business_name' => $businessObj->name ?? "SOB",
+                        'amount' => number_format($order->total, 2),
                         'business_phone' => $businessObj->phone ?? "",
                     ];
 
@@ -148,16 +145,14 @@ class OrderController extends Controller
                         $messageText = str_replace("{" . $key . "}", $value, $messageText);
                     }
 
-                    TelegramService::sendMessageToUser($order->api_user, $messageText);
+                    TelegramService::sendMessageToUser($user, $messageText);
                 }
 
-
                 $telegramLink = "https://t.me/sysproasiabot";
-            }else{
-                 $telegramLink = TelegramService::generateStartLink($user->id, $order->id);
+            } else {
+                // Generate start link for first-time user
+                $telegramLink = TelegramService::generateStartLink($user->id, $order->id);
             }
-
-
 
             return response()->json([
                 'success' => true,
