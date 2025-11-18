@@ -1765,6 +1765,9 @@ class SellController extends Controller
                 $contact = $transaction->contact;
                 $api_user = $contact?->api_user;
 
+                \Log::info('contact', ['data' =>$contact]);
+                \Log::info('api_user', ['data' =>$api_user]);
+
                 if ($template_name && $api_user?->telegram_chat_id) {
                     $template = \App\TelegramTemplate::where('name', $template_name)
                         ->where('business_id', $transaction->business_id)
@@ -1834,8 +1837,6 @@ class SellController extends Controller
 
         return $output;
     }
-
-
 
     /**
      * Display list of shipments.
