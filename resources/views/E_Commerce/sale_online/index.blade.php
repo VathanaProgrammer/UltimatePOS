@@ -241,7 +241,7 @@
                     },
                     success: function(response) {
                         window.location.href =
-                            '{{ action([\App\Http\Controllers\SalesOrderController::class, 'index']) }}'
+                            '{{ action([\App\Http\Controllers\SellController::class, 'index']) }}'
                     },
                     error: function(xhr) {
                         alert('Something went wrong: ' + xhr.responseText);
