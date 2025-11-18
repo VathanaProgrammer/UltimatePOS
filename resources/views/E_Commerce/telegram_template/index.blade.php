@@ -18,7 +18,7 @@
                 <div class="col-md-12 mb-4">
                     @component('components.widget', [
                         'class' => 'box-primary',
-                        'title' => $template->name,
+                        'title' => $template->label ?? ucfirst(str_replace('_', ' ', $template->name)),
                     ])
                         <!-- Greeting -->
                         <div class="form-group">

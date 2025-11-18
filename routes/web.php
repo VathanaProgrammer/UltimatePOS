@@ -68,8 +68,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\TelegramTemplateController;
-
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -82,6 +80,8 @@ use App\Http\Controllers\TelegramTemplateController;
 */
 
 include_once 'install_r.php';
+
+Route::get('/testss', [TelegramTemplateController::class, "test"]);
 
 Route::middleware(['setData'])->group(function () {
     Route::get('/', function () {

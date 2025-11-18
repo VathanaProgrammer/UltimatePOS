@@ -38,4 +38,9 @@ class TelegramTemplateController extends Controller
 
         return redirect()->back()->with('status', $output);
     }
+
+    public function test(){
+        $user = auth()->user();
+        return response()->json(["user: " => $user]);
+    }
 }

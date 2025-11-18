@@ -120,34 +120,39 @@ class OrderController extends Controller
             $user = ApiUser::find($data['api_user_id']);
 
            if ($user->telegram_chat_id) {
-    \Log::info('Saved chat id for user', ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]);
+            \Log::info('Saved chat id for user', ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]);
 
-    // Fetch template from DB
-    $template = TelegramTemplate::where('name', 'new_order')->first();
+            // Fetch template from DB
+            $template = TelegramTemplate::where('name', 'new_order')->first();
 
-if ($template) {
-    $messageText = trim($template->greeting) . "\n\n" .
-                   trim(strip_tags($template->body)) . "\n\n" .
-                   trim($template->footer);
+            if ($template) {
+                $messageText = trim($template->greeting) . "\n\n" .
+                            trim(strip_tags($template->body)) . "\n\n" .
+                            trim($template->footer);
 
-    $placeholders = [
-        'user_name'      => $order->api_user->contact->name ?? "Customer",
-        'order_id'       => $order->id,
-        'business_name'  => "SOB",
-        'amount'         => number_format($order->total, 2),
-        'business_phone' => "099923333",
-    ];
+            $businessObj = DB::table("business")
+                            ->where('id', auth()->user()->business_id)
+                            ->select("name", "phone")
+                            ->first();
 
-    foreach ($placeholders as $key => $value) {
-        $messageText = str_replace("{".$key."}", $value, $messageText);
-    }
+                $placeholders = [
+                    'user_name'      => $order->api_user->contact->name ?? "Customer",
+                    'order_id'       => $order->id,
+                    'business_name'  => $businessObj->name ?? "SOB",
+                    'amount'         => number_format($order->total, 2),
+                    'business_phone' => $businessObj->phone ?? "",
+                ];
 
-    TelegramService::sendMessageToUser($order->api_user, $messageText);
-}
+                foreach ($placeholders as $key => $value) {
+                    $messageText = str_replace("{".$key."}", $value, $messageText);
+                }
+
+                TelegramService::sendMessageToUser($order->api_user, $messageText);
+            }
 
 
-    $telegramLink = "https://t.me/sysproasiabot";
-}
+                $telegramLink = "https://t.me/sysproasiabot";
+            }
 
 
 

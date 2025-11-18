@@ -170,7 +170,7 @@ class AdminSidebarMenu
                         );
                         $sub->url(
                             route('telegram_template.index'),
-                            'Notification Settings',
+                            'Telegram templates',
                             ['icon' => '', 'active' => request()->segment(1) == 'catologs']
                         );
                     },
