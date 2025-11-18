@@ -221,7 +221,7 @@ class SaleOnlineController extends Controller
                 ?? optional($order->currentAddress()->latest()->first())->short_address ?? '',
             'shipping_address' => $shipping_address ?? '',
             'delivery_date' => $order->delivery_date ?? $now,
-            'shipping_status' => $order->shipping_status ?? 'delivered',
+            'shipping_status' => $order->shipping_status ?? 'ordered',
             'delivered_to' => $order->delivered_to ?? optional($order->api_user->contact)->name ?? '',
             'delivery_person' => $order->delivery_person ?? null,
             'shipping_charges' => $order->shipping_charges ?? 0,
