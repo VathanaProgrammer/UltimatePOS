@@ -1700,16 +1700,19 @@ class SellController extends Controller
     public function updateShipping(Request $request, $id)
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
+        \Log::info('Step 0: Checking admin & permissions', ['user_id' => auth()->id()]);
 
         if (! $is_admin && ! auth()->user()->hasAnyPermission([
             'access_shipping',
             'access_own_shipping',
             'access_commission_agent_shipping'
         ])) {
+            \Log::warning('Unauthorized action attempted', ['user_id' => auth()->id()]);
             abort(403, 'Unauthorized action.');
         }
 
         try {
+            \Log::info('Step 1: Receiving request input');
             $input = $request->only([
                 'shipping_details',
                 'shipping_address',
@@ -1722,54 +1725,59 @@ class SellController extends Controller
                 'shipping_custom_field_4',
                 'shipping_custom_field_5',
             ]);
+            \Log::info('Step 1: Input received', ['input' => $input]);
 
             $business_id = $request->session()->get('user.business_id');
+            \Log::info('Step 2: Business ID from session', ['business_id' => $business_id]);
 
             $transaction = Transaction::where('business_id', $business_id)
                 ->findOrFail($id);
+            \Log::info('Step 3: Transaction fetched', ['transaction_id' => $transaction->id]);
 
             // Backup before update
             $transaction_before = $transaction->replicate();
+            \Log::info('Step 4: Transaction backup created');
 
             // Perform update
             $transaction->update($input);
-
-            /*
-        |--------------------------------------------------------------------------
-        | SEND TELEGRAM MESSAGE WHEN SHIPPING STATUS CHANGES
-        |--------------------------------------------------------------------------
-        */
+            \Log::info('Step 5: Transaction updated', ['updated_input' => $input]);
 
             $old_status = $transaction_before->shipping_status;
             $new_status = $transaction->shipping_status;
+            \Log::info('Step 6: Shipping status checked', [
+                'old_status' => $old_status,
+                'new_status' => $new_status
+            ]);
 
             if ($old_status !== $new_status) {
+                \Log::info('Step 7: Shipping status changed, preparing Telegram message');
 
-                // Map status → template name
                 $template_name = match ($new_status) {
-                    'ordered'   => 'new_order',      // matches your DB template
+                    'ordered'   => 'new_order',
                     'packed'    => 'order_packed',
                     'shipped'   => 'order_shipped',
                     'delivered' => 'order_delivered',
                     'cancelled' => 'order_cancelled',
                     default     => null,
                 };
+                \Log::info('Step 7: Template name determined', ['template_name' => $template_name]);
 
-                if ($template_name && $transaction->api_user?->telegram_chat_id) {
+                $contact = $transaction->contact;
+                $api_user = $contact?->api_user;
 
-                    // Fetch template from DB
+                if ($template_name && $api_user?->telegram_chat_id) {
                     $template = \App\TelegramTemplate::where('name', $template_name)
                         ->where('business_id', $transaction->business_id)
                         ->first();
+                    \Log::info('Step 8: Template fetched', ['template_exists' => (bool)$template]);
 
                     if ($template) {
-                        // Fetch business data from DB
                         $business = DB::table('business')
                             ->select('name', 'phone')
                             ->where('id', $transaction->business_id)
                             ->first();
+                        \Log::info('Step 9: Business data fetched', ['business' => $business]);
 
-                        // Build template message
                         $messageText = trim($template->greeting) . "\n\n" .
                             trim(strip_tags($template->body)) . "\n\n" .
                             trim($template->footer);
@@ -1783,19 +1791,17 @@ class SellController extends Controller
                             'business_phone'  => $business->phone ?? '',
                         ];
 
-                        // Replace {key} with actual values
                         foreach ($placeholders as $key => $value) {
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
+                        \Log::info('Step 10: Telegram message prepared', ['message' => $messageText]);
 
-                        // Send message
                         TelegramService::sendMessageToUser($transaction->api_user, $messageText);
+                        \Log::info('Step 11: Telegram message sent');
                     }
                 }
             }
 
-
-            // Logging
             $activity_property = [
                 'update_note' => $request->input('shipping_note', ''),
             ];
@@ -1806,18 +1812,19 @@ class SellController extends Controller
                 $transaction_before,
                 $activity_property
             );
+            \Log::info('Step 12: Activity log recorded');
 
             $output = [
                 'success' => 1,
                 'msg' => trans('lang_v1.updated_success'),
             ];
         } catch (\Exception $e) {
-
-            \Log::emergency(
-                'File:' . $e->getFile() .
-                    ' Line:' . $e->getLine() .
-                    ' Message:' . $e->getMessage()
-            );
+            \Log::error('Step 99: Exception caught', [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             $output = [
                 'success' => 0,
@@ -1827,6 +1834,7 @@ class SellController extends Controller
 
         return $output;
     }
+
 
 
     /**

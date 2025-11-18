@@ -182,7 +182,7 @@ class SaleOnlineController extends Controller
         // --- Build transaction (sell) with as many fields filled as possible ---
         $transaction = [
             'business_id' => $business_id,
-            'location_id' => $order->location_id ?? 2,
+            'location_id' => $order->location_id ?? 1,
             'is_kitchen_order' => $order->is_kitchen_order ?? 0,
             'res_table_id' => $order->res_table_id ?? null,
             'res_waiter_id' => $order->res_waiter_id ?? null,
