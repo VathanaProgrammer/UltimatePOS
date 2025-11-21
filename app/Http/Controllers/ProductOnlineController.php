@@ -10,6 +10,7 @@ class ProductOnlineController extends Controller
 {
     public function data(Request $request)
     {
+        $path = '/uploads/img/';
         $query = DB::table('products_E as pe')
             ->join('products as p', 'pe.product_id', '=', 'p.id')
             ->leftJoin('variations as v', 'v.product_id', '=', 'p.id')
@@ -21,7 +22,7 @@ class ProductOnlineController extends Controller
                 'pe.id',
                 'pe.is_active', // <-- add this field
                 'p.name',
-                'p.image',
+                DB::raw("CONCAT('$path', p.image) as image"),
                 'p.sku',
                 'p.type',
                 'c.name as category_name',
