@@ -68,6 +68,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\TelegramTemplateController;
+use App\Http\Controllers\RewardRequstController;
+use App\Http\Controllers\ProductRewardController;
+use App\Http\Controllers\ImportToRewardListController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -111,11 +114,28 @@ Route::middleware(['setData'])->group(function () {
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
 
-    Route::post('/e-commerce/telegram-template', [TelegramTemplateController::class, 'update'])->name('telegram_template.update');
-    Route::get('/e-commerce/telegram-template', [TelegramTemplateController::class, "index"])->name("telegram_template.index");
+    Route::get('/e-commerce/reward-request', [RewardRequstController::class, 'index']);
+    Route::get('product-reward/data', [ProductRewardController::class, 'getData'])
+        ->name('product.reward.data');
+    Route::get('e-commerce/import-product-reward', [ImportToRewardListController::class, 'index'])
+        ->name('import.reward.list');
+    Route::get('products_reward/data', [ImportToRewardListController::class, 'getData'])
+        ->name('products_reward.index');
+    Route::post('products_reward/import', [ImportToRewardListController::class, 'import'])
+        ->name('products_reward.import');
+
+    Route::post('/e-commerce/product-reward/status-update', [ProductRewardController::class, 'updateStatus'])
+        ->name('product.reward.status.update');
+    Route::get('/e-commerce/product-reward-list', [ProductRewardController::class, 'index'])
+        ->name('product.reward.index');
+
+    Route::post('/e-commerce/telegram-template', [TelegramTemplateController::class, 'update'])
+        ->name('telegram_template.update');
+    Route::get('/e-commerce/telegram-template', [TelegramTemplateController::class, "index"])
+        ->name("telegram_template.index");
 
     Route::post('/convert-to-sale-order', [SaleOnlineController::class, "create_sale_order_from_online"]);
-    
+
     // Blade page
     Route::get('/e-commerce/sale-online', [SaleOnlineController::class, "index"])
         ->name("E_Commerce.sale_online.index");
@@ -123,7 +143,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     // DataTables AJAX
     Route::get('/sale_online/data', [SaleOnlineController::class, 'getData'])
         ->name('sale_online.data');
-    
+
     Route::get('/test', [OrderController::class, 'test'])
         ->name('s');
 
@@ -133,9 +153,17 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/e-commerce/catolog/category/create', [Category_EController::class, 'store'])->name("category_e.store");
 
     Route::get('/e-commerce/import-existing-produts', [ImportExistProductController::class, 'index'])->name('importExistingProduct.show');
-    Route::post('/e-commerce/import-existing-produts', [ImportExistProductController::class, 'importToEcommerce'])->name('importExistingProduct.store');
+    Route::get('/e-commerce/import-existing-produts-data', [ImportExistProductController::class, 'data'])->name('importExistingProduct.data');
+    Route::post('/e-commerce/import-existing-produts', [ImportExistProductController::class, 'store'])->name('importExistingProduct.store');
 
     Route::get('/e-commerce/categoies', [Category_EController::class, "index"])->name("category_e.show");
+    Route::get('/e-commerce/categoies-data', [Category_EController::class, "data"])->name("categories.data");
+    Route::get('/e-commerce/categoies-store', [Category_EController::class, "store"])->name("categories.store");
+    Route::get('/e-commerce/categoies-update', [Category_EController::class, "update"])->name("categories.update");
+    Route::get('/e-commerce/categoies-destroy', [Category_EController::class, "destroy"])->name("categories.destroy");
+
+    // Route::get('/product-online', [ProductOnlineController::class, 'index'])->name('product.online.index');
+    Route::get('/product-online/data', [ProductOnlineController::class, 'data'])->name('product.online.data');
 
     Route::get('pos/payment/{id}', [SellPosController::class, 'edit'])->name('edit-pos-payment');
     Route::get('service-staff-availability', [SellPosController::class, 'showServiceStaffAvailibility']);
@@ -199,6 +227,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('catologs', CatologController::class);
     // route used by views to show catalog page by category
     Route::get('/catologs/show-by-category', [CatologController::class, 'showByCategory'])->name('catologs.show_by_category');
+    
+    Route::get('catalogs/data', [CatologController::class, 'data'])->name('catalogs.data');
+    Route::delete('catalogs/{id}/delete', [CatologController::class, 'destroy']);
 
     Route::resource('variation-templates', VariationTemplateController::class);
 

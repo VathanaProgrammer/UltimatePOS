@@ -15,9 +15,59 @@ class Product extends Model
 
     protected $appends = ['image_url'];
 
+    //Original -> // protected $fillable = [
+    //     'name'
+    // ];
+
     protected $fillable = [
-        'name'
+        'name',
+        'business_id',
+        'created_by',
+        'type',
+        'unit_id',
+        'secondary_unit_id',
+        'sub_unit_ids',
+        'brand_id',
+        'category_id',
+        'sub_category_id',
+        'tax',
+        'tax_type',
+        'enable_stock',
+        'alert_quantity',
+        'sku',
+        'barcode_type',
+        'expiry_period',
+        'expiry_period_type',
+        'enable_sr_no',
+        'weight',
+        'product_custom_field1',
+        'product_custom_field2',
+        'product_custom_field3',
+        'product_custom_field4',
+        'product_custom_field5',
+        'product_custom_field6',
+        'product_custom_field7',
+        'product_custom_field8',
+        'product_custom_field9',
+        'product_custom_field10',
+        'product_custom_field11',
+        'product_custom_field12',
+        'product_custom_field13',
+        'product_custom_field14',
+        'product_custom_field15',
+        'product_custom_field16',
+        'product_custom_field17',
+        'product_custom_field18',
+        'product_custom_field19',
+        'product_custom_field20',
+        'product_description',
+        'image',
+        'warranty_id',
+        'preparation_time_in_minutes',
+        'not_for_selling',
+        'is_inactive'
     ];
+
 
     /**
      * The attributes that should be cast to native types.
@@ -36,7 +86,7 @@ class Product extends Model
     public function getImageUrlAttribute()
     {
         if (! empty($this->image)) {
-            $image_url = asset('/uploads/img/'.rawurlencode($this->image));
+            $image_url = asset('/uploads/img/' . rawurlencode($this->image));
         } else {
             $image_url = asset('/img/default.png');
         }
@@ -52,7 +102,7 @@ class Product extends Model
     public function getImagePathAttribute()
     {
         if (! empty($this->image)) {
-            $image_path = public_path('uploads').'/'.config('constants.product_img_path').'/'.$this->image;
+            $image_path = public_path('uploads') . '/' . config('constants.product_img_path') . '/' . $this->image;
         } else {
             $image_path = null;
         }

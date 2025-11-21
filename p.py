@@ -23,7 +23,7 @@ def split_columns_top_level(text):
         buf.append(ch)
     last = "".join(buf).strip()
     if last:
-        cols.append(last)
+        cols.append(last) 
     return cols
 
 def parse_column(col_def):

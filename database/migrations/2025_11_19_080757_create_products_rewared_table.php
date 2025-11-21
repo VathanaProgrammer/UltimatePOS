@@ -13,10 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('categories_E', function (Blueprint $table) {
+        Schema::create('products_reward', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('catalog_id');
-            $table->foreign('catalog_id')->references('id')->on('catologs')->onDelete('cascade');
+
+            $table->unsignedInteger('product_id');
+            $table->foreign('product_id')
+                ->references('id')
+                ->on('products')
+                ->onDelete('cascade');
+
+            $table->integer('points_required')->nullable();
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
     }
@@ -28,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('categories_E');
+        Schema::dropIfExists('products_reward');
     }
 };

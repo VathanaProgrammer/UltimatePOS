@@ -52,7 +52,7 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'OTP generated',
             'otp' => $otp
-         ])->cookie(
+        ])->cookie(
             'token',
             $token,
             60,
@@ -96,47 +96,50 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Login successful',
             'user' => $user,
-         ])->cookie(
-            'token',
-            $token,
-            60,
-            '/',
-            '.syspro.asia',
-            true,
-            true,
-            false,
-            'None'
-        );
-        //->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
+        ]) //->cookie(
+            //     'token',
+            //     $token,
+            //     60,
+            //     '/',
+            //     '.syspro.asia',
+            //     true,
+            //     true,
+            //     false,
+            //     'None'
+            // );
+            ->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
     }
 
     // 🔹 Get user from JWT token
     public function user(Request $request)
     {
         try {
-            Log::info('Fetching user info via token');
             $token = $request->cookie('token'); // get token from HttpOnly cookie
-            Log::info('Token received from cookie', ['token' => $token ? 'exists' : 'missing']);
-
             $user = JWTAuth::setToken($token)->toUser();
             $user->load('contact');
 
-            Log::info('User retrieved successfully', ['user_id' => $user->id]);
+            $contact = $user->contact;
 
             return response()->json([
                 'success' => true,
                 'user' => [
                     'id' => $user->id,
-                    'profile_url' => $user->profile_url,
-                    'name' => $user->contact->name ?? null,
-                    'mobile' => $user->contact->mobile ?? null,
+                    'profile_url' => $user->profile_url ?? null,
+                    'name' => $contact->name ?? null,
+                    'mobile' => $contact->mobile ?? null,
+                    'reward_points' => [
+                        'total' => $contact->total_rp ?? 0,
+                        'used' => $contact->total_rp_used ?? 0,
+                        'expired' => $contact->total_rp_expired ?? 0,
+                        'available' => ($contact->total_rp ?? 0) - ($contact->total_rp_used ?? 0) - ($contact->total_rp_expired ?? 0),
+                    ],
                 ]
             ]);
-        } catch (JWTException $e) {
-            Log::error('JWT parse error', ['error' => $e->getMessage()]);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
     }
+
 
     public function verifyOtp(Request $request)
     {

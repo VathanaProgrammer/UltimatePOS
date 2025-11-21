@@ -17,11 +17,14 @@ class Categories_E extends Model
         "description",
     ];
 
-    public function catolog(){
-        return $this->belongTo(Catalog::class, 'catolog_id', 'id');
+    public function catolog()
+    {
+        return $this->belongsTo(Catalog::class, 'catolog_id', 'id');
     }
 
-    public function product_e(){
+
+    public function product_e()
+    {
         return $this->hasMany(ProductE::class, 'category_id', 'id');
     }
 }

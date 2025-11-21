@@ -145,33 +145,50 @@ class AdminSidebarMenu
                     function ($sub) {
                         $sub->url(
                             route("E_Commerce.sale_online.index"),
-                            'Sale Online',
-                            ['icon' => '', 'active' => request()->segment(1) == 'sale_online']
+                            'List Sale Online',
+                            ['icon' => '', 'active' => request()->is('e-commerce/sale-online')]
                         );
                         $sub->url(
                             route("product.online.index"),
                             'List Products',
-                            ['icon' => '', 'active' => request()->segment(1) == 'products']
+                            ['icon' => '', 'active' => request()->is('e-commerce/product')]
                         );
                         $sub->url(
                             action([\App\Http\Controllers\CatologController::class, 'index']),
                             'Catalogs',
-                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
+                            ['icon' => '', 'active' => request()->is('catologs')]
                         );
                         $sub->url(
                             action([\App\Http\Controllers\ImportExistProductController::class, 'index']),
                             'Import Existing Product',
-                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
+                            ['icon' => '', 'active' => request()->is('e-commerce/import-existing-produts')]
                         );
                         $sub->url(
                             route('category_e.show'),
                             'Categories',
-                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
+                            ['icon' => '', 'active' => request()->is('e-commerce/categoies')]
                         );
                         $sub->url(
                             route('telegram_template.index'),
-                            'Telegram templates',
-                            ['icon' => '', 'active' => request()->segment(1) == 'catologs']
+                            'Telegram Templates',
+                            ['icon' => '', 'active' => request()->is('e-commerce/telegram-template')]
+                        );
+                        $sub->url(
+                            route('product.reward.index'), // Product Reward List page
+                            'Product Reward List',
+                            ['icon' => '', 'active' => request()->is('e-commerce/product-reward-list')]
+                        );
+
+                        $sub->url(
+                            route('import.reward.list'), // Import to Reward List page
+                            'Import To Reward List',
+                            ['icon' => '', 'active' => request()->is('e-commerce/import-product-reward')]
+                        );
+
+                        $sub->url(
+                            route('telegram_template.index'), // Reward Request / Telegram template
+                            'Reward Request',
+                            ['icon' => '', 'active' => request()->is('e-commerce/reward-request')]
                         );
                     },
                     ['icon' => '<svg aria-hidden="true" class="tw-size-5 tw-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -352,7 +369,7 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => request()->segment(1) == 'sales-order']
                             );
                         }
-                        
+
                         if ($is_admin || auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'direct_sell.view', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
                             $sub->url(
                                 action([\App\Http\Controllers\SellController::class, 'index']),

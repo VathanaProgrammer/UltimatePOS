@@ -18,12 +18,14 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\SaleOnlineController;
+use App\Http\Controllers\Api\ApiRewardController;
 use App\Http\Controllers\Api\TelegramBotWebhookController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/product/all', [ProductController::class, "all"])->name('api.product.all');
 Route::get("/category/all", [CategoryController::class, "all"])->name('api.category.all');
+Route::get('/product/reward/all', [ApiRewardController::class, 'getData']);
 
 Route::post("/telegram/webhook", [TelegramBotWebhookController::class, "webhook"])->name('webhook');
 
