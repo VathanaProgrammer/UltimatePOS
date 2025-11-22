@@ -18,20 +18,24 @@ class TelegramService
         $token = env('TELEGRAM_BOT_TOKEN');
 
         if (!empty($fileUrls)) {
-            foreach ($fileUrls as $filePath) {
-                $localPath = public_path(parse_url($filePath, PHP_URL_PATH));
-                $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+            foreach ($fileUrls as $fileUrl) {
+                $localPath = public_path('uploads/media/' . basename($fileUrl));
+
+                if (!file_exists($localPath)) continue; // skip missing files
+
+                $ext = pathinfo($localPath, PATHINFO_EXTENSION);
                 $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+
                 $endpoint = $isImage ? 'sendPhoto' : 'sendDocument';
 
                 $payload = ['chat_id' => $user->telegram_chat_id];
 
                 if ($isImage) {
+                    $payload['photo'] = curl_file_create($localPath);
                     $payload['caption'] = $text;
-                    $payload['photo'] = file_exists($localPath) ? curl_file_create($localPath) : $filePath;
                 } else {
+                    $payload['document'] = curl_file_create($localPath);
                     $payload['caption'] = $text;
-                    $payload['document'] = file_exists($localPath) ? curl_file_create($localPath) : $filePath;
                 }
 
                 $ch = curl_init();
@@ -43,7 +47,7 @@ class TelegramService
                 curl_close($ch);
             }
         } else {
-            // Send text only
+            // Only text
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, "https://api.telegram.org/bot{$token}/sendMessage");
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -58,7 +62,6 @@ class TelegramService
 
         return true;
     }
-
     /**
      * Optional: generate /start link for first-time users
      */
