@@ -1700,7 +1700,6 @@ class SellController extends Controller
      */
     public function updateShipping(Request $request, $id)
     {
-        \Log::info("request all : ", ["info: " => $request->all()]);
         $is_admin = auth()->user()->can('access_shipping');
 
         if (!$is_admin) {
@@ -1729,11 +1728,13 @@ class SellController extends Controller
 
             $transaction->update($input);
 
-            // Collect newly uploaded media for sending to Telegram  
+            // Collect newly uploaded media for Telegram
             $newMediaFiles = [];
             if ($request->has('uploaded_media_ids')) {
                 foreach ($request->input('uploaded_media_ids') as $media_id) {
-                    $media = Media::where('id', $media_id)->where('business_id', $business_id)->first();
+                    $media = Media::where('id', $media_id)
+                        ->where('business_id', $business_id)
+                        ->first();
                     if ($media) {
                         $media->model_id = $transaction->id;
                         $media->model_type = Transaction::class;
@@ -1767,7 +1768,8 @@ class SellController extends Controller
 
                     if ($template) {
                         $business = DB::table('business')->select('name', 'phone')
-                            ->where('id', $transaction->business_id)->first();
+                            ->where('id', $transaction->business_id)
+                            ->first();
 
                         $messageText = trim($template->greeting) . "\n\n" .
                             trim(strip_tags($template->body)) . "\n\n" .
@@ -1786,34 +1788,28 @@ class SellController extends Controller
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
 
-                        \Log::info('Debug Telegram media files', [
+                        \Log::info('Debug Telegram new media files', [
                             'newMediaFiles' => $newMediaFiles,
                             'transaction_id' => $transaction->id,
                             'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/' . $f)), $newMediaFiles)
                         ]);
 
-                        // Send message with only new media files  
-                        \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $newMediaFiles);
+                        TelegramService::sendMessageToUser($api_user, $messageText, $newMediaFiles);
                     }
                 }
             }
 
             DB::commit();
 
-            return [
-                'success' => 1,
-                'msg' => 'Shipping updated successfully.',
-            ];
+            return ['success' => 1, 'msg' => 'Shipping updated successfully.'];
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error updating shipping: ' . $e->getMessage());
 
-            return [
-                'success' => 0,
-                'msg' => 'Something went wrong.',
-            ];
+            return ['success' => 0, 'msg' => 'Something went wrong.'];
         }
     }
+
 
     /**
      * Display list of shipments.
