@@ -18,31 +18,42 @@ class TelegramService
         $token = env('TELEGRAM_BOT_TOKEN');
 
         if (!empty($fileUrls)) {
-            foreach ($fileUrls as $url) {
-                $ext = pathinfo($url, PATHINFO_EXTENSION);
+            foreach ($fileUrls as $filePath) {
+                $localPath = public_path(parse_url($filePath, PHP_URL_PATH));
+                $ext = pathinfo($filePath, PATHINFO_EXTENSION);
                 $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'webp', 'gif']);
-
                 $endpoint = $isImage ? 'sendPhoto' : 'sendDocument';
 
-                $payload = [
-                    'chat_id' => $user->telegram_chat_id,
-                ];
+                $payload = ['chat_id' => $user->telegram_chat_id];
 
                 if ($isImage) {
-                    $payload['photo'] = $url;
                     $payload['caption'] = $text;
+                    $payload['photo'] = file_exists($localPath) ? curl_file_create($localPath) : $filePath;
                 } else {
-                    $payload['document'] = $url;
                     $payload['caption'] = $text;
+                    $payload['document'] = file_exists($localPath) ? curl_file_create($localPath) : $filePath;
                 }
 
-                Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/{$endpoint}", $payload);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://api.telegram.org/bot{$token}/{$endpoint}");
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_exec($ch);
+                curl_close($ch);
             }
         } else {
-            Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
+            // Send text only
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "https://api.telegram.org/bot{$token}/sendMessage");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, [
                 'chat_id' => $user->telegram_chat_id,
                 'text' => $text,
             ]);
+            curl_exec($ch);
+            curl_close($ch);
         }
 
         return true;

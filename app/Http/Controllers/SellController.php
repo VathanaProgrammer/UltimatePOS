@@ -1700,13 +1700,9 @@ class SellController extends Controller
      */
     public function updateShipping(Request $request, $id)
     {
-        $is_admin = $this->businessUtil->is_admin(auth()->user());
+        $is_admin = auth()->user()->can('access_shipping'); // adjust permission check
 
-        if (!$is_admin && !auth()->user()->hasAnyPermission([
-            'access_shipping',
-            'access_own_shipping',
-            'access_commission_agent_shipping'
-        ])) {
+        if (!$is_admin) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -1714,10 +1710,7 @@ class SellController extends Controller
 
         try {
             $business_id = $request->session()->get('user.business_id');
-
-            $transaction = Transaction::where('business_id', $business_id)
-                ->findOrFail($id);
-
+            $transaction = Transaction::where('business_id', $business_id)->findOrFail($id);
             $transaction_before = $transaction->replicate();
 
             $input = $request->only([
@@ -1735,7 +1728,7 @@ class SellController extends Controller
 
             $transaction->update($input);
 
-            // Attach uploaded files correctly
+            // Attach uploaded files
             if ($request->has('uploaded_media_ids')) {
                 foreach ($request->input('uploaded_media_ids') as $media_id) {
                     $media = Media::where('id', $media_id)
@@ -1755,7 +1748,6 @@ class SellController extends Controller
             $new_status = $transaction->shipping_status;
 
             if ($old_status !== $new_status) {
-
                 $template_name = match ($new_status) {
                     'ordered'   => 'new_order',
                     'packed'    => 'order_packed',
@@ -1796,59 +1788,34 @@ class SellController extends Controller
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
 
-                        // -----------------------------------------
-                        // Collect ALL files attached to THIS update
-                        // -----------------------------------------
+                        // Get all attached media URLs
                         $mediaFiles = $transaction->media()
                             ->where('model_media_type', 'shipping_document')
                             ->get()
                             ->pluck('display_url')
                             ->toArray();
 
-                        if (!is_array($mediaFiles)) {
-                            $mediaFiles = [];
-                        }
-
-                        // -----------------------------------------
-                        // Send telegram text + all files
-                        // -----------------------------------------
-                        \App\Services\TelegramService::sendMessageToUser(
-                            $api_user,
-                            $messageText,
-                            $mediaFiles
-                        );
+                        TelegramService::sendMessageToUser($api_user, $messageText, $mediaFiles);
                     }
                 }
             }
-
-            $activity_property = [
-                'update_note' => $request->input('shipping_note', ''),
-            ];
-
-            $this->transactionUtil->activityLog(
-                $transaction,
-                'shipping_edited',
-                $transaction_before,
-                $activity_property
-            );
 
             DB::commit();
 
             return [
                 'success' => 1,
-                'msg' => trans('lang_v1.updated_success'),
+                'msg' => 'Shipping updated successfully.',
             ];
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error updating shipping:', ['error' => $e->getMessage()]);
+            \Log::error('Error updating shipping: ' . $e->getMessage());
 
             return [
                 'success' => 0,
-                'msg' => trans('messages.something_went_wrong'),
+                'msg' => 'Something went wrong.',
             ];
         }
     }
-
     /**
      * Display list of shipments.
      *
