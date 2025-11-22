@@ -1700,6 +1700,7 @@ class SellController extends Controller
      */
     public function updateShipping(Request $request, $id)
     {
+        \Log::info("request all : ", ["info: " => $request->all()]);
         $is_admin = auth()->user()->can('access_shipping');
 
         if (!$is_admin) {
