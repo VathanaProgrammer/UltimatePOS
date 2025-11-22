@@ -11,53 +11,87 @@ class TelegramService
     /**
      * Send a message to a Telegram user via chat_id
      */
-    public static function sendMessageToUser(ApiUser $user, string $text, array $fileUrls = [])
+    public static function sendMessageToUser(ApiUser $user, string $text, array $fileNames = [])
     {
-        if (!$user->telegram_chat_id) return false;
+        if (!$user->telegram_chat_id) {
+            Log::warning("User {$user->id} has no Telegram chat_id");
+            return false;
+        }
 
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        if (!empty($fileUrls)) {
-            foreach ($fileUrls as $fileUrl) {
-                $localPath = public_path('uploads/media/' . basename($fileUrl));
+        // Log input
+        Log::info("Sending Telegram message", [
+            'user_id' => $user->id,
+            'chat_id' => $user->telegram_chat_id,
+            'text' => $text,
+            'files' => $fileNames
+        ]);
 
-                if (!file_exists($localPath)) continue; // skip missing files
+        // Send files if available
+        foreach ($fileNames as $fileName) {
+            $localPath = public_path('uploads/media/' . $fileName);
 
-                $ext = pathinfo($localPath, PATHINFO_EXTENSION);
-                $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'webp', 'gif']);
-
-                $endpoint = $isImage ? 'sendPhoto' : 'sendDocument';
-
-                $payload = ['chat_id' => $user->telegram_chat_id];
-
-                if ($isImage) {
-                    $payload['photo'] = curl_file_create($localPath);
-                    $payload['caption'] = $text;
-                } else {
-                    $payload['document'] = curl_file_create($localPath);
-                    $payload['caption'] = $text;
-                }
-
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, "https://api.telegram.org/bot{$token}/{$endpoint}");
-                curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-                curl_exec($ch);
-                curl_close($ch);
+            if (!file_exists($localPath)) {
+                Log::error("File not found for Telegram", ['file' => $localPath]);
+                continue; // skip missing file
             }
-        } else {
-            // Only text
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://api.telegram.org/bot{$token}/sendMessage");
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, [
-                'chat_id' => $user->telegram_chat_id,
-                'text' => $text,
-            ]);
-            curl_exec($ch);
-            curl_close($ch);
+
+            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+
+            $endpoint = $isImage ? 'sendPhoto' : 'sendDocument';
+
+            // Telegram requires multipart/form-data for local files
+            $multipart = [
+                [
+                    'name'     => $isImage ? 'photo' : 'document',
+                    'contents' => fopen($localPath, 'r'),
+                    'filename' => basename($localPath)
+                ],
+                [
+                    'name'     => 'chat_id',
+                    'contents' => $user->telegram_chat_id
+                ],
+                [
+                    'name'     => 'caption',
+                    'contents' => $text
+                ]
+            ];
+
+            try {
+                $response = Http::withoutVerifying()
+                    ->withHeaders(['Accept' => 'application/json'])
+                    ->asMultipart()
+                    ->post("https://api.telegram.org/bot{$token}/{$endpoint}", $multipart);
+
+                Log::info("Telegram API response", [
+                    'file' => $fileName,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Telegram send failed", ['file' => $fileName, 'error' => $e->getMessage()]);
+            }
+        }
+
+        // Send text-only if no files
+        if (empty($fileNames)) {
+            try {
+                $response = Http::withoutVerifying()
+                    ->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                        'chat_id' => $user->telegram_chat_id,
+                        'text' => $text,
+                        'parse_mode' => 'HTML'
+                    ]);
+
+                Log::info("Telegram API text-only response", [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Telegram text-only send failed", ['error' => $e->getMessage()]);
+            }
         }
 
         return true;
