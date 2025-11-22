@@ -134,7 +134,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/e-commerce/telegram-template', [TelegramTemplateController::class, "index"])
         ->name("telegram_template.index");
 
-    Route::post('/convert-to-sale-order', [SaleOnlineController::class, "create_sale_order_from_online"]);
+    Route::post('/convert-to-sale-order', [SaleOnlineController::class, "create_sell_from_online"])->name("sale_online.convert");
 
     // Blade page
     Route::get('/e-commerce/sale-online', [SaleOnlineController::class, "index"])
