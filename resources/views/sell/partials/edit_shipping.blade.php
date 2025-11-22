@@ -185,8 +185,8 @@
 </div><!-- /.modal-dialog -->
 <!-- Your modal HTML ends here -->
 </div><!-- /.modal-dialog -->
-
 @push('scripts')
+
 <script>
 Dropzone.autoDiscover = false;
 
@@ -222,5 +222,29 @@ var shippingDropzone = new Dropzone("#shipping_documents_dropzone", {
         });
     }
 });
+
+// AJAX submit for shipping form
+$('#edit_shipping_form').on('submit', function(e) {
+    e.preventDefault();
+    var form = $(this);
+    $.ajax({
+        url: form.attr('action'),
+        type: 'POST', // must be POST
+        data: form.serialize(), // includes _method=PUT
+        success: function(response) {
+            if(response.success){
+                $('#edit_shipping_form').closest('.modal').modal('hide');
+                // optionally reload the page or update your table here
+                location.reload();
+            } else {
+                alert('Update failed: ' + (response.msg || 'Unknown error'));
+            }
+        },
+        error: function(xhr){
+            alert('Something went wrong. Please try again.');
+        }
+    });
+});
 </script>
+
 @endpush
