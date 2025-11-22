@@ -24,6 +24,101 @@ $(document).ready(function () {
         },
     });
 
+    Dropzone.autoDiscover = false;
+
+    // Open modal triggers Dropzone init
+    $('#edit_shipping_modal').on('shown.bs.modal', function () {
+        if (!window.shippingDropzone) { // prevent re-init
+            const uploadUrl = $('#media_upload_url').val();
+            console.log('Upload URL:', uploadUrl);
+
+            window.shippingDropzone = new Dropzone("#shipping_documents_dropzone", {
+                url: uploadUrl,
+                paramName: "file",
+                maxFilesize: 50, // MB
+                acceptedFiles: ".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx",
+                addRemoveLinks: true,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                init: function () {
+                    const dz = this;
+                    const container = document.getElementById('uploaded_media_container');
+
+                    console.log('Dropzone initialized');
+
+                    dz.on("sending", function (file, xhr, formData) {
+                        console.log('Sending file:', file.name);
+                    });
+
+                    dz.on("success", function (file, response) {
+                        console.log('Server response:', response);
+                        if (response.success && response.media_id) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'uploaded_media_ids[]';
+                            input.value = response.media_id;
+                            container.appendChild(input);
+                            console.log('File uploaded, media_id:', response.media_id);
+                        }
+                    });
+
+                    dz.on("error", function (file, errorMessage, xhr) {
+                        console.log('Upload error:', errorMessage);
+                        if (xhr) console.log('XHR status:', xhr.status, xhr.responseText);
+                    });
+
+                    dz.on("removedfile", function (file) {
+                        if (file.xhr) {
+                            const response = JSON.parse(file.xhr.response);
+                            if (response.success && response.media_id) {
+                                const input = container.querySelector('input[value="' + response.media_id + '"]');
+                                if (input) container.removeChild(input);
+                                console.log('File removed, media_id:', response.media_id);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    // Form submission
+    $('#edit_shipping_form').on('submit', function (e) {
+        e.preventDefault();
+        const form = $(this);
+
+        const media_ids = [];
+        $('#uploaded_media_container input[name="uploaded_media_ids[]"]').each(function () {
+            media_ids.push($(this).val());
+        });
+
+        const data = form.serializeArray();
+        media_ids.forEach(function (id) {
+            data.push({ name: 'uploaded_media_ids[]', value: id });
+        });
+
+        console.log('Submitting form with media IDs:', media_ids);
+
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: $.param(data),
+            success: function (response) {
+                console.log('Form submission response:', response);
+                if (response.success) {
+                    $('#edit_shipping_form').closest('.modal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Update failed: ' + (response.msg || 'Unknown error'));
+                }
+            },
+            error: function (xhr) {
+                console.log('Form submission error:', xhr.status, xhr.responseText);
+                alert('Something went wrong. Please try again.');
+            }
+        });
+    });
     update_font_size();
     if ($('#status_span').length) {
         var status = $('#status_span').attr('data-status');
@@ -146,16 +241,16 @@ $(document).ready(function () {
         if (typeof str !== 'string') {
             str = String(str);
         }
-        
+
         // HTML REMOVAL: Simple regex to remove HTML tags
-        str = str.replace(/<[^>]*>/g, ''); 
-        
+        str = str.replace(/<[^>]*>/g, '');
+
         // Check 1: Variable exists, Check 2: Has value, Check 3: Symbol present in string
         if (typeof __currency_symbol !== 'undefined' && __currency_symbol && str.includes(__currency_symbol)) {
             // SIMPLE REPLACEMENT: Replace all occurrences of currency symbol with empty string
-            str = str.split(__currency_symbol).join('');  
+            str = str.split(__currency_symbol).join('');
         }
-        
+
         return str.trim();
     }
 
@@ -176,11 +271,11 @@ $(document).ready(function () {
             exportOptions: {
                 columns: ':visible',
                 format: {
-                    body: function(data, row, column, node) {
+                    body: function (data, row, column, node) {
                         // Remove currency symbol from the cell data
                         return __remove_currency_symbol(data);
                     },
-                    footer: function(data, row, column, node) {
+                    footer: function (data, row, column, node) {
                         // Remove currency symbol from the footer data
                         return __remove_currency_symbol(data);
                     }
@@ -195,11 +290,11 @@ $(document).ready(function () {
             exportOptions: {
                 columns: ':visible',
                 format: {
-                    body: function(data, row, column, node) {
+                    body: function (data, row, column, node) {
                         // Remove currency symbol from the cell data
                         return __remove_currency_symbol(data);
                     },
-                    footer: function(data, row, column, node) {
+                    footer: function (data, row, column, node) {
                         // Remove currency symbol from the footer data
                         return __remove_currency_symbol(data);
                     }
@@ -283,7 +378,7 @@ $(document).ready(function () {
         },
     });
 
-   
+
 
     if ($('input#iraqi_selling_price_adjustment').length > 0) {
         iraqi_selling_price_adjustment = true;
@@ -371,8 +466,8 @@ ranges[LANG.last_financial_year] = [
 ];
 
 var dateRangeSettings = {
-    showDropdowns : true,
-    linkedCalendars : false,
+    showDropdowns: true,
+    linkedCalendars: false,
     ranges: ranges,
     startDate: financial_year.start,
     endDate: financial_year.end,
@@ -400,7 +495,7 @@ $(document).on('keypress', 'input.input_number', function (event) {
     }
 
     // Check for no negative values
-    if(is_decimal == 'no_neg'){
+    if (is_decimal == 'no_neg') {
         var regex = new RegExp(/^[0-9.,]+$/);
     }
 

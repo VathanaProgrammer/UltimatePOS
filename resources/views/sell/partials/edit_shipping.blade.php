@@ -291,81 +291,62 @@
 </div><!-- /.modal-dialog -->
 <!-- Your modal HTML ends here -->
 </div><!-- /.modal-dialog -->
-@push('scripts')
-    <script>
-        Dropzone.autoDiscover = false;
 
-        var shippingDropzone = new Dropzone("#shipping_documents_dropzone", {
-            url: document.getElementById('media_upload_url').value,
-            paramName: "file",
-            maxFilesize: 50, // MB
-            acceptedFiles: ".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx",
-            addRemoveLinks: true,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            init: function() {
-                var dz = this;
-                var container = document.getElementById('uploaded_media_container');
+@section('javascript')
+    <script type="text/javascript">
+        $(document).ready(function() {
+            Dropzone.autoDiscover = false;
 
-                dz.on("success", function(file, response) {
-                    if (response.success && response.media_id) {
-                        // Add hidden input for uploaded file
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'uploaded_media_ids[]';
-                        input.value = response.media_id;
-                        container.appendChild(input);
-                    }
-                });
+            // Debug click
+            $(document).on('click', function() {
+                console.log('click!');
+            });
 
-                dz.on("removedfile", function(file) {
-                    if (file.xhr) {
-                        var response = JSON.parse(file.xhr.response);
-                        if (response.success && response.media_id) {
-                            var input = container.querySelector('input[value="' + response.media_id +
-                                '"]');
-                            if (input) container.removeChild(input);
+            // Initialize Dropzone when modal is opened
+            $('#edit_shipping_modal').on('shown.bs.modal', function() {
+                if (!window.shippingDropzone) { // prevent re-initialization
+                    window.shippingDropzone = new Dropzone("#shipping_documents_dropzone", {
+                        url: $('#media_upload_url').val(),
+                        paramName: "file",
+                        maxFilesize: 50,
+                        acceptedFiles: ".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx",
+                        addRemoveLinks: true,
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        init: function() {
+                            var dz = this;
+                            var container = document.getElementById('uploaded_media_container');
+
+                            dz.on("success", function(file, response) {
+                                if (response.success && response.media_id) {
+                                    var input = document.createElement('input');
+                                    input.type = 'hidden';
+                                    input.name = 'uploaded_media_ids[]';
+                                    input.value = response.media_id;
+                                    container.appendChild(input);
+                                    console.log('File uploaded:', response.media_id);
+                                }
+                            });
+
+                            dz.on("removedfile", function(file) {
+                                if (file.xhr) {
+                                    var response = JSON.parse(file.xhr.response);
+                                    if (response.success && response.media_id) {
+                                        var input = container.querySelector(
+                                            'input[value="' + response.media_id +
+                                            '"]');
+                                        if (input) container.removeChild(input);
+                                        console.log('File removed:', response.media_id);
+                                    }
+                                }
+                            });
+
+                            console.log('Dropzone initialized');
                         }
-                    }
-                });
-            }
-        });
-
-        /$('#edit_shipping_form').on('submit', function(e) {
-        e.preventDefault();
-        var form = $(this);
-
-        // Include Dropzone uploaded media IDs
-        var media_ids = [];
-        $('#uploaded_media_container input[name="uploaded_media_ids[]"]').each(function() {
-            media_ids.push($(this).val());
-        });
-
-        var data = form.serializeArray(); // existing form data
-        media_ids.forEach(function(id) {
-            data.push({
-                name: 'uploaded_media_ids[]',
-                value: id
+                    });
+                }
             });
         });
-
-        $.ajax({
-        url: form.attr('action'),
-        type: 'POST',
-        data: $.param(data),
-        success: function(response) {
-            if (response.success) {
-                $('#edit_shipping_form').closest('.modal').modal('hide');
-                location.reload();
-            } else {
-                alert('Update failed: ' + (response.msg || 'Unknown error'));
-            }
-        },
-        error: function(xhr) {
-            alert('Something went wrong. Please try again.');
-        }
-        });
-        });
     </script>
-@endpush
+@endsection
