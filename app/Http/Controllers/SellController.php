@@ -1794,6 +1794,12 @@ class SellController extends Controller
                             ->get()
                             ->pluck('file_name')
                             ->toArray();
+                            
+                        \Log::info('Debug Telegram media files', [
+                            'mediaFiles' => $mediaFiles,
+                            'transaction_id' => $transaction->id,
+                            'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/'.$f)), $mediaFiles)
+                        ]);
 
                         TelegramService::sendMessageToUser($api_user, $messageText, $mediaFiles);
                     }
