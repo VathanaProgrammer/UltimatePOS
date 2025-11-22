@@ -1692,9 +1692,10 @@ class SellController extends Controller
     }
 
     /**
-     * Update shipping.
+     * Update shipping details and attach uploaded documents.
      *
-     * @param  Request  $request, int  $id
+     * @param  Request  $request
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function updateShipping(Request $request, $id)
@@ -1709,7 +1710,18 @@ class SellController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        DB::beginTransaction();
+
         try {
+            $business_id = $request->session()->get('user.business_id');
+
+            $transaction = Transaction::where('business_id', $business_id)
+                ->findOrFail($id);
+
+            // Backup before update
+            $transaction_before = $transaction->replicate();
+
+            // Update shipping fields
             $input = $request->only([
                 'shipping_details',
                 'shipping_address',
@@ -1723,22 +1735,28 @@ class SellController extends Controller
                 'shipping_custom_field_5',
             ]);
 
-            $business_id = $request->session()->get('user.business_id');
-
-            $transaction = Transaction::where('business_id', $business_id)
-                ->findOrFail($id);
-
-            // Backup before update
-            $transaction_before = $transaction->replicate();
-
-            // Perform update
             $transaction->update($input);
 
+            // Attach uploaded files safely
+            if ($request->has('uploaded_media_ids')) {
+                foreach ($request->input('uploaded_media_ids') as $media_id) {
+                    $media = Media::where('id', $media_id)
+                        ->where('business_id', $business_id)
+                        ->first();
+                    if ($media && $media->model_id !== $transaction->id) {
+                        $media->model_id = $transaction->id;
+                        $media->model_type = Transaction::class;
+                        $media->model_media_type = 'shipping_document';
+                        $media->save();
+                    }
+                }
+            }
+
+            // Telegram notification if shipping status changed
             $old_status = $transaction_before->shipping_status;
             $new_status = $transaction->shipping_status;
 
             if ($old_status !== $new_status) {
-
                 $template_name = match ($new_status) {
                     'ordered'   => 'new_order',
                     'packed'    => 'order_packed',
@@ -1748,7 +1766,7 @@ class SellController extends Controller
                     default     => null,
                 };
 
-                $contact = $transaction->contact;
+                $contact = $transaction?->contact;
                 $api_user = $contact?->api_user;
 
                 if ($template_name && $api_user?->telegram_chat_id) {
@@ -1779,15 +1797,20 @@ class SellController extends Controller
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
 
-                        TelegramService::sendMessageToUser($api_user, $messageText);
+                        // Send Telegram message
+                        TelegramService::sendMessageToUser(
+                            $api_user,
+                            $messageText,
+                            $template->image_url ?? null
+                        );
                     }
                 }
             }
 
+            // Log activity
             $activity_property = [
                 'update_note' => $request->input('shipping_note', ''),
             ];
-
             $this->transactionUtil->activityLog(
                 $transaction,
                 'shipping_edited',
@@ -1795,11 +1818,15 @@ class SellController extends Controller
                 $activity_property
             );
 
+            DB::commit();
+
             $output = [
                 'success' => 1,
                 'msg' => trans('lang_v1.updated_success'),
             ];
         } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating shipping:', ['error' => $e->getMessage()]);
 
             $output = [
                 'success' => 0,

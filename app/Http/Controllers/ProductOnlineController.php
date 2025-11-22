@@ -11,29 +11,35 @@ class ProductOnlineController extends Controller
     public function data(Request $request)
     {
         $path = '/uploads/img/';
+
         $query = DB::table('products_E as pe')
             ->join('products as p', 'pe.product_id', '=', 'p.id')
-            ->leftJoin('variations as v', 'v.product_id', '=', 'p.id')
-            ->leftJoin('variation_location_details as vld', 'vld.variation_id', '=', 'v.id')
             ->leftJoin('categories as c', 'p.category_id', '=', 'c.id')
             ->leftJoin('brands as b', 'p.brand_id', '=', 'b.id')
-            ->leftJoin('business_locations as bl', 'vld.location_id', '=', 'bl.id')
+            ->leftJoin('product_locations as pl', 'pl.product_id', '=', 'p.id') // product-level location
+            ->leftJoin('business_locations as bl', 'pl.location_id', '=', 'bl.id')
+            ->leftJoin('variations as v', 'v.product_id', '=', 'p.id')
+            ->leftJoin('variation_location_details as vld', function ($join) {
+                $join->on('vld.variation_id', '=', 'v.id')
+                    ->on('vld.location_id', '=', 'pl.location_id'); // match variation stock to product location
+            })
             ->select(
                 'pe.id',
-                'pe.is_active', // <-- add this field
+                'pe.is_active',
                 'p.name',
                 DB::raw("CONCAT('$path', p.image) as image"),
                 'p.sku',
                 'p.type',
                 'c.name as category_name',
-                DB::raw('COALESCE(SUM(vld.qty_available), 0) as total_stock'),
-                DB::raw('MIN(v.default_purchase_price) as unit_purchase_price'),
-                DB::raw('MIN(v.sell_price_inc_tax) as unit_selling_price'),
+                DB::raw("FORMAT(COALESCE(SUM(vld.qty_available), 0), 2) as total_stock"),
+                DB::raw("FORMAT(MIN(v.default_purchase_price), 2) as unit_purchase_price"),
+                DB::raw("FORMAT(MIN(v.sell_price_inc_tax), 2) as unit_selling_price"),
                 DB::raw("GROUP_CONCAT(DISTINCT bl.name SEPARATOR ', ') as business_location")
             )
             ->groupBy(
                 'pe.id',
-                'pe.is_active', // <-- add this to group by
+                'pe.is_active',
+                'p.id',
                 'p.name',
                 'p.image',
                 'p.sku',
@@ -58,6 +64,7 @@ class ProductOnlineController extends Controller
             ->rawColumns(['image', 'action', 'status'])
             ->make(true);
     }
+
 
     public function index()
     {

@@ -104,8 +104,16 @@ $(document).ready(function() {
             },
             { data: 'name' },
             { data: 'business_location' },
-            { data: 'unit_purchase_price' },
-            { data: 'unit_selling_price' },
+            { data: 'unit_purchase_price',
+                render: function(data){
+                    return "$ " + data;
+                }
+             },
+            { data: 'unit_selling_price',
+                render: function(data){
+                    return "$ "+ data;
+                }
+             },
             { data: 'total_stock' },
             { data: 'type' },
             { data: 'category_name' },

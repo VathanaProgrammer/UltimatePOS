@@ -157,6 +157,7 @@
 					    <input type="hidden" id="model_id" value="{{$transaction->id}}">
 					    <input type="hidden" id="model_type" value="App\Transaction">
 					    <input type="hidden" id="model_media_type" value="shipping_document">
+						<div id="uploaded_media_container"></div>
                     </div>
 		        </div>
 		        <div class="col-md-12">
@@ -182,3 +183,44 @@
 		{!! Form::close() !!}
 	</div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
+<!-- Your modal HTML ends here -->
+</div><!-- /.modal-dialog -->
+
+@push('scripts')
+<script>
+Dropzone.autoDiscover = false;
+
+var shippingDropzone = new Dropzone("#shipping_documents_dropzone", {
+    url: document.getElementById('media_upload_url').value,
+    paramName: "file",
+    maxFilesize: 50, // MB
+    acceptedFiles: ".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx",
+    addRemoveLinks: true,
+    headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    init: function() {
+        this.on("success", function(file, response) {
+            if(response.success && response.media_id){
+                let container = document.getElementById('uploaded_media_container');
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'uploaded_media_ids[]';
+                input.value = response.media_id;
+                container.appendChild(input);
+            }
+        });
+        this.on("removedfile", function(file){
+            if(file.xhr){
+                let response = JSON.parse(file.xhr.response);
+                if(response.success && response.media_id){
+                    let container = document.getElementById('uploaded_media_container');
+                    let input = container.querySelector('input[value="'+response.media_id+'"]');
+                    if(input) container.removeChild(input);
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush

@@ -22,11 +22,9 @@ class ImportExistProductController extends Controller
         $products = DB::table('products as p')
             ->leftJoin('categories as c', 'c.id', '=', 'p.category_id')
             ->leftJoin('brands as b', 'b.id', '=', 'p.brand_id')
-            ->leftJoin('product_locations as pl', 'pl.product_id', '=', 'p.id')
+            ->leftJoin('product_locations as pl', 'pl.product_id', '=', 'p.id') // ONLY product_locations
             ->leftJoin('business_locations as bl', 'bl.id', '=', 'pl.location_id')
-            ->leftJoin('variations as v', 'v.product_id', '=', 'p.id')
-            ->leftJoin('variation_location_details as vld', 'vld.variation_id', '=', 'v.id')
-            ->whereNotIn('p.id', function($q){
+            ->whereNotIn('p.id', function ($q) {
                 $q->select('product_id')->from('products_E');
             })
             ->select(
@@ -36,29 +34,23 @@ class ImportExistProductController extends Controller
                 DB::raw("IF(p.image IS NOT NULL, CONCAT('$imagePath', p.image), null) as image"),
                 DB::raw('c.name as category_name'),
                 DB::raw('b.name as brand_name'),
-                DB::raw('COALESCE(SUM(vld.qty_available),0) as total_stock'),
-                DB::raw('MIN(v.default_purchase_price) as unit_purchase_price'),
-                DB::raw('MIN(v.sell_price_inc_tax) as unit_selling_price'),
-                DB::raw('bl.landmark as business_location')
+                DB::raw("FORMAT(0, 2) as total_stock"), // stock from variations ignored
+                DB::raw("FORMAT(0, 2) as unit_purchase_price"), // purchase price ignored
+                DB::raw("FORMAT(0, 2) as unit_selling_price"), // selling price ignored
+                DB::raw("IFNULL(GROUP_CONCAT(DISTINCT bl.name SEPARATOR ', '), '-') as business_location")
             )
-            ->groupBy('p.id', 'p.name', 'p.sku', 'p.image', 'c.name', 'b.name', 'bl.landmark');
+            ->groupBy('p.id', 'p.name', 'p.sku', 'p.image', 'c.name', 'b.name');
 
         return DataTables::of($products)
-            ->addColumn('checkbox', function($row){
-                return '<input type="checkbox" class="product_checkbox" value="'.$row->id.'">';
+            ->addColumn('checkbox', function ($row) {
+                return '<input type="checkbox" name="selected_products[]" class="product_checkbox" value="' . $row->id . '">';
             })
-            ->editColumn('image', function($row){
-                return $row->image ? '<img src="'.$row->image.'" class="w-16 h-16 object-cover rounded-md">' : '--';
+            ->editColumn('image', function ($row) {
+                return $row->image ? '<img src="' . $row->image . '" class="w-16 h-16 rounded-md object-cover">' : '--';
             })
-            ->addColumn('action', function($row){
-                return '<div class="btn-group">
-                    <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info tw-w-max dropdown-toggle" data-toggle="dropdown">
-                        Actions
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-left">
-                        <li><a href="#" onclick="editProduct('.$row->id.')"><i class="fas fa-edit"></i> Edit</a></li>
-                    </ul>
-                </div>';
+            ->addColumn('action', function ($row) {
+                return '<button onclick="editProduct(' . $row->id . ')" 
+                class="px-2 py-1 bg-gray-200 rounded">Edit</button>';
             })
             ->rawColumns(['checkbox', 'image', 'action'])
             ->make(true);
@@ -66,6 +58,7 @@ class ImportExistProductController extends Controller
 
     public function store(Request $request)
     {
+        // MUST BE THIS — correct key name
         $selected = $request->input('selected_products', []);
         $category_id = $request->input('category_id');
 
@@ -96,7 +89,7 @@ class ImportExistProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'msg' => count($insertData).' products imported successfully!'
+            'msg' => count($insertData) . ' products imported successfully!'
         ]);
     }
 }

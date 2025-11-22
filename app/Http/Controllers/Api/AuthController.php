@@ -47,7 +47,7 @@ class AuthController extends Controller
         $token = JWTAuth::fromUser($user);
         Log::info('JWT token created');
 
-        // ✅ Proper cookie for cross-site, mobile + HTTPS support
+        // Proper cookie for cross-site, mobile + HTTPS support
         return response()->json([
             'success' => true,
             'message' => 'OTP generated',

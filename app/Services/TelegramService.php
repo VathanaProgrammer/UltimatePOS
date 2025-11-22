@@ -11,17 +11,39 @@ class TelegramService
     /**
      * Send a message to a Telegram user via chat_id
      */
-    public static function sendMessageToUser(ApiUser $user, string $text)
+    public static function sendMessageToUser(ApiUser $user, string $text, array $fileUrls = [])
     {
         if (!$user->telegram_chat_id) return false;
 
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        $response = Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
-            'chat_id' => $user->telegram_chat_id,
-            'text' => $text,
-        ]);
-        \Log::info('Telegram API response:', ['body' => $response->body()]);
+        if (!empty($fileUrls)) {
+            foreach ($fileUrls as $url) {
+                $ext = pathinfo($url, PATHINFO_EXTENSION);
+                $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+
+                $endpoint = $isImage ? 'sendPhoto' : 'sendDocument';
+
+                $payload = [
+                    'chat_id' => $user->telegram_chat_id,
+                ];
+
+                if ($isImage) {
+                    $payload['photo'] = $url;
+                    $payload['caption'] = $text;
+                } else {
+                    $payload['document'] = $url;
+                    $payload['caption'] = $text;
+                }
+
+                Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/{$endpoint}", $payload);
+            }
+        } else {
+            Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id' => $user->telegram_chat_id,
+                'text' => $text,
+            ]);
+        }
 
         return true;
     }
@@ -43,7 +65,7 @@ class TelegramService
         return "https://t.me/sysproasiabot?start={$token}";
     }
 
-     public static function saveChatIdIfNotExist(ApiUser $user, string $chatId)
+    public static function saveChatIdIfNotExist(ApiUser $user, string $chatId)
     {
         if (!$user->telegram_chat_id || $user->telegram_chat_id == 0) {
             $user->telegram_chat_id = $chatId;
