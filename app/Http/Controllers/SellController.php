@@ -1792,7 +1792,7 @@ class SellController extends Controller
                         $mediaFiles = $transaction->media()
                             ->where('model_media_type', 'shipping_document')
                             ->get()
-                            ->pluck('display_url')
+                            ->pluck('file_name')
                             ->toArray();
 
                         TelegramService::sendMessageToUser($api_user, $messageText, $mediaFiles);
