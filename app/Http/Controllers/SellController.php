@@ -1700,7 +1700,7 @@ class SellController extends Controller
      */
     public function updateShipping(Request $request, $id)
     {
-        $is_admin = auth()->user()->can('access_shipping'); // adjust permission check
+        $is_admin = auth()->user()->can('access_shipping');
 
         if (!$is_admin) {
             abort(403, 'Unauthorized action.');
@@ -1728,18 +1728,17 @@ class SellController extends Controller
 
             $transaction->update($input);
 
-            // Attach uploaded files
+            // Collect newly uploaded media for sending to Telegram  
+            $newMediaFiles = [];
             if ($request->has('uploaded_media_ids')) {
                 foreach ($request->input('uploaded_media_ids') as $media_id) {
-                    $media = Media::where('id', $media_id)
-                        ->where('business_id', $business_id)
-                        ->first();
-
-                    if ($media && $media->model_id !== $transaction->id) {
+                    $media = Media::where('id', $media_id)->where('business_id', $business_id)->first();
+                    if ($media) {
                         $media->model_id = $transaction->id;
                         $media->model_type = Transaction::class;
                         $media->model_media_type = 'shipping_document';
                         $media->save();
+                        $newMediaFiles[] = $media->file_name;
                     }
                 }
             }
@@ -1766,10 +1765,8 @@ class SellController extends Controller
                         ->first();
 
                     if ($template) {
-                        $business = DB::table('business')
-                            ->select('name', 'phone')
-                            ->where('id', $transaction->business_id)
-                            ->first();
+                        $business = DB::table('business')->select('name', 'phone')
+                            ->where('id', $transaction->business_id)->first();
 
                         $messageText = trim($template->greeting) . "\n\n" .
                             trim(strip_tags($template->body)) . "\n\n" .
@@ -1788,20 +1785,14 @@ class SellController extends Controller
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
 
-                        // Get all attached media URLs
-                        $mediaFiles = $transaction->media()
-                            ->where('model_media_type', 'shipping_document')
-                            ->get()
-                            ->pluck('file_name')
-                            ->toArray();
-                            
                         \Log::info('Debug Telegram media files', [
-                            'mediaFiles' => $mediaFiles,
+                            'newMediaFiles' => $newMediaFiles,
                             'transaction_id' => $transaction->id,
-                            'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/'.$f)), $mediaFiles)
+                            'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/' . $f)), $newMediaFiles)
                         ]);
 
-                        TelegramService::sendMessageToUser($api_user, $messageText, $mediaFiles);
+                        // Send message with only new media files  
+                        \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $newMediaFiles);
                     }
                 }
             }
@@ -1822,6 +1813,7 @@ class SellController extends Controller
             ];
         }
     }
+
     /**
      * Display list of shipments.
      *
