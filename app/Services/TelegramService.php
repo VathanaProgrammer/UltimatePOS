@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use App\ApiModel\ApiUser;
 use App\ApiModel\TelegramStartToken;
+use Illuminate\Support\Facades\Log;
 
 class TelegramService
 {
