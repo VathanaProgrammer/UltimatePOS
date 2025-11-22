@@ -1701,13 +1701,9 @@ class SellController extends Controller
     public function updateShipping(Request $request, $id)
     {
         $is_admin = auth()->user()->can('access_shipping');
-
-        if (!$is_admin) {
-            abort(403, 'Unauthorized action.');
-        }
+        if (!$is_admin) abort(403, 'Unauthorized action.');
 
         DB::beginTransaction();
-
         try {
             $business_id = $request->session()->get('user.business_id');
             $transaction = Transaction::where('business_id', $business_id)->findOrFail($id);
@@ -1724,17 +1720,15 @@ class SellController extends Controller
                 'shipping_custom_field_3',
                 'shipping_custom_field_4',
                 'shipping_custom_field_5',
+                'shipping_note',
             ]);
-
             $transaction->update($input);
 
-            // Collect newly uploaded media for Telegram
+            // Collect only newly uploaded media
             $newMediaFiles = [];
             if ($request->has('uploaded_media_ids')) {
                 foreach ($request->input('uploaded_media_ids') as $media_id) {
-                    $media = Media::where('id', $media_id)
-                        ->where('business_id', $business_id)
-                        ->first();
+                    $media = Media::where('id', $media_id)->where('business_id', $business_id)->first();
                     if ($media) {
                         $media->model_id = $transaction->id;
                         $media->model_type = Transaction::class;
@@ -1758,7 +1752,7 @@ class SellController extends Controller
                     default     => null,
                 };
 
-                $contact = $transaction?->contact;
+                $contact = $transaction->contact;
                 $api_user = $contact?->api_user;
 
                 if ($template_name && $api_user?->telegram_chat_id) {
@@ -1767,7 +1761,8 @@ class SellController extends Controller
                         ->first();
 
                     if ($template) {
-                        $business = DB::table('business')->select('name', 'phone')
+                        $business = DB::table('business')
+                            ->select('name', 'phone')
                             ->where('id', $transaction->business_id)
                             ->first();
 
@@ -1776,19 +1771,19 @@ class SellController extends Controller
                             trim($template->footer);
 
                         $placeholders = [
-                            'order_id'        => $transaction->id,
-                            'user_name'       => $api_user->contact->name ?? 'Customer',
-                            'amount'          => number_format($transaction->final_total, 2),
+                            'order_id' => $transaction->id,
+                            'user_name' => $api_user->contact->name ?? 'Customer',
+                            'amount' => number_format($transaction->final_total, 2),
                             'shipping_status' => ucfirst(str_replace('_', ' ', $new_status)),
-                            'business_name'   => $business->name ?? '',
-                            'business_phone'  => $business->phone ?? '',
+                            'business_name' => $business->name ?? '',
+                            'business_phone' => $business->phone ?? '',
                         ];
 
                         foreach ($placeholders as $key => $value) {
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
 
-                        \Log::info('Debug Telegram new media files', [
+                        \Log::info('Debug Telegram media files', [
                             'newMediaFiles' => $newMediaFiles,
                             'transaction_id' => $transaction->id,
                             'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/' . $f)), $newMediaFiles)
@@ -1800,15 +1795,14 @@ class SellController extends Controller
             }
 
             DB::commit();
-
             return ['success' => 1, 'msg' => 'Shipping updated successfully.'];
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error updating shipping: ' . $e->getMessage());
-
             return ['success' => 0, 'msg' => 'Something went wrong.'];
         }
     }
+
 
 
     /**
