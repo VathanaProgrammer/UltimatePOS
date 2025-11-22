@@ -1702,7 +1702,7 @@ class SellController extends Controller
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
 
-        if (! $is_admin && ! auth()->user()->hasAnyPermission([
+        if (!$is_admin && !auth()->user()->hasAnyPermission([
             'access_shipping',
             'access_own_shipping',
             'access_commission_agent_shipping'
@@ -1718,10 +1718,8 @@ class SellController extends Controller
             $transaction = Transaction::where('business_id', $business_id)
                 ->findOrFail($id);
 
-            // Backup before update
             $transaction_before = $transaction->replicate();
 
-            // Update shipping fields
             $input = $request->only([
                 'shipping_details',
                 'shipping_address',
@@ -1737,12 +1735,13 @@ class SellController extends Controller
 
             $transaction->update($input);
 
-            // Attach uploaded files safely
+            // Attach uploaded files correctly
             if ($request->has('uploaded_media_ids')) {
                 foreach ($request->input('uploaded_media_ids') as $media_id) {
                     $media = Media::where('id', $media_id)
                         ->where('business_id', $business_id)
                         ->first();
+
                     if ($media && $media->model_id !== $transaction->id) {
                         $media->model_id = $transaction->id;
                         $media->model_type = Transaction::class;
@@ -1752,11 +1751,11 @@ class SellController extends Controller
                 }
             }
 
-            // Telegram notification if shipping status changed
             $old_status = $transaction_before->shipping_status;
             $new_status = $transaction->shipping_status;
 
             if ($old_status !== $new_status) {
+
                 $template_name = match ($new_status) {
                     'ordered'   => 'new_order',
                     'packed'    => 'order_packed',
@@ -1797,20 +1796,35 @@ class SellController extends Controller
                             $messageText = str_replace('{' . $key . '}', $value, $messageText);
                         }
 
-                        // Send Telegram message
-                        TelegramService::sendMessageToUser(
+                        // -----------------------------------------
+                        // Collect ALL files attached to THIS update
+                        // -----------------------------------------
+                        $mediaFiles = $transaction->media()
+                            ->where('model_media_type', 'shipping_document')
+                            ->get()
+                            ->pluck('display_url')
+                            ->toArray();
+
+                        if (!is_array($mediaFiles)) {
+                            $mediaFiles = [];
+                        }
+
+                        // -----------------------------------------
+                        // Send telegram text + all files
+                        // -----------------------------------------
+                        \App\Services\TelegramService::sendMessageToUser(
                             $api_user,
                             $messageText,
-                            $template->image_url ?? null
+                            $mediaFiles
                         );
                     }
                 }
             }
 
-            // Log activity
             $activity_property = [
                 'update_note' => $request->input('shipping_note', ''),
             ];
+
             $this->transactionUtil->activityLog(
                 $transaction,
                 'shipping_edited',
@@ -1820,7 +1834,7 @@ class SellController extends Controller
 
             DB::commit();
 
-            $output = [
+            return [
                 'success' => 1,
                 'msg' => trans('lang_v1.updated_success'),
             ];
@@ -1828,13 +1842,11 @@ class SellController extends Controller
             DB::rollBack();
             \Log::error('Error updating shipping:', ['error' => $e->getMessage()]);
 
-            $output = [
+            return [
                 'success' => 0,
                 'msg' => trans('messages.something_went_wrong'),
             ];
         }
-
-        return $output;
     }
 
     /**
