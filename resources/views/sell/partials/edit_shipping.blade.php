@@ -200,22 +200,25 @@ var shippingDropzone = new Dropzone("#shipping_documents_dropzone", {
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
     },
     init: function() {
-        this.on("success", function(file, response) {
+        var dz = this;
+        var container = document.getElementById('uploaded_media_container');
+
+        dz.on("success", function(file, response) {
             if(response.success && response.media_id){
-                let container = document.getElementById('uploaded_media_container');
-                let input = document.createElement('input');
+                // Add hidden input for uploaded file
+                var input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'uploaded_media_ids[]';
                 input.value = response.media_id;
                 container.appendChild(input);
             }
         });
-        this.on("removedfile", function(file){
+
+        dz.on("removedfile", function(file){
             if(file.xhr){
-                let response = JSON.parse(file.xhr.response);
+                var response = JSON.parse(file.xhr.response);
                 if(response.success && response.media_id){
-                    let container = document.getElementById('uploaded_media_container');
-                    let input = container.querySelector('input[value="'+response.media_id+'"]');
+                    var input = container.querySelector('input[value="'+response.media_id+'"]');
                     if(input) container.removeChild(input);
                 }
             }
@@ -229,12 +232,11 @@ $('#edit_shipping_form').on('submit', function(e) {
     var form = $(this);
     $.ajax({
         url: form.attr('action'),
-        type: 'POST', // must be POST
-        data: form.serialize(), // includes _method=PUT
+        type: 'POST', // includes _method=PUT
+        data: form.serialize(),
         success: function(response) {
             if(response.success){
                 $('#edit_shipping_form').closest('.modal').modal('hide');
-                // optionally reload the page or update your table here
                 location.reload();
             } else {
                 alert('Update failed: ' + (response.msg || 'Unknown error'));
@@ -245,6 +247,7 @@ $('#edit_shipping_form').on('submit', function(e) {
         }
     });
 });
+
 </script>
 
 @endpush

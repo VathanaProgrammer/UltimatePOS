@@ -1724,6 +1724,13 @@ class SellController extends Controller
                 'shipping_note',
             ]);
             $transaction->update($input);
+            
+            \Log::info('Debug request data', [
+                'all_request' => $request->all(),
+                'has_uploaded_media_ids' => $request->has('uploaded_media_ids'),
+                'uploaded_media_ids' => $request->input('uploaded_media_ids')
+            ]);
+
 
             // Collect only newly uploaded media
             $newMediaFiles = [];
