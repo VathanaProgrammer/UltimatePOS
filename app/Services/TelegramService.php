@@ -22,14 +22,19 @@ class TelegramService
         $token = env('TELEGRAM_BOT_TOKEN');
 
         foreach ($files as $file) {
-            $isUploadedFile = $file instanceof \Illuminate\Http\UploadedFile;
-
-            $filename = $isUploadedFile ? $file->getClientOriginalName() : basename($file);
-            $contents = $isUploadedFile ? fopen($file->getRealPath(), 'r') : fopen($file, 'r');
+            // $file can be either UploadedFile OR ['path' => ..., 'name' => ...]
+            if ($file instanceof \Illuminate\Http\UploadedFile) {
+                $filename = $file->getClientOriginalName();
+                $contents = fopen($file->getRealPath(), 'r');
+            } elseif (is_array($file) && isset($file['path'], $file['name'])) {
+                $filename = $file['name'];
+                $contents = fopen($file['path'], 'r');
+            } else {
+                continue; // skip invalid
+            }
 
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'webp', 'gif']);
-
             $endpoint = $isImage ? 'sendPhoto' : 'sendDocument';
 
             $multipart = [
@@ -85,6 +90,7 @@ class TelegramService
 
         return true;
     }
+
 
     /**
      * Optional: generate /start link for first-time users
