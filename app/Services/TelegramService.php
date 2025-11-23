@@ -12,7 +12,7 @@ class TelegramService
     /**
      * Send a message to a Telegram user via chat_id
      */
-    public static function sendMessageToUser(ApiUser $user, string $text, array $fileNames = [])
+    public static function sendMessageToUser(ApiUser $user, string $text, array $files = [])
     {
         if (!$user->telegram_chat_id) {
             Log::warning("User {$user->id} has no Telegram chat_id");
@@ -21,34 +21,22 @@ class TelegramService
 
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        // Log input
-        Log::info("Sending Telegram message", [
-            'user_id' => $user->id,
-            'chat_id' => $user->telegram_chat_id,
-            'text' => $text,
-            'files' => $fileNames
-        ]);
+        foreach ($files as $file) {
+            $isUploadedFile = $file instanceof \Illuminate\Http\UploadedFile;
 
-        // Send files if available
-        foreach ($fileNames as $fileName) {
-            $localPath = public_path('uploads/media/' . $fileName);
+            $filename = $isUploadedFile ? $file->getClientOriginalName() : basename($file);
+            $contents = $isUploadedFile ? fopen($file->getRealPath(), 'r') : fopen($file, 'r');
 
-            if (!file_exists($localPath)) {
-                Log::error("File not found for Telegram", ['file' => $localPath]);
-                continue; // skip missing file
-            }
-
-            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+            $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $isImage = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'webp', 'gif']);
 
             $endpoint = $isImage ? 'sendPhoto' : 'sendDocument';
 
-            // Telegram requires multipart/form-data for local files
             $multipart = [
                 [
                     'name'     => $isImage ? 'photo' : 'document',
-                    'contents' => fopen($localPath, 'r'),
-                    'filename' => basename($localPath)
+                    'contents' => $contents,
+                    'filename' => $filename
                 ],
                 [
                     'name'     => 'chat_id',
@@ -67,17 +55,17 @@ class TelegramService
                     ->post("https://api.telegram.org/bot{$token}/{$endpoint}", $multipart);
 
                 Log::info("Telegram API response", [
-                    'file' => $fileName,
+                    'file' => $filename,
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
             } catch (\Exception $e) {
-                Log::error("Telegram send failed", ['file' => $fileName, 'error' => $e->getMessage()]);
+                Log::error("Telegram send failed", ['file' => $filename, 'error' => $e->getMessage()]);
             }
         }
 
         // Send text-only if no files
-        if (empty($fileNames)) {
+        if (empty($files)) {
             try {
                 $response = Http::withoutVerifying()
                     ->post("https://api.telegram.org/bot{$token}/sendMessage", [
@@ -97,6 +85,7 @@ class TelegramService
 
         return true;
     }
+
     /**
      * Optional: generate /start link for first-time users
      */

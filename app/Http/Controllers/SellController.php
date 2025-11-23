@@ -1700,12 +1700,13 @@ class SellController extends Controller
      */
 public function updateShipping(Request $request, $id)
 {
-    \Log::info('Debug: updateShipping called', ["request all: " => $request->all()]);
+    \Log::info('Debug: updateShipping called', ["request all" => $request->all()]);
 
     $is_admin = auth()->user()->can('access_shipping');
     if (!$is_admin) abort(403, 'Unauthorized action.');
 
     DB::beginTransaction();
+
     try {
         $business_id = $request->session()->get('user.business_id');
         $transaction = Transaction::where('business_id', $business_id)->findOrFail($id);
@@ -1730,14 +1731,12 @@ public function updateShipping(Request $request, $id)
         $transaction->update($input);
 
         // ===========================
-        // Save uploaded invoice files only
+        // Prepare invoice files (do NOT save permanently)
         // ===========================
         $invoiceFiles = [];
         if ($request->hasFile('invoice_files')) {
             foreach ($request->file('invoice_files') as $file) {
-                $filename = $file->getClientOriginalName();
-                $file->storeAs('uploads/media', $filename, 'public'); // save in media folder
-                $invoiceFiles[] = $filename;
+                $invoiceFiles[] = $file; // keep UploadedFile objects
             }
         }
 
@@ -1746,7 +1745,7 @@ public function updateShipping(Request $request, $id)
         // ===========================
         $activity_property = [
             'update_note' => $request->input('shipping_note', ''),
-            'updated_media_files' => $invoiceFiles
+            'updated_media_files' => array_map(fn($f) => $f->getClientOriginalName(), $invoiceFiles),
         ];
         $this->transactionUtil->activityLog($transaction, 'shipping_edited', $transaction_before, $activity_property);
 
@@ -1755,6 +1754,7 @@ public function updateShipping(Request $request, $id)
         // ===========================
         $api_user = $transaction->contact?->api_user;
         if ($api_user && $api_user->telegram_chat_id) {
+
             $messageText = "Your shipping update is complete.";
 
             // Optional: customize message if status changed
@@ -1800,24 +1800,43 @@ public function updateShipping(Request $request, $id)
             }
 
             \Log::info('Debug Telegram invoice files', [
-                'invoiceFiles' => $invoiceFiles,
+                'invoiceFiles' => array_map(fn($f) => $f->getClientOriginalName(), $invoiceFiles),
                 'transaction_id' => $transaction->id,
-                'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/' . $f)), $invoiceFiles)
             ]);
 
-            // Send invoice files to Telegram
-            \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $invoiceFiles);
+            // ===========================
+            // Send invoice files using TEMP files
+            // ===========================
+            $fileNames = [];
+            foreach ($invoiceFiles as $file) {
+                $tempDir = public_path('uploads/temp');
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0755, true);
+                }
+
+                $tempPath = $tempDir . '/' . $file->getClientOriginalName();
+                $file->move($tempDir, $file->getClientOriginalName());
+                $fileNames[] = $file->getClientOriginalName();
+            }
+
+            // Send files
+            \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $fileNames);
+
+            // Delete temp files
+            foreach ($fileNames as $f) {
+                @unlink(public_path('uploads/temp/' . $f));
+            }
         }
 
         DB::commit();
         return ['success' => 1, 'msg' => 'Shipping updated successfully.'];
+
     } catch (\Exception $e) {
         DB::rollBack();
         \Log::error('Error updating shipping: ' . $e->getMessage());
         return ['success' => 0, 'msg' => 'Something went wrong.'];
     }
 }
-
 
     /**
      * Display list of shipments.
