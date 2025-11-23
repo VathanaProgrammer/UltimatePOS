@@ -1700,7 +1700,7 @@ class SellController extends Controller
      */
 public function updateShipping(Request $request, $id)
 {
-    \Log::info('Debug: updateShipping called');
+    \Log::info('Debug: updateShipping called', ["request all: " => $request->all()]);
 
     $is_admin = auth()->user()->can('access_shipping');
     if (!$is_admin) abort(403, 'Unauthorized action.');
