@@ -1711,6 +1711,9 @@ public function updateShipping(Request $request, $id)
         $transaction = Transaction::where('business_id', $business_id)->findOrFail($id);
         $transaction_before = $transaction->replicate();
 
+        // ===========================
+        // Update shipping details
+        // ===========================
         $input = $request->only([
             'shipping_details',
             'shipping_address',
@@ -1727,29 +1730,14 @@ public function updateShipping(Request $request, $id)
         $transaction->update($input);
 
         // ===========================
-        // Save uploaded files
+        // Save uploaded invoice files only
         // ===========================
-        $newMediaFiles = [];
-
-        $allFileTypes = ['copied_files', 'shipping_documents', 'invoice_files'];
-
-        foreach ($allFileTypes as $type) {
-            if ($request->hasFile($type)) {
-                foreach ($request->file($type) as $file) {
-                    $filename = $file->getClientOriginalName();
-                    $path = $file->storeAs('uploads/media', $filename, 'public');
-
-                    $media = new Media();
-                    $media->business_id = $business_id;
-                    $media->file_name = $filename;
-                    $media->file_path = $path;
-                    $media->model_id = $transaction->id;
-                    $media->model_type = Transaction::class;
-                    $media->model_media_type = $type === 'invoice_files' ? 'invoice' : 'shipping_document';
-                    $media->save();
-
-                    $newMediaFiles[] = $filename;
-                }
+        $invoiceFiles = [];
+        if ($request->hasFile('invoice_files')) {
+            foreach ($request->file('invoice_files') as $file) {
+                $filename = $file->getClientOriginalName();
+                $file->storeAs('uploads/media', $filename, 'public'); // save in media folder
+                $invoiceFiles[] = $filename;
             }
         }
 
@@ -1758,24 +1746,20 @@ public function updateShipping(Request $request, $id)
         // ===========================
         $activity_property = [
             'update_note' => $request->input('shipping_note', ''),
-            'updated_media_files' => $newMediaFiles
+            'updated_media_files' => $invoiceFiles
         ];
         $this->transactionUtil->activityLog($transaction, 'shipping_edited', $transaction_before, $activity_property);
 
         // ===========================
-        // Telegram notifications
+        // Telegram notification
         // ===========================
-        $old_status = $transaction_before->shipping_status;
-        $new_status = $transaction->shipping_status;
-
-        $contact = $transaction->contact;
-        $api_user = $contact?->api_user;
-
+        $api_user = $transaction->contact?->api_user;
         if ($api_user && $api_user->telegram_chat_id) {
             $messageText = "Your shipping update is complete.";
 
-            if ($old_status !== $new_status) {
-                $template_name = match ($new_status) {
+            // Optional: customize message if status changed
+            if ($transaction_before->shipping_status !== $transaction->shipping_status) {
+                $template_name = match ($transaction->shipping_status) {
                     'ordered'   => 'new_order',
                     'packed'    => 'order_packed',
                     'shipped'   => 'order_shipped',
@@ -1789,38 +1773,40 @@ public function updateShipping(Request $request, $id)
                         ->where('business_id', $transaction->business_id)
                         ->first();
 
-                    $business = DB::table('business')
-                        ->select('name', 'phone')
-                        ->where('id', $transaction->business_id)
-                        ->first();
+                    if ($template) {
+                        $business = DB::table('business')
+                            ->select('name', 'phone')
+                            ->where('id', $transaction->business_id)
+                            ->first();
 
-                    $messageText = trim($template->greeting) . "\n\n" .
-                        trim(strip_tags($template->body)) . "\n\n" .
-                        trim($template->footer);
+                        $messageText = trim($template->greeting) . "\n\n" .
+                                       trim(strip_tags($template->body)) . "\n\n" .
+                                       trim($template->footer);
 
-                    $placeholders = [
-                        'order_id' => $transaction->id,
-                        'user_name' => $api_user->contact->name ?? 'Customer',
-                        'amount' => number_format($transaction->final_total, 2),
-                        'shipping_status' => ucfirst(str_replace('_', ' ', $new_status)),
-                        'business_name' => $business->name ?? '',
-                        'business_phone' => $business->phone ?? '',
-                    ];
+                        $placeholders = [
+                            'order_id' => $transaction->id,
+                            'user_name' => $api_user->contact->name ?? 'Customer',
+                            'amount' => number_format($transaction->final_total, 2),
+                            'shipping_status' => ucfirst(str_replace('_', ' ', $transaction->shipping_status)),
+                            'business_name' => $business->name ?? '',
+                            'business_phone' => $business->phone ?? '',
+                        ];
 
-                    foreach ($placeholders as $key => $value) {
-                        $messageText = str_replace('{' . $key . '}', $value, $messageText);
+                        foreach ($placeholders as $key => $value) {
+                            $messageText = str_replace('{' . $key . '}', $value, $messageText);
+                        }
                     }
                 }
             }
 
-            \Log::info('Debug Telegram media files', [
-                'newMediaFiles' => $newMediaFiles,
+            \Log::info('Debug Telegram invoice files', [
+                'invoiceFiles' => $invoiceFiles,
                 'transaction_id' => $transaction->id,
-                'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/' . $f)), $newMediaFiles)
+                'files_exist' => array_map(fn($f) => file_exists(public_path('uploads/media/' . $f)), $invoiceFiles)
             ]);
 
-            // Send uploaded files to Telegram
-            \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $newMediaFiles);
+            // Send invoice files to Telegram
+            \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $invoiceFiles);
         }
 
         DB::commit();
