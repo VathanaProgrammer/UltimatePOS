@@ -3,6 +3,7 @@
         'url' => action([\App\Http\Controllers\SellController::class, 'updateShipping'], [$transaction->id]),
         'method' => 'put',
         'id' => 'edit_shipping_form',
+        'enctype' => 'multipart/form-data', // important for files
     ]) !!}
     <div class="modal-content">
         <div class="modal-header">
@@ -251,18 +252,34 @@
                         ]) !!}
                     </div>
                 </div>
+                <!-- Invoice Dropzone -->
+
+                <!-- Invoice dropzone -->
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="include_invoice_checkbox">
+                            <label class="form-check-label" for="include_invoice_checkbox">
+                                Include invoice?
+                            </label>
+                        </div>
+
+                        <div class="dropzone" id="invoice_dropzone" style="display:none;"></div>
+                        <small class="form-text text-muted" id="invoice_status">No invoice selected.</small>
+                    </div>
+                </div>
                 <div class="col-md-12">
                     <div class="form-group">
                         <label for="fileupload">
                             @lang('lang_v1.shipping_documents'):
                         </label>
                         <div class="dropzone" id="shipping_documents_dropzone"></div>
+                        <input type="hidden" id="copied_files_holder">
                         {{-- params for media upload --}}
                         <input type="hidden" id="media_upload_url" value="{{ route('attach.medias.to.model') }}">
                         <input type="hidden" id="model_id" value="{{ $transaction->id }}">
                         <input type="hidden" id="model_type" value="App\Transaction">
                         <input type="hidden" id="model_media_type" value="shipping_document">
-                        <div id="uploaded_media_container"></div>
                     </div>
                 </div>
                 <div class="col-md-12">
@@ -291,62 +308,4 @@
 </div><!-- /.modal-dialog -->
 <!-- Your modal HTML ends here -->
 </div><!-- /.modal-dialog -->
-
-@section('javascript')
-    <script type="text/javascript">
-        $(document).ready(function() {
-            Dropzone.autoDiscover = false;
-
-            // Debug click
-            $(document).on('click', function() {
-                console.log('click!');
-            });
-
-            // Initialize Dropzone when modal is opened
-            $('#edit_shipping_modal').on('shown.bs.modal', function() {
-                if (!window.shippingDropzone) { // prevent re-initialization
-                    window.shippingDropzone = new Dropzone("#shipping_documents_dropzone", {
-                        url: $('#media_upload_url').val(),
-                        paramName: "file",
-                        maxFilesize: 50,
-                        acceptedFiles: ".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx",
-                        addRemoveLinks: true,
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        init: function() {
-                            var dz = this;
-                            var container = document.getElementById('uploaded_media_container');
-
-                            dz.on("success", function(file, response) {
-                                if (response.success && response.media_id) {
-                                    var input = document.createElement('input');
-                                    input.type = 'hidden';
-                                    input.name = 'uploaded_media_ids[]';
-                                    input.value = response.media_id;
-                                    container.appendChild(input);
-                                    console.log('File uploaded:', response.media_id);
-                                }
-                            });
-
-                            dz.on("removedfile", function(file) {
-                                if (file.xhr) {
-                                    var response = JSON.parse(file.xhr.response);
-                                    if (response.success && response.media_id) {
-                                        var input = container.querySelector(
-                                            'input[value="' + response.media_id +
-                                            '"]');
-                                        if (input) container.removeChild(input);
-                                        console.log('File removed:', response.media_id);
-                                    }
-                                }
-                            });
-
-                            console.log('Dropzone initialized');
-                        }
-                    });
-                }
-            });
-        });
-    </script>
-@endsection
+{{-- <script src="{{ asset('js/edit_shipping.js') }}"></script> --}}
