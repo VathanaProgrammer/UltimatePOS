@@ -1807,24 +1807,24 @@ public function updateShipping(Request $request, $id)
             // ===========================
             // Send invoice files using TEMP files
             // ===========================
-            $fileNames = [];
-            foreach ($invoiceFiles as $file) {
-                $tempDir = public_path('uploads/temp');
-                if (!is_dir($tempDir)) {
-                    mkdir($tempDir, 0755, true);
-                }
-
-                $tempPath = $tempDir . '/' . $file->getClientOriginalName();
-                $file->move($tempDir, $file->getClientOriginalName());
-                $fileNames[] = $file->getClientOriginalName();
+            $tempDir = public_path('uploads/temp');
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0755, true);
             }
 
-            // Send files
-            \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $fileNames);
+            $tempFilePaths = [];
+            foreach ($invoiceFiles as $file) {
+                $tempPath = $tempDir . '/' . $file->getClientOriginalName();
+                $file->move($tempDir, $file->getClientOriginalName());
+                $tempFilePaths[] = ['path' => $tempPath, 'name' => $file->getClientOriginalName()];
+            }
 
-            // Delete temp files
-            foreach ($fileNames as $f) {
-                @unlink(public_path('uploads/temp/' . $f));
+            // Adjust TelegramService to accept ['path' => ..., 'name' => ...]
+            \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $tempFilePaths);
+
+            // Delete temp files after sending
+            foreach ($tempFilePaths as $f) {
+                @unlink($f['path']);
             }
         }
 
@@ -1837,6 +1837,7 @@ public function updateShipping(Request $request, $id)
         return ['success' => 0, 'msg' => 'Something went wrong.'];
     }
 }
+
 
     /**
      * Display list of shipments.
