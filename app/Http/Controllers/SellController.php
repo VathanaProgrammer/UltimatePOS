@@ -1731,12 +1731,23 @@ public function updateShipping(Request $request, $id)
         $transaction->update($input);
 
         // ===========================
-        // Prepare invoice files (do NOT save permanently)
+        // Handle invoice files (permanent + Telegram temp)
         // ===========================
         $invoiceFiles = [];
         if ($request->hasFile('invoice_files')) {
             foreach ($request->file('invoice_files') as $file) {
-                $invoiceFiles[] = $file; // keep UploadedFile objects
+                // 1) Upload permanently using Media helper
+                $savedFileName = \App\Media::uploadFile($file); // saves to public/uploads/media
+                if ($savedFileName) {
+                    // 2) Attach to media table
+                    \App\Media::attachMediaToModel($transaction, $business_id, $savedFileName, $request, 'shipping_document');
+
+                    // 3) Keep for Telegram temp send
+                    $invoiceFiles[] = [
+                        'path' => public_path('uploads/media/' . $savedFileName),
+                        'name' => $savedFileName
+                    ];
+                }
             }
         }
 
@@ -1745,7 +1756,7 @@ public function updateShipping(Request $request, $id)
         // ===========================
         $activity_property = [
             'update_note' => $request->input('shipping_note', ''),
-            'updated_media_files' => array_map(fn($f) => $f->getClientOriginalName(), $invoiceFiles),
+            'updated_media_files' => array_map(fn($f) => $f['name'], $invoiceFiles),
         ];
         $this->transactionUtil->activityLog($transaction, 'shipping_edited', $transaction_before, $activity_property);
 
@@ -1754,18 +1765,17 @@ public function updateShipping(Request $request, $id)
         // ===========================
         $api_user = $transaction->contact?->api_user;
         if ($api_user && $api_user->telegram_chat_id) {
-
             $messageText = "Your shipping update is complete.";
 
-            // Optional: customize message if status changed
+            // Customize if status changed
             if ($transaction_before->shipping_status !== $transaction->shipping_status) {
                 $template_name = match ($transaction->shipping_status) {
-                    'ordered'   => 'new_order',
-                    'packed'    => 'order_packed',
-                    'shipped'   => 'order_shipped',
+                    'ordered' => 'new_order',
+                    'packed' => 'order_packed',
+                    'shipped' => 'order_shipped',
                     'delivered' => 'order_delivered',
                     'cancelled' => 'order_cancelled',
-                    default     => null,
+                    default => null,
                 };
 
                 if ($template_name) {
@@ -1780,8 +1790,8 @@ public function updateShipping(Request $request, $id)
                             ->first();
 
                         $messageText = trim($template->greeting) . "\n\n" .
-                                       trim(strip_tags($template->body)) . "\n\n" .
-                                       trim($template->footer);
+                            trim(strip_tags($template->body)) . "\n\n" .
+                            trim($template->footer);
 
                         $placeholders = [
                             'order_id' => $transaction->id,
@@ -1799,33 +1809,23 @@ public function updateShipping(Request $request, $id)
                 }
             }
 
-            \Log::info('Debug Telegram invoice files', [
-                'invoiceFiles' => array_map(fn($f) => $f->getClientOriginalName(), $invoiceFiles),
-                'transaction_id' => $transaction->id,
-            ]);
-
-            // ===========================
-            // Send invoice files using TEMP files
-            // ===========================
+            // ----------------------------
+            // Send temp files via Telegram
+            // ----------------------------
             $tempDir = public_path('uploads/temp');
-            if (!is_dir($tempDir)) {
-                mkdir($tempDir, 0755, true);
-            }
+            if (!is_dir($tempDir)) mkdir($tempDir, 0755, true);
 
             $tempFilePaths = [];
             foreach ($invoiceFiles as $file) {
-                $tempPath = $tempDir . '/' . $file->getClientOriginalName();
-                $file->move($tempDir, $file->getClientOriginalName());
-                $tempFilePaths[] = ['path' => $tempPath, 'name' => $file->getClientOriginalName()];
+                $tempPath = $tempDir . '/' . $file['name'];
+                copy($file['path'], $tempPath); // copy permanent file to temp
+                $tempFilePaths[] = ['path' => $tempPath, 'name' => $file['name']];
             }
 
-            // Adjust TelegramService to accept ['path' => ..., 'name' => ...]
             \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $tempFilePaths);
 
-            // Delete temp files after sending
-            foreach ($tempFilePaths as $f) {
-                @unlink($f['path']);
-            }
+            // Delete temp files
+            foreach ($tempFilePaths as $f) @unlink($f['path']);
         }
 
         DB::commit();
