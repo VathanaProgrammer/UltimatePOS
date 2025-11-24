@@ -1687,7 +1687,7 @@ class SellController extends Controller
             ->latest()
             ->get();
         \Log::info('Debug: ', ["all activities for this transaction" => $activities]);
-        
+
 
         return view('sell.partials.edit_shipping')
             ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
@@ -1739,30 +1739,32 @@ class SellController extends Controller
             $media_ids_for_activity = [];
 
             if ($request->hasFile('invoice_files')) {
-                foreach ($request->file('invoice_files') as $file) {
-                    // Generate unique filename
-                    $extension = $file->getClientOriginalExtension();
-                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                    $uniqueName = $originalName . '_' . time() . '_' . uniqid() . '.' . $extension;
+                // Use built-in uploader (DO NOT TOUCH EXISTING CODE)
+                Media::uploadMedia(
+                    $business_id,
+                    $transaction,
+                    $request,
+                    'invoice_files',
+                    false,
+                    'shipping_document'
+                );
 
-                    // Save file to media folder
-                    $file->move(public_path('uploads/media'), $uniqueName);
+                // Fetch the REAL media records that system created
+                $uploadedMedias = Media::where('model_id', $transaction->id)
+                    ->where('model_media_type', 'shipping_document')
+                    ->latest()
+                    ->take(count($request->file('invoice_files')))
+                    ->get();
 
-                    // Attach to media table
-                    \App\Media::attachMediaToModel($transaction, $business_id, $uniqueName, $request, 'shipping_document');
-
+                foreach ($uploadedMedias as $m) {
                     $invoiceFiles[] = [
-                        'path' => public_path('uploads/media/' . $uniqueName),
-                        'name' => $uniqueName
+                        'path' => public_path('uploads/media/' . $m->file_name),
+                        'name' => $m->file_name
                     ];
-
-                    // Get media id for activity
-                    $media = $transaction->media()->where('file_name', $uniqueName)->first();
-                    if ($media) {
-                        $media_ids_for_activity[] = $media->id;
-                    }
+                    $media_ids_for_activity[] = $m->id;
                 }
             }
+
 
             // ===========================
             // Activity log
