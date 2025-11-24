@@ -21,48 +21,40 @@ class TelegramService
 
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        // If no files → send normal message
+        // If no files → send a simple text message
         if (empty($files)) {
-            try {
-                $res = Http::withoutVerifying()
-                    ->post("https://api.telegram.org/bot{$token}/sendMessage", [
-                        'chat_id' => $user->telegram_chat_id,
-                        'text'    => $text,
-                        'parse_mode' => 'HTML'
-                    ]);
-
-                Log::info("Telegram text message response", [
-                    'status' => $res->status(),
-                    'body'   => $res->body()
+            Http::withoutVerifying()
+                ->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                    'chat_id' => $user->telegram_chat_id,
+                    'text'    => (string)$text,
+                    'parse_mode' => 'HTML'
                 ]);
-            } catch (\Exception $e) {
-                Log::error("Telegram send message error", ['error' => $e->getMessage()]);
-            }
-
             return true;
         }
 
-        // -------------------------------
-        // ONE message with ALL FILES
-        // sendMediaGroup
-        // -------------------------------
+        // -------------------------
+        // SEND MULTIPLE FILES AS ONE MEDIA GROUP
+        // -------------------------
         $media = [];
         $multipart = [];
+
+        // Make sure caption is always a string
+        $caption = trim((string)$text);
 
         foreach ($files as $i => $file) {
 
             if ($file instanceof \Illuminate\Http\UploadedFile) {
                 $filename = $file->getClientOriginalName();
-                $path = $file->getRealPath();
+                $path     = $file->getRealPath();
             } elseif (is_array($file) && isset($file['path'], $file['name'])) {
                 $filename = $file['name'];
-                $path = $file['path'];
+                $path     = $file['path'];
             } else {
                 continue;
             }
 
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-            $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+            $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
 
             // Attach file
             $multipart[] = [
@@ -71,19 +63,13 @@ class TelegramService
                 'filename' => $filename,
             ];
 
-            // Media entry
+            // Media info
             $media[] = [
                 'type'    => $isImage ? 'photo' : 'document',
                 'media'   => "attach://file{$i}",
-                'caption' => $i === 0 ? $text : null // caption on FIRST file only
+                'caption' => $i === 0 ? $caption : null  // ONLY FIRST FILE GET CAPTION
             ];
         }
-
-        // Add media info
-        $multipart[] = [
-            'name'     => 'media',
-            'contents' => json_encode($media)
-        ];
 
         // Add chat ID
         $multipart[] = [
@@ -91,23 +77,24 @@ class TelegramService
             'contents' => $user->telegram_chat_id
         ];
 
-        try {
-            $res = Http::withoutVerifying()
-                ->asMultipart()
-                ->post("https://api.telegram.org/bot{$token}/sendMediaGroup", $multipart);
+        // Add encoded media array
+        $multipart[] = [
+            'name'     => 'media',
+            'contents' => json_encode($media, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        ];
 
-            Log::info("Telegram sendMediaGroup response", [
-                'status' => $res->status(),
-                'body'   => $res->body()
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Telegram sendMediaGroup failed", ['error' => $e->getMessage()]);
-        }
+        // Send the media group
+        $response = Http::withoutVerifying()
+            ->asMultipart()
+            ->post("https://api.telegram.org/bot{$token}/sendMediaGroup", $multipart);
+
+        Log::info("Telegram sendMediaGroup response", [
+            'status' => $response->status(),
+            'body'   => $response->body()
+        ]);
 
         return true;
     }
-
-
 
     /**
      * Optional: generate /start link for first-time users
