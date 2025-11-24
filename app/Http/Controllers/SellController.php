@@ -1700,7 +1700,7 @@ class SellController extends Controller
      */
 public function updateShipping(Request $request, $id)
 {
-    \Log::info('Debug: updateShipping called', ["request all" => $request->all()]);
+    \Log::info('Debug: updateShipping called', ["request_all" => $request->all()]);
 
     $is_admin = auth()->user()->can('access_shipping');
     if (!$is_admin) abort(403, 'Unauthorized action.');
@@ -1731,12 +1731,14 @@ public function updateShipping(Request $request, $id)
         $transaction->update($input);
 
         // ===========================
-        // Handle invoice files (permanent + Telegram temp)
+        // Handle invoice files
         // ===========================
         $invoiceFiles = [];
+        $media_ids_for_activity = [];
+
         if ($request->hasFile('invoice_files')) {
             foreach ($request->file('invoice_files') as $file) {
-                // 1) Upload permanently using Media helper
+                // 1) Save permanently using Media helper
                 $savedFileName = \App\Media::uploadFile($file); // saves to public/uploads/media
                 if ($savedFileName) {
                     // 2) Attach to media table
@@ -1747,6 +1749,12 @@ public function updateShipping(Request $request, $id)
                         'path' => public_path('uploads/media/' . $savedFileName),
                         'name' => $savedFileName
                     ];
+
+                    // 4) Save Media ID for activity
+                    $media = $transaction->media()->where('file_name', $savedFileName)->first();
+                    if ($media) {
+                        $media_ids_for_activity[] = $media->id;
+                    }
                 }
             }
         }
@@ -1756,8 +1764,9 @@ public function updateShipping(Request $request, $id)
         // ===========================
         $activity_property = [
             'update_note' => $request->input('shipping_note', ''),
-            'updated_media_files' => array_map(fn($f) => $f['name'], $invoiceFiles),
+            'updated_media_files' => $media_ids_for_activity, // store Media IDs
         ];
+
         $this->transactionUtil->activityLog($transaction, 'shipping_edited', $transaction_before, $activity_property);
 
         // ===========================
@@ -1818,7 +1827,7 @@ public function updateShipping(Request $request, $id)
             $tempFilePaths = [];
             foreach ($invoiceFiles as $file) {
                 $tempPath = $tempDir . '/' . $file['name'];
-                copy($file['path'], $tempPath); // copy permanent file to temp
+                copy($file['path'], $tempPath);
                 $tempFilePaths[] = ['path' => $tempPath, 'name' => $file['name']];
             }
 
@@ -1837,7 +1846,6 @@ public function updateShipping(Request $request, $id)
         return ['success' => 0, 'msg' => 'Something went wrong.'];
     }
 }
-
 
     /**
      * Display list of shipments.
