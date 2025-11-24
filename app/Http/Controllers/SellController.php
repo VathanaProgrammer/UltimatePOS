@@ -1660,6 +1660,42 @@ class SellController extends Controller
     /**
      * Shows modal to edit shipping details.
      *
+    //  * @param  int  $id
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function editShipping($id)
+    // {
+    //     $is_admin = $this->businessUtil->is_admin(auth()->user());
+
+    //     if (! $is_admin && ! auth()->user()->hasAnyPermission(['access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
+    //         abort(403, 'Unauthorized action.');
+    //     }
+
+    //     $business_id = request()->session()->get('user.business_id');
+
+    //     $transaction = Transaction::where('business_id', $business_id)
+    //         ->with(['media', 'media.uploaded_by_user'])
+    //         ->findorfail($id);
+
+    //     $users = User::forDropdown($business_id, false, false, false);
+
+    //     $shipping_statuses = $this->transactionUtil->shipping_statuses();
+
+    //     $activities = Activity::forSubject($transaction)
+    //         ->with(['causer', 'subject'])
+    //         ->where('activity_log.description', 'shipping_edited')
+    //         ->latest()
+    //         ->get();
+    //     \Log::info('Debug: ', ["all activities for this transaction: " => $activities]);
+
+
+    //     return view('sell.partials.edit_shipping')
+    //         ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
+    // }
+
+    /**
+     * Show the form for editing the shipping of a transaction.
+     *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
@@ -1667,31 +1703,56 @@ class SellController extends Controller
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
 
-        if (! $is_admin && ! auth()->user()->hasAnyPermission(['access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
+        if (! $is_admin && ! auth()->user()->hasAnyPermission([
+            'access_shipping',
+            'access_own_shipping',
+            'access_commission_agent_shipping'
+        ])) {
             abort(403, 'Unauthorized action.');
         }
 
         $business_id = request()->session()->get('user.business_id');
 
+        // Fetch the transaction with its media
         $transaction = Transaction::where('business_id', $business_id)
             ->with(['media', 'media.uploaded_by_user'])
-            ->findorfail($id);
+            ->findOrFail($id);
 
+        // Get dropdown users
         $users = User::forDropdown($business_id, false, false, false);
 
+        // Shipping statuses
         $shipping_statuses = $this->transactionUtil->shipping_statuses();
 
+        // Get all shipping_edited activities
         $activities = Activity::forSubject($transaction)
             ->with(['causer', 'subject'])
             ->where('activity_log.description', 'shipping_edited')
             ->latest()
             ->get();
-        \Log::info('Debug: ', ["all activities for this transaction: " => $activities]);
-        
 
+        // Collect all media IDs from all activities
+        $allMediaIds = $activities->pluck('properties.updated_media_files') // array of arrays
+            ->flatten()                                                      // flatten to single array
+            ->unique()                                                       // remove duplicates
+            ->filter()                                                       // remove null/empty
+            ->toArray();
+
+        // Fetch the actual Media records
+        $allMedia = Media::whereIn('id', $allMediaIds)
+            ->with('uploaded_by_user')
+            ->get();
+
+        \Log::info('Debug: ', [
+            "all activities for this transaction" => $activities,
+            "all media collected" => $allMedia
+        ]);
+
+        // Pass everything to the view
         return view('sell.partials.edit_shipping')
-            ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
+            ->with(compact('transaction', 'shipping_statuses', 'activities', 'users', 'allMedia'));
     }
+
 
     /**
      * Update shipping details and attach uploaded documents.
