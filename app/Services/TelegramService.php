@@ -12,77 +12,91 @@ class TelegramService
     /**
      * Send a message to a Telegram user via chat_id
      */
-    public static function sendMessageToUser(ApiUser $user, string $text, array $files = [])
-    {
-        if (!$user->telegram_chat_id) return false;
+public static function sendMessageToUser(ApiUser $user, string $text, array $files = [])
+{
+    if (!$user->telegram_chat_id) return false;
 
-        $token = env('TELEGRAM_BOT_TOKEN');
+    $token = env('TELEGRAM_BOT_TOKEN');
 
-        // 1) Send text first
-        Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
-            'chat_id' => $user->telegram_chat_id,
-            'text' => $text,
-            'parse_mode' => 'HTML'
-        ]);
+    // -------------------------------
+    // 1) Send text message first
+    // -------------------------------
+    Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
+        'chat_id' => $user->telegram_chat_id,
+        'text'    => $text,
+        'parse_mode' => 'HTML'
+    ]);
 
-        // 2) No files → stop
-        if (empty($files)) return true;
+    if (empty($files)) return true;
 
+    // -------------------------------
+    // 2) Separate files into images and documents
+    // -------------------------------
+    $images = [];
+    $docs   = [];
+
+    foreach ($files as $file) {
+        $isUploaded = $file instanceof \Illuminate\Http\UploadedFile;
+        $path = $isUploaded ? $file->getRealPath() : $file['path'];
+        $name = $isUploaded ? $file->getClientOriginalName() : $file['name'];
+
+        $ext  = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if (in_array($ext, ['jpg','jpeg','png','gif','webp'])) {
+            $images[] = ['path'=>$path, 'name'=>$name];
+        } else {
+            $docs[] = ['path'=>$path, 'name'=>$name];
+        }
+    }
+
+    // -------------------------------
+    // 3) Send images as media group
+    // -------------------------------
+    if (!empty($images)) {
         $media = [];
         $multipart = [];
 
-        foreach ($files as $i => $file) {
-
-            // MUST be UploadedFile
-            if (!$file instanceof \Illuminate\Http\UploadedFile) {
-                Log::error("Invalid file input", ['file' => $file]);
-                continue;
-            }
-
-            $name = $file->getClientOriginalName();
-            $path = $file->getRealPath();
-
-            $ext = strtolower($file->getClientOriginalExtension());
-            $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
-
-            $type = $isImage ? "photo" : "document";
-
+        foreach ($images as $index => $img) {
             $media[] = [
-                "type"  => $type,
-                "media" => "attach://file{$i}"
+                'type' => 'photo',
+                'media' => 'attach://' . $img['name']
             ];
 
             $multipart[] = [
-                "name"     => "file{$i}",
-                "contents" => fopen($path, "r"),
-                "filename" => $name
+                'name' => $img['name'],
+                'contents' => fopen($img['path'], 'r'),
+                'filename' => $img['name']
             ];
         }
 
-        // add chat_id + media json
-        $multipart[] = [
-            'name' => 'chat_id',
-            'contents' => $user->telegram_chat_id
-        ];
+        $multipart[] = ['name'=>'chat_id','contents'=>$user->telegram_chat_id];
+        $multipart[] = ['name'=>'media','contents'=>json_encode($media, JSON_UNESCAPED_UNICODE)];
 
-        $multipart[] = [
-            'name' => 'media',
-            'contents' => json_encode($media)
-        ];
-
-        $response = Http::withoutVerifying()
-            ->asMultipart()
+        Http::withoutVerifying()->asMultipart()
             ->post("https://api.telegram.org/bot{$token}/sendMediaGroup", $multipart);
-
-        Log::info("Telegram sendMediaGroup response", [
-            'status' => $response->status(),
-            'body' => $response->body()
-        ]);
-
-        return true;
     }
 
+    // -------------------------------
+    // 4) Send documents one by one
+    // -------------------------------
+    foreach ($docs as $doc) {
+        $multipart = [
+            [
+                'name' => 'document',
+                'contents' => fopen($doc['path'], 'r'),
+                'filename' => $doc['name']
+            ],
+            [
+                'name' => 'chat_id',
+                'contents' => $user->telegram_chat_id
+            ]
+        ];
 
+        Http::withoutVerifying()->asMultipart()
+            ->post("https://api.telegram.org/bot{$token}/sendDocument", $multipart);
+    }
+
+    return true;
+}
 
     /**
      * Optional: generate /start link for first-time users
