@@ -32,6 +32,8 @@ class TelegramService
             return true;
         }
 
+        \Log::info("text info: ", ['$text: ' => $text]);
+
         // -------------------------
         // SEND MULTIPLE FILES AS ONE MEDIA GROUP
         // -------------------------
