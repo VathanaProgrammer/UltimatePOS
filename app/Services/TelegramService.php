@@ -14,78 +14,63 @@ class TelegramService
      */
     public static function sendMessageToUser(ApiUser $user, string $text, array $files = [])
     {
-        if (!$user->telegram_chat_id) {
-            Log::warning("User {$user->id} has no Telegram chat_id");
-            return false;
-        }
+        if (!$user->telegram_chat_id) return false;
 
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        // If no files → send a simple text message
+        // If no files → send normal text message
         if (empty($files)) {
-            Http::withoutVerifying()
-                ->post("https://api.telegram.org/bot{$token}/sendMessage", [
-                    'chat_id' => $user->telegram_chat_id,
-                    'text'    => (string)$text,
-                    'parse_mode' => 'HTML'
-                ]);
+            Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id' => $user->telegram_chat_id,
+                'text'    => $text,
+                'parse_mode' => 'HTML'
+            ]);
             return true;
         }
 
-        \Log::info("text info: ", ['$text: ' => $text]);
-
-        // -------------------------
-        // SEND MULTIPLE FILES AS ONE MEDIA GROUP
-        // -------------------------
+        // ========= MULTIPLE FILES → USE MEDIA GROUP =========
         $media = [];
-        $multipart = [];
 
-        // Make sure caption is always a string
-        $caption = trim((string)$text);
+        foreach ($files as $index => $file) {
 
-        foreach ($files as $i => $file) {
+            $isUploaded = is_array($file);
 
-            if ($file instanceof \Illuminate\Http\UploadedFile) {
-                $filename = $file->getClientOriginalName();
-                $path     = $file->getRealPath();
-            } elseif (is_array($file) && isset($file['path'], $file['name'])) {
-                $filename = $file['name'];
-                $path     = $file['path'];
-            } else {
-                continue;
-            }
+            $path = $isUploaded ? $file['path'] : $file->getRealPath();
+            $name = $isUploaded ? $file['name'] : $file->getClientOriginalName();
 
-            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
             $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+            $type = $isImage ? 'photo' : 'document';
 
-            // Attach file
-            $multipart[] = [
-                'name'     => "file{$i}",
-                'contents' => fopen($path, 'r'),
-                'filename' => $filename,
+            $item = [
+                'type' => $type,
+                'media' => 'attach://' . $name
             ];
 
-            // Media info
-            $media[] = [
-                'type'    => $isImage ? 'photo' : 'document',
-                'media'   => "attach://file{$i}",
-                'caption' => $i === 0 ? $caption : null  // ONLY FIRST FILE GET CAPTION
+            // caption ONLY ON FIRST ITEM
+            if ($index === 0) {
+                $item['caption'] = $text;
+            }
+
+            $media[] = $item;
+
+            $multipart[] = [
+                'name' => $name,
+                'contents' => fopen($path, 'r'),
+                'filename' => $name
             ];
         }
 
-        // Add chat ID
         $multipart[] = [
-            'name'     => 'chat_id',
+            'name' => 'chat_id',
             'contents' => $user->telegram_chat_id
         ];
 
-        // Add encoded media array
         $multipart[] = [
-            'name'     => 'media',
-            'contents' => json_encode($media, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            'name' => 'media',
+            'contents' => json_encode($media, JSON_UNESCAPED_UNICODE)
         ];
 
-        // Send the media group
         $response = Http::withoutVerifying()
             ->asMultipart()
             ->post("https://api.telegram.org/bot{$token}/sendMediaGroup", $multipart);
@@ -97,6 +82,7 @@ class TelegramService
 
         return true;
     }
+
 
     /**
      * Optional: generate /start link for first-time users
