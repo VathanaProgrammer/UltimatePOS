@@ -286,7 +286,7 @@
                     @php
                         $medias = $transaction->media->where('model_media_type', 'shipping_document')->all();
                     @endphp
-                    @include('sell.partials.media_table', ['medias' => $medias, 'delete' => true])
+                    @include('sell.partials.media_table', ['medias' => $AllMedia, 'delete' => true])
                 </div>
             </div>
             @if (!empty($activities))

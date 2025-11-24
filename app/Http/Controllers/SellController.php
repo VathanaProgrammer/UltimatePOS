@@ -1660,9 +1660,9 @@ class SellController extends Controller
     /**
      * Shows modal to edit shipping details.
      *
-      * @param  int  $id
-      * @return \Illuminate\Http\Response
-      */
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     // public function editShipping($id)
     // {
     //     $is_admin = $this->businessUtil->is_admin(auth()->user());
@@ -1695,9 +1695,9 @@ class SellController extends Controller
         /**
      * Shows modal to edit shipping details.
      *
-      * @param  int  $id
-      * @return \Illuminate\Http\Response
-      */
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function editShipping($id)
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
@@ -1708,18 +1708,14 @@ class SellController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
 
-        // Fetch transaction
         $transaction = Transaction::where('business_id', $business_id)
-            ->with(['media', 'media.uploaded_by_user'])
+            ->with(['media.uploaded_by_user'])
             ->findOrFail($id);
 
-        // Users for dropdown
         $users = User::forDropdown($business_id, false, false, false);
 
-        // Shipping statuses
         $shipping_statuses = $this->transactionUtil->shipping_statuses();
 
-        // Get shipping_edited activities
         $activities = Activity::forSubject($transaction)
             ->with(['causer', 'subject'])
             ->where('activity_log.description', 'shipping_edited')
@@ -1728,19 +1724,22 @@ class SellController extends Controller
 
         \Log::info('Debug: ', ["all activities for this transaction: " => $activities]);
 
-        // --- Merge all media from transaction + activities ---
-        $allMedia = $transaction->media->where('model_media_type', 'shipping_document')->all();
+        // --- Efficiently collect all media IDs from activities ---
+        $mediaIdsFromActivities = collect($activities)
+            ->pluck('properties.updated_media_files')
+            ->flatten()
+            ->filter() // remove empty
+            ->unique()
+            ->all();
 
-        foreach ($activities as $activity) {
-            if (!empty($activity->properties['updated_media_files'])) {
-                foreach ($activity->properties['updated_media_files'] as $mediaId) {
-                    $media = Media::find($mediaId); // Make sure Media model is imported
-                    if ($media && !in_array($media, $allMedia)) {
-                        $allMedia[] = $media;
-                    }
-                }
-            }
-        }
+        // Fetch all media at once
+        $activityMedias = Media::with('uploaded_by_user')->whereIn('id', $mediaIdsFromActivities)->get();
+
+        // Merge transaction media + activity media (unique)
+        $allMedia = $transaction->media
+            ->where('model_media_type', 'shipping_document')
+            ->merge($activityMedias)
+            ->unique('id');
 
         return view('sell.partials.edit_shipping')
             ->with(compact('transaction', 'shipping_statuses', 'activities', 'users', 'allMedia'));
