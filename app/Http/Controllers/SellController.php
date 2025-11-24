@@ -1663,41 +1663,6 @@ class SellController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    // public function editShipping($id)
-    // {
-    //     $is_admin = $this->businessUtil->is_admin(auth()->user());
-
-    //     if (! $is_admin && ! auth()->user()->hasAnyPermission(['access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
-    //         abort(403, 'Unauthorized action.');
-    //     }
-
-    //     $business_id = request()->session()->get('user.business_id');
-
-    //     $transaction = Transaction::where('business_id', $business_id)
-    //         ->with(['media', 'media.uploaded_by_user'])
-    //         ->findorfail($id);
-
-    //     $users = User::forDropdown($business_id, false, false, false);
-
-    //     $shipping_statuses = $this->transactionUtil->shipping_statuses();
-
-    //     $activities = Activity::forSubject($transaction)
-    //         ->with(['causer', 'subject'])
-    //         ->where('activity_log.description', 'shipping_edited')
-    //         ->latest()
-    //         ->get();
-    //     \Log::info('Debug: ', ["all activities for this transaction: " => $activities]);
-
-
-    //     return view('sell.partials.edit_shipping')
-    //         ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
-    // }
-        /**
-     * Shows modal to edit shipping details.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function editShipping($id)
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
@@ -1709,8 +1674,8 @@ class SellController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $transaction = Transaction::where('business_id', $business_id)
-            ->with(['media.uploaded_by_user'])
-            ->findOrFail($id);
+            ->with(['media', 'media.uploaded_by_user'])
+            ->findorfail($id);
 
         $users = User::forDropdown($business_id, false, false, false);
 
@@ -1721,30 +1686,12 @@ class SellController extends Controller
             ->where('activity_log.description', 'shipping_edited')
             ->latest()
             ->get();
-
-        \Log::info('Debug: ', ["all activities for this transaction: " => $activities]);
-
-        // --- Efficiently collect all media IDs from activities ---
-        $mediaIdsFromActivities = collect($activities)
-            ->pluck('properties.updated_media_files')
-            ->flatten()
-            ->filter() // remove empty
-            ->unique()
-            ->all();
-
-        // Fetch all media at once
-        $activityMedias = Media::with('uploaded_by_user')->whereIn('id', $mediaIdsFromActivities)->get();
-
-        // Merge transaction media + activity media (unique)
-        $allMedia = $transaction->media
-            ->where('model_media_type', 'shipping_document')
-            ->merge($activityMedias)
-            ->unique('id');
+        \Log::info('Debug: ', ["all activities for this transaction" => $activities]);
+        
 
         return view('sell.partials.edit_shipping')
-            ->with(compact('transaction', 'shipping_statuses', 'activities', 'users', 'allMedia'));
+            ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
     }
-
 
     /**
      * Update shipping details and attach uploaded documents.

@@ -1,4 +1,4 @@
-{{-- <table class="table table-condensed">
+<table class="table table-condensed">
 	@forelse($medias as $media)
 		<tr>
 			<td>
@@ -26,9 +26,9 @@
 			<td colspan="3" class="text-center">@lang('lang_v1.no_attachment_found')</td>
 		</tr>
 	@endforelse
-</table> --}}
+</table>
 
-
+{{-- 
 <div class="col-md-12">
     @include('sell.partials.media_table', ['medias' => $allMedia, 'delete' => true])
 </div>
@@ -65,4 +65,4 @@
             <td colspan="3" class="text-center">@lang('lang_v1.no_attachment_found')</td>
         </tr>
     @endforelse
-</table>
+</table> --}}
