@@ -1660,9 +1660,9 @@ class SellController extends Controller
     /**
      * Shows modal to edit shipping details.
      *
-    //  * @param  int  $id
-    //  * @return \Illuminate\Http\Response
-    //  */
+      * @param  int  $id
+      * @return \Illuminate\Http\Response
+      */
     // public function editShipping($id)
     // {
     //     $is_admin = $this->businessUtil->is_admin(auth()->user());
@@ -1692,13 +1692,12 @@ class SellController extends Controller
     //     return view('sell.partials.edit_shipping')
     //         ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
     // }
-
-    /**
-     * Show the form for editing the shipping of a transaction.
+        /**
+     * Shows modal to edit shipping details.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+      * @param  int  $id
+      * @return \Illuminate\Http\Response
+      */
     public function editShipping($id)
     {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
@@ -1746,7 +1745,6 @@ class SellController extends Controller
         return view('sell.partials.edit_shipping')
             ->with(compact('transaction', 'shipping_statuses', 'activities', 'users', 'allMedia'));
     }
-
 
 
     /**

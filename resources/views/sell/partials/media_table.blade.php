@@ -28,6 +28,7 @@
 	@endforelse
 </table> --}}
 
+
 <div class="col-md-12">
     @include('sell.partials.media_table', ['medias' => $allMedia, 'delete' => true])
 </div>
