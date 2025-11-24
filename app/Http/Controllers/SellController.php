@@ -1698,161 +1698,153 @@ class SellController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-public function updateShipping(Request $request, $id)
-{
-    \Log::info('Debug: updateShipping called', ["request_all" => $request->all()]);
+    public function updateShipping(Request $request, $id)
+    {
+        \Log::info('Debug: updateShipping called', ["request_all" => $request->all()]);
 
-    $is_admin = auth()->user()->can('access_shipping');
-    if (!$is_admin) abort(403, 'Unauthorized action.');
+        $is_admin = auth()->user()->can('access_shipping');
+        if (!$is_admin) abort(403, 'Unauthorized action.');
 
-    DB::beginTransaction();
+        DB::beginTransaction();
 
-    try {
-        $business_id = $request->session()->get('user.business_id');
-        $transaction = Transaction::where('business_id', $business_id)->findOrFail($id);
-        $transaction_before = $transaction->replicate();
+        try {
+            $business_id = $request->session()->get('user.business_id');
+            $transaction = Transaction::where('business_id', $business_id)->findOrFail($id);
+            $transaction_before = $transaction->replicate();
 
-        // ===========================
-        // Update shipping details
-        // ===========================
-        $input = $request->only([
-            'shipping_details',
-            'shipping_address',
-            'shipping_status',
-            'delivered_to',
-            'delivery_person',
-            'shipping_custom_field_1',
-            'shipping_custom_field_2',
-            'shipping_custom_field_3',
-            'shipping_custom_field_4',
-            'shipping_custom_field_5',
-            'shipping_note',
-        ]);
-        $transaction->update($input);
+            // ===========================
+            // Update shipping details
+            // ===========================
+            $input = $request->only([
+                'shipping_details',
+                'shipping_address',
+                'shipping_status',
+                'delivered_to',
+                'delivery_person',
+                'shipping_custom_field_1',
+                'shipping_custom_field_2',
+                'shipping_custom_field_3',
+                'shipping_custom_field_4',
+                'shipping_custom_field_5',
+                'shipping_note',
+            ]);
+            $transaction->update($input);
 
-        // ===========================
-        // Handle invoice files
-        // ===========================
-        $invoiceFiles = [];
-        $media_ids_for_activity = [];
+            // ===========================
+            // Handle invoice files with unique names
+            // ===========================
+            $invoiceFiles = [];
+            $media_ids_for_activity = [];
 
-        if ($request->hasFile('invoice_files')) {
-            foreach ($request->file('invoice_files') as $file) {
-                // Make unique filename
-                $originalName = $file->getClientOriginalName();
-                $uniqueName = time() . '_' . mt_rand(1000,9999) . '_' . $originalName;
+            if ($request->hasFile('invoice_files')) {
+                foreach ($request->file('invoice_files') as $file) {
+                    // Generate unique filename
+                    $extension = $file->getClientOriginalExtension();
+                    $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $uniqueName = $originalName . '_' . time() . '_' . uniqid() . '.' . $extension;
 
-                // Save permanently
-                $savedFileName = \App\Media::uploadFile($file, $uniqueName);
+                    // Save file to media folder
+                    $file->move(public_path('uploads/media'), $uniqueName);
 
-                if ($savedFileName) {
                     // Attach to media table
-                    \App\Media::attachMediaToModel($transaction, $business_id, $savedFileName, $request, 'shipping_document');
+                    \App\Media::attachMediaToModel($transaction, $business_id, $uniqueName, $request, 'shipping_document');
 
-                    // Keep for Telegram temp send
                     $invoiceFiles[] = [
-                        'path' => public_path('uploads/media/' . $savedFileName),
-                        'name' => $savedFileName
+                        'path' => public_path('uploads/media/' . $uniqueName),
+                        'name' => $uniqueName
                     ];
 
-                    // Save Media ID for activity
-                    $media = $transaction->media()->where('file_name', $savedFileName)->first();
+                    // Get media id for activity
+                    $media = $transaction->media()->where('file_name', $uniqueName)->first();
                     if ($media) {
                         $media_ids_for_activity[] = $media->id;
                     }
                 }
             }
-        }
 
-        // ===========================
-        // Activity log (keep all history)
-        // ===========================
-        $activity_property = [
-            'update_note' => $request->input('shipping_note', ''),
-            'updated_media_files' => $media_ids_for_activity,
-        ];
+            // ===========================
+            // Activity log
+            // ===========================
+            $activity_property = [
+                'update_note' => $request->input('shipping_note', ''),
+                'updated_media_files' => $media_ids_for_activity,
+            ];
 
-        $activity = new \App\ActivityLog();
-        $activity->subject_type = Transaction::class;
-        $activity->subject_id = $transaction->id;
-        $activity->causer_id = auth()->id();
-        $activity->description = 'shipping_edited';
-        $activity->properties = json_encode($activity_property);
-        $activity->save();
+            $this->transactionUtil->activityLog($transaction, 'shipping_edited', $transaction_before, $activity_property);
 
-        // ===========================
-        // Telegram notification
-        // ===========================
-        $api_user = $transaction->contact?->api_user;
-        if ($api_user && $api_user->telegram_chat_id) {
-            $messageText = "Your shipping update is complete.";
+            // ===========================
+            // Telegram notification
+            // ===========================
+            $api_user = $transaction->contact?->api_user;
+            if ($api_user && $api_user->telegram_chat_id) {
+                $messageText = "Your shipping update is complete.";
 
-            if ($transaction_before->shipping_status !== $transaction->shipping_status) {
-                $template_name = match ($transaction->shipping_status) {
-                    'ordered' => 'new_order',
-                    'packed' => 'order_packed',
-                    'shipped' => 'order_shipped',
-                    'delivered' => 'order_delivered',
-                    'cancelled' => 'order_cancelled',
-                    default => null,
-                };
+                if ($transaction_before->shipping_status !== $transaction->shipping_status) {
+                    $template_name = match ($transaction->shipping_status) {
+                        'ordered' => 'new_order',
+                        'packed' => 'order_packed',
+                        'shipped' => 'order_shipped',
+                        'delivered' => 'order_delivered',
+                        'cancelled' => 'order_cancelled',
+                        default => null,
+                    };
 
-                if ($template_name) {
-                    $template = \App\TelegramTemplate::where('name', $template_name)
-                        ->where('business_id', $transaction->business_id)
-                        ->first();
-
-                    if ($template) {
-                        $business = DB::table('business')
-                            ->select('name', 'phone')
-                            ->where('id', $transaction->business_id)
+                    if ($template_name) {
+                        $template = \App\TelegramTemplate::where('name', $template_name)
+                            ->where('business_id', $transaction->business_id)
                             ->first();
 
-                        $messageText = trim($template->greeting) . "\n\n" .
-                            trim(strip_tags($template->body)) . "\n\n" .
-                            trim($template->footer);
+                        if ($template) {
+                            $business = DB::table('business')
+                                ->select('name', 'phone')
+                                ->where('id', $transaction->business_id)
+                                ->first();
 
-                        $placeholders = [
-                            'order_id' => $transaction->id,
-                            'user_name' => $api_user->contact->name ?? 'Customer',
-                            'amount' => number_format($transaction->final_total, 2),
-                            'shipping_status' => ucfirst(str_replace('_', ' ', $transaction->shipping_status)),
-                            'business_name' => $business->name ?? '',
-                            'business_phone' => $business->phone ?? '',
-                        ];
+                            $messageText = trim($template->greeting) . "\n\n" .
+                                trim(strip_tags($template->body)) . "\n\n" .
+                                trim($template->footer);
 
-                        foreach ($placeholders as $key => $value) {
-                            $messageText = str_replace('{' . $key . '}', $value, $messageText);
+                            $placeholders = [
+                                'order_id' => $transaction->id,
+                                'user_name' => $api_user->contact->name ?? 'Customer',
+                                'amount' => number_format($transaction->final_total, 2),
+                                'shipping_status' => ucfirst(str_replace('_', ' ', $transaction->shipping_status)),
+                                'business_name' => $business->name ?? '',
+                                'business_phone' => $business->phone ?? '',
+                            ];
+
+                            foreach ($placeholders as $key => $value) {
+                                $messageText = str_replace('{' . $key . '}', $value, $messageText);
+                            }
                         }
                     }
                 }
+
+                // Send temp files via Telegram
+                $tempDir = public_path('uploads/temp');
+                if (!is_dir($tempDir)) mkdir($tempDir, 0755, true);
+
+                $tempFilePaths = [];
+                foreach ($invoiceFiles as $file) {
+                    $tempPath = $tempDir . '/' . $file['name'];
+                    copy($file['path'], $tempPath);
+                    $tempFilePaths[] = ['path' => $tempPath, 'name' => $file['name']];
+                }
+
+                \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $tempFilePaths);
+
+                // Delete temp files
+                foreach ($tempFilePaths as $f) @unlink($f['path']);
             }
 
-            // Send temp files via Telegram
-            $tempDir = public_path('uploads/temp');
-            if (!is_dir($tempDir)) mkdir($tempDir, 0755, true);
-
-            $tempFilePaths = [];
-            foreach ($invoiceFiles as $file) {
-                $tempPath = $tempDir . '/' . $file['name'];
-                copy($file['path'], $tempPath);
-                $tempFilePaths[] = ['path' => $tempPath, 'name' => $file['name']];
-            }
-
-            \App\Services\TelegramService::sendMessageToUser($api_user, $messageText, $tempFilePaths);
-
-            foreach ($tempFilePaths as $f) @unlink($f['path']);
+            DB::commit();
+            return ['success' => 1, 'msg' => 'Shipping updated successfully.'];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating shipping: ' . $e->getMessage());
+            return ['success' => 0, 'msg' => 'Something went wrong.'];
         }
-
-        DB::commit();
-        return ['success' => 1, 'msg' => 'Shipping updated successfully.'];
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        \Log::error('Error updating shipping: ' . $e->getMessage());
-        return ['success' => 0, 'msg' => 'Something went wrong.'];
     }
-}
 
     /**
      * Display list of shipments.
