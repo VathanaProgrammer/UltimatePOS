@@ -1686,6 +1686,8 @@ class SellController extends Controller
             ->where('activity_log.description', 'shipping_edited')
             ->latest()
             ->get();
+        \Log::info('Debug: ', ["all activities for this transaction: " => $activities]);
+        
 
         return view('sell.partials.edit_shipping')
             ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
