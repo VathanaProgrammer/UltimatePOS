@@ -365,10 +365,9 @@
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
-                            // fallback if id is missing
-                            var transactionId = data || row.transaction_id || 0;
+                            if (!data) return ''; // don't render button if id is missing
                             return '<button class="btn btn-sm bg-green-500 text-white btn-view-transaction" data-id="' +
-                                transactionId + '">View</button>';
+                                data + '">View</button>';
                         }
                     }
 
