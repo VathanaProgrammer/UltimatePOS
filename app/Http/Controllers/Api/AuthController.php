@@ -25,21 +25,20 @@ class AuthController extends Controller
         $otp = rand(100000, 999999);
         Log::info('Generated OTP', ['otp' => $otp]);
 
-        // Find or create contact
         // Find the last contact_id
         $lastContact = Contact::where('business_id', 6)
             ->orderBy('contact_id', 'desc')
             ->first();
 
         if ($lastContact && preg_match('/C(\d+)/', $lastContact->contact_id, $matches)) {
-            $lastNumber = (int) $matches[1];
-            $newNumber = $lastNumber + 1;
+            $lastNumber = (int) $matches[1]; // e.g., 1 for C0001
+            $newNumber = $lastNumber + 1;    // 2
         } else {
             $newNumber = 1; // start from 1 if none exists
         }
 
-        // Just concatenate with C, no padding
-        $newContactId = 'C' . $newNumber;
+        // Keep zero padding (C0001 → C0002)
+        $newContactId = 'C' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
 
         // Create new contact
         $contact = Contact::create([
@@ -50,6 +49,7 @@ class AuthController extends Controller
             'contact_id' => $newContactId,
             'mobile' => $validatedData['phone'],
         ]);
+
 
         Log::info('Contact found or created', ['contact_id' => $contact->id]);
 
