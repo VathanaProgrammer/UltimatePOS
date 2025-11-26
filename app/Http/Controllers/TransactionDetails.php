@@ -15,13 +15,12 @@ class TransactionDetails extends Controller
         try {
             $transaction = Transaction::with(['contact'])->findOrFail($id);
 
-            $products = TransactionSellLine::with(['product', 'variation'])
+            $products = TransactionSellLine::with(['product'])
                 ->where('transaction_id', $id)
                 ->get()
                 ->map(function ($line) {
                     return [
                         'product_name' => $line->product->name ?? '',
-                        'variation_name' => $line->variation->name ?? '',
                         'unit_price' => $line->unit_price,
                         'quantity' => $line->quantity,
                         'total_line' => $line->unit_price * $line->quantity,
