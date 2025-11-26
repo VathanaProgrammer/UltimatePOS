@@ -390,36 +390,51 @@
                     url: '/transactions/' + transaction_id + '/details',
                     method: 'GET',
                     success: function(data) {
+                        // Format price
+                        function formatPrice(amount) {
+                            return '$' + (amount ? parseFloat(amount).toFixed(2) : '0.00');
+                        }
+
+                        // Format datetime
+                        function formatDate(datetime) {
+                            const dt = new Date(datetime);
+                            return dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        }
+
                         // Fill modal header
-                        $('#_oid').text('Invoice: ' + data.invoice_no);
+                        $('#_oid').text('Invoice: Reward Details (' + data.invoice_no + ')');
                         $('#modalCustomerName').text(data.customer_name);
-                        $('#modalDate').text(data.date);
-                        $('#modalTotal').text(data.total);
+                        $('#modalDate').text(formatDate(data.date));
+                        $('#modalTotal').text(formatPrice(data.total));
 
                         const path = 'https://syspro.asia/uploads/img/';
 
+                        // Fill product table
                         var tbody = '';
                         data.products.forEach(function(p) {
                             tbody += '<tr>' +
                                 '<td>' + p.product_name + (p.variation_name ? ' (' + p
                                     .variation_name + ')' : '') + '</td>' +
-                                '<td>' + p.unit_price + '</td>' +
+                                '<td>' + formatPrice(p.unit_price) + '</td>' +
                                 '<td>' + p.quantity + '</td>' +
-                                '<td>' + p.total_line + '</td>' +
+                                '<td>' + formatPrice(p.total_line) + '</td>' +
                                 '<td>' + (p.image ? '<img src="' + path + p.image +
                                     '" style="max-width:80px; max-height:80px; object-fit:contain; border:2px solid white; border-radius:8px;"/>' :
                                     '') + '</td>' +
                                 '</tr>';
                         });
 
-
                         $('#modalProducts').html(tbody);
 
                         // Show modal
                         $('#reward_Modal').modal('show');
-                        if ($('#reward_Modal').modal('show')) {
-                            console.log('it work!')
-                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to fetch transaction details:', xhr);
+                        alert('Unable to load reward details. Please try again.');
                     }
                 });
             });
