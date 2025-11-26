@@ -355,10 +355,58 @@
                     },
                     {
                         data: 'rp_description',
+                        defaultContent: '--',
                         name: 'rph.description'
+                    },
+                    {
+                        data: 'id', // use the transaction ID
+                        name: 'view',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row, meta) {
+                            return '<button class="btn btn-sm bg-green-500 text-white btn-view-transaction" data-id="' +
+                                data + '">View</button>';
+                        }
                     }
                 ]
             });
+
+            $(document).on('click', '.btn-view-transaction', function() {
+                var transaction_id = $(this).data('id');
+
+                $.ajax({
+                    url: '/transactions/' + transaction_id + '/details',
+                    method: 'GET',
+                    success: function(data) {
+                        // Fill modal header
+                        $('#_oid').text('Invoice: ' + data.invoice_no);
+                        $('#modalOrderNo').text(data.invoice_no);
+                        $('#modalCustomerName').text(data.customer_name);
+                        $('#modalDate').text(data.date);
+                        $('#modalTotal').text(data.total);
+
+                        // Fill product table
+                        var tbody = '';
+                        data.products.forEach(function(p) {
+                            tbody += '<tr>' +
+                                '<td>' + p.product_name + (p.variation_name ? ' (' + p
+                                    .variation_name + ')' : '') + '</td>' +
+                                '<td>' + p.unit_price + '</td>' +
+                                '<td>' + p.quantity + '</td>' +
+                                '<td>' + p.total_line + '</td>' +
+                                '<td>' + (p.image ? '<img src="' + p.image +
+                                    '" width="50"/>' : '') + '</td>' +
+                                '</tr>';
+                        });
+
+                        $('#modalProducts').html(tbody);
+
+                        // Show modal
+                        $('#orderModal').modal('show');
+                    }
+                });
+            });
+
 
             supplier_stock_report_table = $('#supplier_stock_report_table').DataTable({
                 processing: true,
@@ -516,7 +564,7 @@
         function get_contact_payments(url = null) {
             if (!url) {
                 url =
-                "{{ action([\App\Http\Controllers\ContactController::class, 'getContactPayments'], [$contact->id]) }}";
+                    "{{ action([\App\Http\Controllers\ContactController::class, 'getContactPayments'], [$contact->id]) }}";
             }
             $.ajax({
                 url: url,
