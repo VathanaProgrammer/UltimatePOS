@@ -414,6 +414,9 @@
 
                         // Show modal
                         $('#reward_Modal').modal('show');
+                        if($('#reward_Modal').modal('show')){
+                            console.log('it work!')
+                        }
                     }
                 });
             });
