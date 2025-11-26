@@ -205,11 +205,27 @@ class SellController extends Controller
                 }
             }
 
-            if (!empty(request()->input('rewards_only')) && request()->input('rewards_only') == true) {
-                $sells->where(function ($q) {
-                    $q->whereNotNull('transactions.rp_earned')
-                        ->orWhere('transactions.rp_redeemed', '>', 0);
-                });
+            // if (!empty(request()->input('rewards_only')) && request()->input('rewards_only') == true) {
+            //     $sells->where(function ($q) {
+            //         $q->whereNotNull('transactions.rp_earned')
+            //             ->orWhere('transactions.rp_redeemed', '>', 0);
+            //     });
+            // }
+
+            if (! empty(request()->input('rewards_only')) && request()->input('rewards_only') == true) {
+                $sells->leftJoin('reward_point_histories as rph', function ($join) {
+                    $join->on('rph.transaction_id', '=', 'transactions.id');
+                })
+                    ->addSelect(
+                        'transactions.*',
+                        'rph.points as rp_points',
+                        'rph.type as rp_type',
+                        'rph.description as rp_description'
+                    )
+                    ->where(function ($q) {
+                        $q->whereNotNull('transactions.rp_earned')
+                            ->orWhere('transactions.rp_redeemed', '>', 0);
+                    });
             }
 
             if (! empty(request()->customer_id)) {
