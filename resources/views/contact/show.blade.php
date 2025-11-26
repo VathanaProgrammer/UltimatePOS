@@ -242,6 +242,7 @@
                         @if (in_array($contact->type, ['customer', 'both']) && session('business.enable_rp'))
                             <div class="tab-pane
                             @if (!empty($view_type) && $view_type == 'reward_point') active
+                            @include('contact.reward_model')
                             @else
                                 '' @endif"
                                 id="reward_point_tab">
@@ -359,15 +360,18 @@
                         name: 'rph.description'
                     },
                     {
-                        data: 'id', // use the transaction ID
+                        data: 'id',
                         name: 'view',
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row, meta) {
+                            // fallback if id is missing
+                            var transactionId = data || row.transaction_id || 0;
                             return '<button class="btn btn-sm bg-green-500 text-white btn-view-transaction" data-id="' +
-                                data + '">View</button>';
+                                transactionId + '">View</button>';
                         }
                     }
+
                 ]
             });
 
