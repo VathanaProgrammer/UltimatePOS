@@ -364,6 +364,7 @@
                         name: 'view',
                         orderable: false,
                         searchable: false,
+                         defaultContent: '',
                         render: function(data, type, row, meta) {
                             if (!data) return ''; // don't render button if id is missing
                             return '<button class="btn btn-sm bg-green-500 text-white btn-view-transaction" data-id="' +
