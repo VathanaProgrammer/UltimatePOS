@@ -16,7 +16,6 @@
                 <!-- Transaction Info -->
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <p><b>Invoice No:</b> <span id="modalOrderNo">#12345</span></p>
                         <p><b>Customer Name:</b> <span id="modalCustomerName">John Doe</span></p>
                     </div>
                     <div>
@@ -27,26 +26,26 @@
 
                 <!-- Products Table -->
                 <div class="overflow-x-auto">
-                    <table class="table-auto w-full border border-gray-300">
-                        <thead class="bg-blue-500 text-white">
+                    <table class="table table-bordered">
+                        <thead class="bg-primary text-white">
                             <tr>
-                                <th class="px-4 py-2">Product</th>
-                                <th class="px-4 py-2">Price</th>
-                                <th class="px-4 py-2">Qty</th>
-                                <th class="px-4 py-2">Total Line</th>
-                                <th class="px-4 py-2">Image</th>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Total Line</th>
+                                <th>Image</th>
                             </tr>
                         </thead>
-                        <tbody id="modalProducts" class="bg-gray-100 text-gray-800">
-                            <!-- Filled dynamically by AJAX -->
-                        </tbody>
+                        <tbody id="modalProducts"></tbody>
                     </table>
+
                 </div>
             </div>
 
             <!-- Modal Footer -->
             <div class="modal-footer flex justify-end space-x-2">
-                <button type="button" class="btn bg-blue-500 text-white no-print" onclick="$(this).closest('div.modal').printThis();">
+                <button type="button" class="btn bg-blue-500 text-white no-print"
+                    onclick="$(this).closest('div.modal').printThis();">
                     Print
                 </button>
                 <button type="button" class="btn bg-gray-500 text-white no-print" data-dismiss="modal">
