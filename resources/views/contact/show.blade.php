@@ -272,6 +272,7 @@
                                                         <th>@lang('lang_v1.earned')</th>
                                                         <th>@lang('lang_v1.redeemed')</th>
                                                         <th>@lang('lang_v1.note')</th>
+                                                        <th>View</th>
                                                     </tr>
                                                 </thead>
                                             </table>
