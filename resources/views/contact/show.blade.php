@@ -374,6 +374,8 @@
                         searchable: false,
                         defaultContent: '',
                         render: function(data, type, row, meta) {
+                             console.log('Row object:', row);
+                              console.log('data object:', data);
                             if (!data) return ''; // don't render button if id is missing
                             return '<button class="btn btn-sm bg-green-500 text-white btn-view-transaction" data-id="' +
                                 data + '">View</button>';
