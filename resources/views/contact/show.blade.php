@@ -242,7 +242,7 @@
                         @if (in_array($contact->type, ['customer', 'both']) && session('business.enable_rp'))
                             <div class="tab-pane
                             @if (!empty($view_type) && $view_type == 'reward_point') active
-                            @include('contact.reward_model')
+
                             @else
                                 '' @endif"
                                 id="reward_point_tab">
@@ -314,6 +314,7 @@
         aria-labelledby="gridSystemModalLabel">
     </div>
     @include('ledger_discount.create')
+    @include('contact.reward_model')
 
 @stop
 @section('javascript')
