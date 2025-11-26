@@ -407,7 +407,8 @@
                                 '<td>' + p.quantity + '</td>' +
                                 '<td>' + p.total_line + '</td>' +
                                 '<td>' + (p.image ? '<img src="' + path + p.image +
-                                    '" width="50"/>' : '') + '</td>' +
+                                    '" style="max-width:80px; max-height:80px; object-fit:contain; border:2px solid white; border-radius:8px;"/>' :
+                                    '') + '</td>' +
                                 '</tr>';
                         });
 
