@@ -252,7 +252,6 @@
                         ]) !!}
                     </div>
                 </div>
-                <!-- Invoice Dropzone -->
 
                 <!-- Invoice dropzone -->
                 <div class="col-md-12">
@@ -260,7 +259,7 @@
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" id="include_invoice_checkbox">
                             <label class="form-check-label" for="include_invoice_checkbox">
-                                Include invoice?
+                                Sending document?
                             </label>
                         </div>
 

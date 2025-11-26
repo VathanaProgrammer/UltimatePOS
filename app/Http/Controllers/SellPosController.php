@@ -63,6 +63,7 @@ use Stripe\Charge;
 use Stripe\Stripe;
 use Yajra\DataTables\Facades\DataTables;
 use App\Events\SellCreatedOrModified;
+use App\RewardHistory;
 
 class SellPosController extends Controller
 {
@@ -577,6 +578,14 @@ class SellPosController extends Controller
                         $redeemed = !empty($input['rp_redeemed']) ? $input['rp_redeemed'] : 0;
                         $this->transactionUtil->updateCustomerRewardPoints($contact_id, $transaction->rp_earned, 0, $redeemed);
                     }
+
+                    RewardHistory::create([
+                        'contact_id' => $contact_id,
+                        'transaction_id' => $transaction->id,
+                        'points' => $transaction->rp_earned,
+                        'type' => 'earn',
+                        'description' => 'Reward points earned from sale #' . $transaction->id,
+                    ]);
 
                     //Allocate the quantity from purchase and add mapping of
                     //purchase & sell lines in
