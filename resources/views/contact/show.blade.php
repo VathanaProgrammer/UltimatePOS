@@ -392,10 +392,11 @@
                     success: function(data) {
                         // Fill modal header
                         $('#_oid').text('Invoice: ' + data.invoice_no);
-                        $('#modalOrderNo').text(data.invoice_no);
                         $('#modalCustomerName').text(data.customer_name);
                         $('#modalDate').text(data.date);
                         $('#modalTotal').text(data.total);
+
+                        const path = 'uploads/img/';
 
                         // Fill product table
                         var tbody = '';
@@ -406,7 +407,7 @@
                                 '<td>' + p.unit_price + '</td>' +
                                 '<td>' + p.quantity + '</td>' +
                                 '<td>' + p.total_line + '</td>' +
-                                '<td>' + (p.image ? '<img src="' + p.image +
+                                '<td>' + (p.image ? '<img src="'path + p.image +
                                     '" width="50"/>' : '') + '</td>' +
                                 '</tr>';
                         });
