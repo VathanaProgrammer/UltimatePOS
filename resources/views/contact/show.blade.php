@@ -398,7 +398,6 @@
 
                         const path = 'uploads/img/';
 
-                        // Fill product table
                         var tbody = '';
                         data.products.forEach(function(p) {
                             tbody += '<tr>' +
@@ -407,16 +406,17 @@
                                 '<td>' + p.unit_price + '</td>' +
                                 '<td>' + p.quantity + '</td>' +
                                 '<td>' + p.total_line + '</td>' +
-                                '<td>' + (p.image ? '<img src="'path + p.image +
+                                '<td>' + (p.image ? '<img src="' + path + p.image +
                                     '" width="50"/>' : '') + '</td>' +
                                 '</tr>';
                         });
+
 
                         $('#modalProducts').html(tbody);
 
                         // Show modal
                         $('#reward_Modal').modal('show');
-                        if($('#reward_Modal').modal('show')){
+                        if ($('#reward_Modal').modal('show')) {
                             console.log('it work!')
                         }
                     }
