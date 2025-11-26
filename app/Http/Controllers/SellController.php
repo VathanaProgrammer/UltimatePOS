@@ -217,7 +217,12 @@ class SellController extends Controller
                     $join->on('rph.transaction_id', '=', 'transactions.id');
                 })
                     ->addSelect(
-                        'transactions.*',
+                        'transactions.id',
+                        'transactions.invoice_no',
+                        'transactions.transaction_date',
+                        'transactions.rp_earned',
+                        'transactions.rp_redeemed',
+                        // add other transactions columns you actually need
                         'rph.points as rp_points',
                         'rph.type as rp_type',
                         'rph.description as rp_description'
