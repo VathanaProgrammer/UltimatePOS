@@ -5,7 +5,7 @@
 
             <!-- Modal Header -->
             <div class="modal-header">
-                <h4 id="_oid" class="modal-title"></h4>
+                <h4 id="_oid" class="modal-title">Invoice: Reward Details</h4>
                 <button type="button" class="close no-print" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -13,19 +13,19 @@
 
             <!-- Modal Body -->
             <div class="modal-body">
-                <!-- Transaction Info -->
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
+                <!-- Customer & Date Info -->
+                <div class="row mb-3">
+                    <div class="col-sm-6">
                         <p><b>Customer Name:</b> <span id="modalCustomerName">John Doe</span></p>
                     </div>
-                    <div>
-                        <p><b>Date:</b> <span id="modalDate">2025-11-26</span></p>
+                    <div class="col-sm-6">
+                        <p><b>Date:</b> <span id="modalDate">26/11/2025 09:00</span></p>
                         <p><b>Total:</b> <span id="modalTotal">$0.00</span></p>
                     </div>
                 </div>
 
                 <!-- Products Table -->
-                <div class="overflow-x-auto">
+                <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead class="bg-primary text-white">
                             <tr>
@@ -36,9 +36,10 @@
                                 <th>Image</th>
                             </tr>
                         </thead>
-                        <tbody id="modalProducts"></tbody>
+                        <tbody id="modalProducts">
+                            <!-- Dynamically filled -->
+                        </tbody>
                     </table>
-
                 </div>
             </div>
 
@@ -56,3 +57,15 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Example: format price and date in JS when filling modal
+    function formatPrice(amount) {
+        return '$' + (amount ? parseFloat(amount).toFixed(2) : '0.00');
+    }
+
+    function formatDate(datetime) {
+        const dt = new Date(datetime);
+        return dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+</script>
