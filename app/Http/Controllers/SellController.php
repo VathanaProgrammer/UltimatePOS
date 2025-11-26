@@ -1804,7 +1804,7 @@ class SellController extends Controller
             // Telegram notification
             // ===========================
             $api_user = $transaction->contact?->api_user;
-            if ($api_user && $api_user->telegram_chat_id) {
+            if ($api_user && $api_user->telegram_chat_id && $transaction_before->shipping_status !== $transaction->shipping_status)  {
                 $messageText = "Your shipping update is complete.";
 
                 if ($transaction_before->shipping_status !== $transaction->shipping_status) {
