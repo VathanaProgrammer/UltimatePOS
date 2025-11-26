@@ -338,7 +338,14 @@
                 aaSorting: [
                     [0, 'desc']
                 ],
-                ajax: '/sells?customer_id={{ $contact->id }}&rewards_only=true',
+                ajax: {
+                    url: '/sells?customer_id={{ $contact->id }}&rewards_only=true',
+                    dataSrc: function(json) {
+                        console.log(json); // <-- add this line
+                        return json.data; // make sure you return the array of rows
+                    }
+                },
+
                 columns: [{
                         data: 'transaction_date',
                         name: 'transactions.transaction_date'
@@ -365,7 +372,7 @@
                         name: 'view',
                         orderable: false,
                         searchable: false,
-                         defaultContent: '',
+                        defaultContent: '',
                         render: function(data, type, row, meta) {
                             if (!data) return ''; // don't render button if id is missing
                             return '<button class="btn btn-sm bg-green-500 text-white btn-view-transaction" data-id="' +
