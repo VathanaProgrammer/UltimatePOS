@@ -222,16 +222,16 @@ class SellController extends Controller
                         'transactions.transaction_date',
                         'transactions.rp_earned',
                         'transactions.rp_redeemed',
-                        // add other transactions columns you actually need
-                        'rph.points as rp_points',
-                        'rph.type as rp_type',
                         'rph.description as rp_description'
                     )
                     ->where(function ($q) {
+                        // Use rph.id IS NOT NULL OR original transactions columns
                         $q->whereNotNull('transactions.rp_earned')
-                            ->orWhere('transactions.rp_redeemed', '>', 0);
+                            ->orWhere('transactions.rp_redeemed', '>', 0)
+                            ->orWhereNotNull('rph.id'); // keep transactions that have reward points history
                     });
             }
+
 
             if (! empty(request()->customer_id)) {
                 $customer_id = request()->customer_id;
