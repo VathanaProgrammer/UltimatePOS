@@ -700,6 +700,9 @@ class SellController extends Controller
                     }
                     return $status;
                 })
+                ->addColumn('dt_id', function ($row) {
+                    return $row->id;
+                })
                 ->editColumn('so_qty_remaining', '{{@format_quantity($so_qty_remaining)}}')
                 ->setRowAttr([
                     'data-href' => function ($row) {
