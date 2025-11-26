@@ -375,11 +375,10 @@
                         defaultContent: '',
                         render: function(data, type, row, meta) {
                             if (!data) return '';
-                            return '<button class="btn btn-sm bg-green-500 text-white btn-view-transaction" data-id="' +
+                            return '<button class="btn btn-sm bg-primary text-white btn-view-transaction" data-id="' +
                                 data + '">View</button>';
                         }
                     }
-
                 ]
             });
 
