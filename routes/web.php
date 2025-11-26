@@ -70,6 +70,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\TelegramTemplateController;
 use App\Http\Controllers\RewardRequstController;
 use App\Http\Controllers\ProductRewardController;
+use App\Http\Controllers\TransactionDetails;
 use App\Http\Controllers\ImportToRewardListController;
 /*
 |--------------------------------------------------------------------------
@@ -113,6 +114,8 @@ Route::middleware(['setData'])->group(function () {
 
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
+    // routes/web.php
+    Route::get('/transactions/{id}/details', [TransactionDetails::class, 'getTransactionDetails']);
 
     Route::get('/e-commerce/reward-request', [RewardRequstController::class, 'index']);
     Route::get('product-reward/data', [ProductRewardController::class, 'getData'])
@@ -184,7 +187,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/home/sales-payment-dues', [HomeController::class, 'getSalesPaymentDues']);
     Route::post('/attach-medias-to-model', [HomeController::class, 'attachMediasToGivenModel'])->name('attach.medias.to.model');
     Route::get('/calendar', [HomeController::class, 'getCalendar'])->name('calendar');
-    
+
     Route::post('/test-email', [BusinessController::class, 'testEmailConfiguration']);
     Route::post('/test-sms', [BusinessController::class, 'testSmsConfiguration']);
     Route::get('/business/settings', [BusinessController::class, 'getBusinessSettings'])->name('business.getBusinessSettings');
@@ -223,11 +226,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('taxonomies-ajax-index-page', [TaxonomyController::class, 'getTaxonomyIndexPage']);
     Route::resource('taxonomies', TaxonomyController::class);
 
-    // E-Commerce: Catalogs (catologs is used in this project for DB/table/controller)
     Route::resource('catologs', CatologController::class);
     // route used by views to show catalog page by category
     Route::get('/catologs/show-by-category', [CatologController::class, 'showByCategory'])->name('catologs.show_by_category');
-    
+
     Route::get('catalogs/data', [CatologController::class, 'data'])->name('catalogs.data');
     Route::delete('catalogs/{id}/delete', [CatologController::class, 'destroy']);
 
