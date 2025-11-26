@@ -26,15 +26,31 @@ class AuthController extends Controller
         Log::info('Generated OTP', ['otp' => $otp]);
 
         // Find or create contact
-        $contact = Contact::firstOrCreate(
-            ['mobile' => $validatedData['phone']],
-            [
-                'name' => $validatedData['name'],
-                'business_id' => 1,
-                'type' => 'customer',
-                'created_by' => 1,
-            ]
-        );
+        // Find the last contact_id
+        $lastContact = Contact::where('business_id', 6)
+            ->orderBy('contact_id', 'desc')
+            ->first();
+
+        if ($lastContact && preg_match('/C(\d+)/', $lastContact->contact_id, $matches)) {
+            $lastNumber = (int) $matches[1];
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1; // start from 1 if none exists
+        }
+
+        // Just concatenate with C, no padding
+        $newContactId = 'C' . $newNumber;
+
+        // Create new contact
+        $contact = Contact::create([
+            'name' => $validatedData['name'],
+            'business_id' => 6,
+            'type' => 'customer',
+            'created_by' => 6,
+            'contact_id' => $newContactId,
+            'mobile' => $validatedData['phone'],
+        ]);
+
         Log::info('Contact found or created', ['contact_id' => $contact->id]);
 
         // Create API user
