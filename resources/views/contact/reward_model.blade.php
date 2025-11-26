@@ -1,5 +1,5 @@
 <script src="https://cdn.tailwindcss.com"></script>
-<div class="modal fade" id="orderModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="reward_Modal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
 

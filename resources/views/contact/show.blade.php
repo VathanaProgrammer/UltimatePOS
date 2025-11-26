@@ -413,7 +413,7 @@
                         $('#modalProducts').html(tbody);
 
                         // Show modal
-                        $('#orderModal').modal('show');
+                        $('#reward_Modal').modal('show');
                     }
                 });
             });
