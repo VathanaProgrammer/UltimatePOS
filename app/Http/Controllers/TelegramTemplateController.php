@@ -33,7 +33,7 @@ class TelegramTemplateController extends Controller
 
         $output = [
                 'success' => true,
-                'msg' => __('Catalog created successfully!'),
+                'msg' => __('Telegram template update successfully!'),
             ];
 
         return redirect()->back()->with('status', $output);

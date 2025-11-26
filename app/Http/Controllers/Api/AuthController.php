@@ -38,7 +38,7 @@ class AuthController extends Controller
         }
 
         // Keep zero padding (C0001 → C0002)
-        $newContactId = 'C' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+        $newContactId = 'CO' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
 
         // Create new contact
         $contact = Contact::create([
