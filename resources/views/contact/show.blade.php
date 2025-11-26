@@ -396,7 +396,7 @@
                         $('#modalDate').text(data.date);
                         $('#modalTotal').text(data.total);
 
-                        const path = 'uploads/img/';
+                        const path = 'https://syspro.asia/uploads/img/';
 
                         var tbody = '';
                         data.products.forEach(function(p) {
