@@ -33,7 +33,7 @@ class CustomerController extends Controller
 
                     Photo::create([
                         'customer_id' => $customer->id,
-                        'filename' => $filename,
+                        'image_url' => $filename,
                     ]);
                 }
             }
