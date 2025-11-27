@@ -22,7 +22,7 @@ class CustomerController extends Controller
             $request->validate([
                 'name' => 'nullable|max:255',
                 'phone' => 'nullable|max:20',
-                'photos.*' => 'required|mimes:jpeg,jpg,png,gif,webp,heic|max:2048',
+                'photos.*' => 'required|mimes:jpeg,jpg,png,gif,webp,heic|max:10240',
             ]);
         } catch (ValidationException $ve) {
             Log::warning('Validation failed', [
