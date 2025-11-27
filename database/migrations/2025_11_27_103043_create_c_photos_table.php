@@ -13,17 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('c_photos', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('customer_id')->nullable();
-            $table->foreign('customer_id')
-                ->references('id')
-                ->on('c-customers')
-                ->onDelete('cascade');
-                
-            $table->string('image_url'); // store filename or path
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('c_photos'))
+        {
+            Schema::create('c_photos', function (Blueprint $table) {
+                $table->increments('id');
+                $table->unsignedInteger('customer_id');
+                $table->string('image_url');
+                $table->timestamps();
+
+                $table->index('customer_id', 'customer_id_index');
+            });
+        }
     }
 
     public function down()
