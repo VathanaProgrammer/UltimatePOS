@@ -15,15 +15,15 @@ class CustomerController extends Controller
     {
         Log::info('Customer store request', ['data' => $request->all()]);
         $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'photos.*' => 'required|image|max:2048', // validate multiple images
+            'name' => 'nullable|max:255',
+            'phone' => 'nullable|max:20',
+            'photos.*' =>  'required|mimes:jpeg,jpg,png,gif,webp,heic|max:2048', // validate multiple images
         ]);
 
         try {
             $customer = Customer::create([
-                'name' => $request->name,
-                'phone' => $request->phone,
+                'name' => $request->name ?? '',
+                'phone' => $request->phone ?? '',
             ]);
 
             if ($request->hasFile('photos')) {
