@@ -13,6 +13,7 @@ class CustomerController extends Controller
     //
     public function store(Request $request)
     {
+        Log::info('Customer store request', ['data' => $request->all()]);
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
