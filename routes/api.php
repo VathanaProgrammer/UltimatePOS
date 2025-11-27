@@ -17,7 +17,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
-use App\Http\Controllers\SaleOnlineController;
+use App\Http\Controllers\Api\CollectorAuthController;
 use App\Http\Controllers\Api\ApiRewardController;
 use App\Http\Controllers\Api\TelegramBotWebhookController;
 
@@ -41,3 +41,12 @@ Route::middleware(['jwt.cookie', 'auth:api'])->group(function () {
     Route::get('/addresses/all', [AddressController::class, 'show']);
     Route::post('/addresses', [AddressController::class, 'store']);
 });
+
+// Collector Auth Routes
+Route::post('/collector/register', [CollectorAuthController::class, 'register']);
+Route::post('/collector/login', [CollectorAuthController::class, 'login']); 
+Route::get('/collector/index', [CollectorAuthController::class, 'index']); 
+// Route::middleware(['jwt.cookie', 'auth:api'])->group(function () {
+//     Route::get('/collector/user', [CollectorAuthController::class, 'user']);
+//     Route::post('/collector/logout', [CollectorAuthController::class, 'logout']);
+// });

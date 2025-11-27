@@ -21,7 +21,10 @@ return [
 
     'allowed_origins' => [
         'http://127.0.0.1:3000',
+        'http://127.0.0.1:5000',
         'http://localhost:3000',
+        'https://data-collector-ten.vercel.app',
+        'https://sob-ecommerce.vercel.app'
     ],
 
     'allowed_origins_patterns' => [],
