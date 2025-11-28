@@ -144,7 +144,8 @@ class CollectorAuthController extends Controller
         } catch (JWTException $e) {
             return response()->json([
                 'success' => 0,
-                'msg' => 'Unauthenticated'
+                'msg' => 'Unauthenticated',
+                'catch' => $e->getMessage()
             ], 401);
         }
     }
