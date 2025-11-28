@@ -10,25 +10,28 @@ class JwtCookieMiddleware
 {
     public function handle($request, Closure $next)
     {
-        $token = $request->cookie('c_token'); // get token from cookie
+        // 1️⃣ Get the token from the cookie
+        $token = $request->cookie('c_token');
 
         if (!$token) {
             return response()->json(['message' => 'Unauthenticated. No token'], Response::HTTP_UNAUTHORIZED);
         }
 
         try {
-            // For recent versions, you must use JWTAuth::setToken($token)->authenticate()
-            // If setToken does not exist, use JWTAuth::authenticate($token)
-            $user = JWTAuth::authenticate($token);
+            // 2️⃣ Pass the token string to authenticate
+            $user = JWTAuth::setToken($token)->authenticate();
 
             if (!$user) {
                 return response()->json(['message' => 'Invalid token or user not found'], Response::HTTP_UNAUTHORIZED);
             }
 
+            // 3️⃣ Attach the user to the request
             $request->attributes->set('user', $user);
 
         } catch (JWTException $e) {
-            return response()->json(['message' => 'Token error: ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);
+            return response()->json([
+                'message' => 'Token error: ' . $e->getMessage()
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         return $next($request);
