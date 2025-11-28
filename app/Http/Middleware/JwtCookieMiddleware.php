@@ -12,14 +12,22 @@ class JwtCookieMiddleware
     public function handle($request, Closure $next)
     {
         try {
-            if ($token = $request->cookie('c_token')) {
-                $user = JWTAuth::setToken($token)->authenticate(); // parse & authenticate
-                $request->merge(['user' => $user]);
-            } else {
-                return response()->json(['message' => 'Unauthenticated.'], 401);
+            $token = $request->cookie('c_token');
+
+            if (!$token) {
+                return response()->json(['message' => 'Unauthenticated. No token'], Response::HTTP_UNAUTHORIZED);
             }
+
+            $user = JWTAuth::setToken($token)->authenticate();
+
+            if (!$user) {
+                return response()->json(['message' => 'Invalid token or user not found'], Response::HTTP_UNAUTHORIZED);
+            }
+
+            // Attach the user properly to request
+            $request->attributes->set('user', $user);
         } catch (JWTException $e) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json(['message' => 'Token error: ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);
         }
 
         return $next($request);
