@@ -22,6 +22,10 @@ class CustomerController extends Controller
             $request->validate([
                 'name' => 'nullable|max:255',
                 'phone' => 'nullable|max:20',
+                'address_detail' => 'nullable|string',
+                'collector_id' => 'nullable|exists:collector,id',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
                 'photos.*' => 'required|mimes:jpeg,jpg,png,gif,webp,heic|max:10240',
             ]);
         } catch (ValidationException $ve) {
@@ -44,7 +48,11 @@ class CustomerController extends Controller
             // Create customer
             $customer = Customer::create([
                 'name' => $request->name ?? '',
+                'collector_id' => $request->collector_id ?? null,
                 'phone' => $request->phone ?? '',
+                'address_detail' => $request->address_detail ?? null,
+                'latitude' => $request->latitude ?? null,
+                'longitude' => $request->longitude ?? null,
             ]);
 
             Log::info('Customer created', ['customer_id' => $customer->id]);

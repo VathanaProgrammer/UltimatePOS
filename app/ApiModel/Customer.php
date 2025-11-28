@@ -13,6 +13,10 @@ class Customer extends Model
     protected $fillable = [
         'name',
         'phone',
+        'address_detail',
+        'latitude',
+        'longitude',
+        'collector_id'
     ];
 
     public function photos()
