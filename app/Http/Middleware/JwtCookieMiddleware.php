@@ -18,7 +18,7 @@ class JwtCookieMiddleware
             }
 
             // Parse and authenticate the token directly using JWTAuth
-            $user = JWTAuth::parseToken()->setToken($token)->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
 
             if (!$user) {
                 return response()->json(['message' => 'Invalid token or user not found'], Response::HTTP_UNAUTHORIZED);
