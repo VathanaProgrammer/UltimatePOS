@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class CollectorAuthController extends Controller
 {
-    protected $cookieDomain = 'syspro.asia'; // production domain
+    protected $cookieDomain = '.syspro.asia'; // production domain
 
     public function register(Request $request)
     {
