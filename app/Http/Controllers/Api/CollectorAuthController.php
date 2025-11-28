@@ -56,7 +56,7 @@ class CollectorAuthController extends Controller
                 $token,
                 60*24*7,       // 1 week
                 '/',            // path
-                'syspro.asia',  // domain
+                '.syspro.asia',  // domain
                 true,           // secure
                 true,           // httpOnly
                 false,          // raw
@@ -113,7 +113,7 @@ class CollectorAuthController extends Controller
                 $token,
                 60*24*7,
                 '/',
-                'syspro.asia',
+                '.syspro.asia',
                 true,
                 true,
                 false,
@@ -164,7 +164,7 @@ class CollectorAuthController extends Controller
                 '',
                 -1,
                 '/',
-                'syspro.asia',
+                '.syspro.asia',
                 true,
                 true,
                 false,
