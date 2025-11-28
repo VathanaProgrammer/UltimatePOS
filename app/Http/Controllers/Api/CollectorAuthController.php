@@ -54,7 +54,7 @@ class CollectorAuthController extends Controller
             ], 201)->cookie(
                 'c_token',
                 $token,
-                60*24*7,       // 1 week
+                60 * 24 * 7,       // 1 week
                 '/',            // path
                 '.syspro.asia',  // domain
                 true,           // secure
@@ -62,7 +62,6 @@ class CollectorAuthController extends Controller
                 false,          // raw
                 'None'          // SameSite
             );
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Collector register error', ['error' => $e->getMessage()]);
@@ -111,7 +110,7 @@ class CollectorAuthController extends Controller
             ], 200)->cookie(
                 'c_token',
                 $token,
-                60*24*7,
+                60 * 24 * 7,
                 '/',
                 '.syspro.asia',
                 true,
@@ -119,7 +118,6 @@ class CollectorAuthController extends Controller
                 false,
                 'None'
             );
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Collector login error', ['error' => $e->getMessage()]);
@@ -132,22 +130,10 @@ class CollectorAuthController extends Controller
 
     public function user(Request $request)
     {
-        try {
-            $token = $request->cookie('c_token');
-            Log::info('Fetching collector from token', ['token' => $token]);
-            $collector = JWTAuth::setToken($token)->toUser();
-
-            return response()->json([
-                'success' => 1,
-                'data' => $collector
-            ]);
-        } catch (JWTException $e) {
-            return response()->json([
-                'success' => 0,
-                'msg' => 'Unauthenticated',
-                'catch' => $e->getMessage()
-            ], 401);
-        }
+        return response()->json([
+            'success' => 1,
+            'data' => $request->user
+        ]);
     }
 
     public function logout()
