@@ -45,10 +45,14 @@ return [
             'driver' => 'jwt',
             'provider' => 'api_users',
         ],
-        
+
         'customer' => [
             'driver' => 'session',
             'provider' => 'contacts',
+        ],
+        'collector' => [
+            'driver' => 'jwt',
+            'provider' => 'collectors',
         ],
     ],
 
@@ -81,6 +85,10 @@ return [
         'api_users' => [
             'driver' => 'eloquent',
             'model' => App\ApiModel\ApiUser::class,
+        ],
+        'collectors' => [
+            'driver' => 'eloquent',
+            'model' => App\ApiModel\Collector::class,
         ],
     ],
 
