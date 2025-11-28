@@ -42,8 +42,9 @@ Route::middleware(['jwt.cookie', 'auth:api'])->group(function () {
     Route::get('/addresses/all', [AddressController::class, 'show']);
     Route::post('/addresses', [AddressController::class, 'store']);
 
-    Route::get('/collector/user', [CollectorAuthController::class, 'user']);
 });
+
+Route::middleware(['jwt.cookie'])->get('/collector/user', [CollectorAuthController::class, 'user']);
 
 // Collector Auth Routes
 Route::post('/collector/register', [CollectorAuthController::class, 'register']);
