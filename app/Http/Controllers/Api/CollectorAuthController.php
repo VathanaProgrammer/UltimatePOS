@@ -134,6 +134,7 @@ class CollectorAuthController extends Controller
     {
         try {
             $token = $request->cookie('c_token');
+            Log::info('Fetching collector from token', ['token' => $token]);
             $collector = JWTAuth::setToken($token)->toUser();
 
             return response()->json([
