@@ -9,7 +9,7 @@ class JwtCookieMiddleware
 {
     public function handle($request, Closure $next)
     {
-        if ($token = $request->cookie('token')) {
+        if ($token = $request->cookie('c_token')) {
             JWTAuth::setToken($token);
         }
         return $next($request);
