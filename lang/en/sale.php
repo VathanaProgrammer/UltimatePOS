@@ -69,4 +69,7 @@ return [
     'shipping' => 'Shipping',
     'shipping_details' => 'Shipping Details',
     'shipping_charges' => 'Shipping Charges',
+    'delivery_label' => 'Delivery Label',
+    'date' => 'Date',
+    "delivery_address" => "Delivery Address",
 ];

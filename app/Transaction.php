@@ -41,6 +41,15 @@ class Transaction extends Model
         return $this->hasMany(\App\PurchaseLine::class);
     }
 
+    //modefied
+    // defining relationship with TransactionSellLine model
+    public function products()
+    {
+        return $this->hasMany(TransactionSellLine::class, 'transaction_id', 'id');
+    }
+
+    //end modified
+    
     public function sell_lines()
     {
         return $this->hasMany(\App\TransactionSellLine::class);
@@ -136,7 +145,7 @@ class Transaction extends Model
      */
     public function getDocumentPathAttribute()
     {
-        $path = ! empty($this->document) ? asset('/uploads/documents/'.$this->document) : null;
+        $path = ! empty($this->document) ? asset('/uploads/documents/' . $this->document) : null;
 
         return $path;
     }
@@ -353,9 +362,9 @@ class Transaction extends Model
     public function scopeOverDue($query)
     {
         return $query->whereIn('transactions.payment_status', ['due', 'partial'])
-                    ->whereNotNull('transactions.pay_term_number')
-                    ->whereNotNull('transactions.pay_term_type')
-                    ->whereRaw("IF(transactions.pay_term_type='days', DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number DAY) < CURDATE(), DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number MONTH) < CURDATE())");
+            ->whereNotNull('transactions.pay_term_number')
+            ->whereNotNull('transactions.pay_term_type')
+            ->whereRaw("IF(transactions.pay_term_type='days', DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number DAY) < CURDATE(), DATE_ADD(transactions.transaction_date, INTERVAL transactions.pay_term_number MONTH) < CURDATE())");
     }
 
     public static function sell_statuses()
@@ -399,13 +408,11 @@ class Transaction extends Model
         $sales_orders = null;
         if (! empty($this->sales_order_ids)) {
             $sales_orders = Transaction::where('business_id', $this->business_id)
-                                ->where('type', 'sales_order')
-                                ->whereIn('id', $this->sales_order_ids)
-                                ->get();
+                ->where('type', 'sales_order')
+                ->whereIn('id', $this->sales_order_ids)
+                ->get();
         }
 
         return $sales_orders;
     }
-
-   
 }

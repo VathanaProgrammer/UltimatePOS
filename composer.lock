@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec16e31ce8219b70c4ce0f0148ce9f60",
+    "content-hash": "595ea5bf5a6e11c22fb08ddccac406de",
     "packages": [
         {
             "name": "aloha/twilio",
@@ -4349,20 +4349,21 @@
         },
         {
             "name": "milon/barcode",
-            "version": "9.0.1",
+            "version": "v12.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/milon/barcode.git",
-                "reference": "a35005eb88d08807058dec0c4cba150ec6b432b8"
+                "reference": "252dc9a530c72454bc6cefb8d274c2acaba24f15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/milon/barcode/zipball/a35005eb88d08807058dec0c4cba150ec6b432b8",
-                "reference": "a35005eb88d08807058dec0c4cba150ec6b432b8",
+                "url": "https://api.github.com/repos/milon/barcode/zipball/252dc9a530c72454bc6cefb8d274c2acaba24f15",
+                "reference": "252dc9a530c72454bc6cefb8d274c2acaba24f15",
                 "shasum": ""
             },
             "require": {
-                "illuminate/support": "^7.0|^8.0|^9.0",
+                "ext-gd": "*",
+                "illuminate/support": "^7.0|^8.0|^9.0|^10.0 | ^11.0 | ^12.0",
                 "php": "^7.3 | ^8.0"
             },
             "type": "library",
@@ -4407,11 +4408,11 @@
             ],
             "support": {
                 "issues": "https://github.com/milon/barcode/issues",
-                "source": "https://github.com/milon/barcode/tree/9.0.1"
+                "source": "https://github.com/milon/barcode/tree/v12.0.0"
             },
             "funding": [
                 {
-                    "url": "https://paypal.me/tomilon",
+                    "url": "https://paypal.me/nuruzzamanmilon",
                     "type": "custom"
                 },
                 {
@@ -4419,7 +4420,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-06-28T11:18:28+00:00"
+            "time": "2025-02-24T18:09:25+00:00"
         },
         {
             "name": "monolog/monolog",
