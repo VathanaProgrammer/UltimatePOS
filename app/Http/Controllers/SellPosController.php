@@ -64,6 +64,8 @@ use Stripe\Stripe;
 use Yajra\DataTables\Facades\DataTables;
 use App\Events\SellCreatedOrModified;
 use App\RewardHistory;
+use Milon\Barcode\DNS1D;
+
 
 class SellPosController extends Controller
 {
@@ -2061,8 +2063,10 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
+                $barcode = (new DNS1D())->getBarcodePNG($transaction->invoice_no, 'C39', 3, 100);
+
                 // Render the delivery label Blade partial
-                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact('transaction', 'printer_type'))->render();
+                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact('transaction', 'printer_type', 'barcode'))->render();
 
                 return ['success' => 1, 'receipt' => $delivery_label_html];
             } catch (\Exception $e) {

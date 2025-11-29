@@ -52,8 +52,11 @@
             <div><strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}</div>
         </div>
         <div class="barcode" style="text-align:center; margin-top:10px;">
-            <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($transaction->invoice_no, 'C39', 3, 100) }}"
-                alt="barcode" />
+            @if (!empty($barcode))
+                <img src="data:image/png;base64,{{ $barcode }}" alt="barcode" />
+            @else
+                <span>Barcode loading…</span>
+            @endif
         </div>
 
     </div>

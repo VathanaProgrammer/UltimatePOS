@@ -80,7 +80,6 @@ function printDeliveryLabel(transaction_id) {
         dataType: 'json',
         success: function(result) {
             if (result.success) {
-                // Create an invisible iframe
                 var iframe = document.createElement('iframe');
                 iframe.style.position = 'absolute';
                 iframe.style.width = '0px';
@@ -88,20 +87,32 @@ function printDeliveryLabel(transaction_id) {
                 iframe.style.border = '0';
                 document.body.appendChild(iframe);
 
-                // Write the label HTML into the iframe
                 var doc = iframe.contentWindow.document;
                 doc.open();
                 doc.write(result.receipt);
                 doc.close();
 
-                // Print the iframe content
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
+                // Wait for all images in iframe to load
+                var images = doc.getElementsByTagName('img');
+                var loadedCount = 0;
 
-                // Remove the iframe after printing
-                setTimeout(function() {
+                if (images.length === 0) {
+                    // No images, print immediately
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
                     document.body.removeChild(iframe);
-                }, 1000);
+                } else {
+                    for (var i = 0; i < images.length; i++) {
+                        images[i].onload = function() {
+                            loadedCount++;
+                            if (loadedCount === images.length) {
+                                iframe.contentWindow.focus();
+                                iframe.contentWindow.print();
+                                document.body.removeChild(iframe);
+                            }
+                        };
+                    }
+                }
             } else {
                 alert(result.msg);
             }
@@ -109,5 +120,6 @@ function printDeliveryLabel(transaction_id) {
     });
 }
 </script>
+
 
 
