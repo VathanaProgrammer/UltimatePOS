@@ -1,8 +1,7 @@
 <?php
 namespace App\Http\Middleware;
 
-use Closure;;
-use Symfony\Component\HttpFoundation\Response;
+use Closure;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
@@ -10,14 +9,24 @@ class JwtCookieMiddleware
 {
     public function handle($request, Closure $next)
     {
-        $token = $request->cookie('c_token');
+        // Check multiple possible cookie names
+        $tokenNames = ['c_token', 'token'];
+        $token = null;
+
+        foreach ($tokenNames as $name) {
+            if ($request->cookie($name)) {
+                $token = $request->cookie($name);
+                break;
+            }
+        }
 
         if (!$token) {
             return response()->json(['message' => 'Unauthenticated. No token'], 401);
         }
 
         try {
-            $payload = JWTAuth::parseToken()->setToken($token)->getPayload(); // or JWTAuth::getPayload($token)
+            // Use setToken() to use the cookie manually
+            $payload = JWTAuth::setToken($token)->getPayload();
             $user = JWTAuth::manager()->getUserFromPayload($payload);
 
             if (!$user) {
