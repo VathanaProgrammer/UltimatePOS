@@ -9,7 +9,7 @@ class JwtCookieMiddleware
 {
     public function handle($request, Closure $next)
     {
-        // Check multiple possible cookie names
+        // Support multiple cookie names
         $tokenNames = ['c_token', 'token'];
         $token = null;
 
@@ -25,9 +25,8 @@ class JwtCookieMiddleware
         }
 
         try {
-            // Use setToken() to use the cookie manually
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $user = JWTAuth::manager()->getUserFromPayload($payload);
+            // Authenticate user using the token
+            $user = JWTAuth::setToken($token)->authenticate();
 
             if (!$user) {
                 return response()->json(['message' => 'Invalid token or user not found'], 401);
@@ -35,7 +34,7 @@ class JwtCookieMiddleware
 
             $request->merge(['user' => $user]);
         } catch (JWTException $e) {
-            return response()->json(['message' => 'Token error: '.$e->getMessage()], 401);
+            return response()->json(['message' => 'Token error: ' . $e->getMessage()], 401);
         }
 
         return $next($request);
