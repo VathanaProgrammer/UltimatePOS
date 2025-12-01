@@ -2054,6 +2054,11 @@ class SellPosController extends Controller
                     ->with(['contact', 'location', 'products'])
                     ->first();
 
+                $localtion = DB::table('business_locations')
+                    ->where('id', $transaction->location_id)
+                    ->first();
+
+
                 if (empty($transaction)) {
                     return ['success' => 0, 'msg' => trans('messages.something_went_wrong')];
                 }
@@ -2066,7 +2071,7 @@ class SellPosController extends Controller
                 $barcode = (new DNS1D())->getBarcodePNG($transaction->invoice_no, 'C39', 3, 100);
 
                 // Render the delivery label Blade partial
-                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact('transaction', 'printer_type', 'barcode'))->render();
+                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact('transaction', 'printer_type', 'barcode', 'localtion'))->render();
 
                 return ['success' => 1, 'receipt' => $delivery_label_html];
             } catch (\Exception $e) {
@@ -2074,6 +2079,23 @@ class SellPosController extends Controller
                 return ['success' => 0, 'msg' => trans('messages.something_went_wrong')];
             }
         }
+    }
+
+    public function AddPoint(Request $request, $id)
+    {
+        $business_id = request()->session()->get('user.business_id');
+        $customer = DB::table('contacts')->where('id', $id)->where('business_id', $business_id)->first();
+        $points = $request->input('points');
+        if (empty($customer)) {
+            return ['success' => 0, 'msg' => 'Customer not found'];
+        }
+        if (empty($points) || !is_numeric($points)) {
+            return ['success' => 0, 'msg' => 'Invalid points'];
+        }
+        $point = $customer->total_rp + $points;
+
+        DB::table('contacts')->where('id', $id)->where('business_id', $business_id)->update(['total_rp' => $point]);
+        return ['success' => 1, 'msg' => 'Points added successfully', 'total_points' => $point];
     }
 
 

@@ -460,6 +460,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('sells/pos/print-delivery-label/{transaction_id}', [\App\Http\Controllers\SellPosController::class, 'printDeliveryLabel'])
     ->name('pos.print_delivery_label');
 
+    Route::post('/reward/add-points/{id}', [SellPosController::class, 'AddPoint'])->name('add_reward_points');
+
     //Backup
     Route::get('backup/download/{file_name}', [BackUpController::class, 'download']);
     Route::get('backup/{id}/delete', [BackUpController::class, 'delete'])->name('delete_backup');

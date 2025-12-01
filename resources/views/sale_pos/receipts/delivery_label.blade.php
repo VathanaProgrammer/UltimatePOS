@@ -19,44 +19,75 @@
 
         .header {
             font-weight: bold;
+            text-align: center;
+            font-size: 20px;
             margin-bottom: 15px;
-            text-align: center;
-            font-size: 18px;
         }
 
-        .footer {
+        .section-title {
+            font-weight: bold;
             margin-top: 10px;
-            font-size: 14px;
+            text-decoration: underline;
         }
 
-        .footer div {
-            margin-bottom: 4px;
+        .row {
+            margin-bottom: 5px;
         }
 
-        .barcode {
-            text-align: center;
-            margin-top: 10px;
+        /* New layout: left details + right barcode */
+        .content-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .info-box {
+            width: 65%;
+        }
+
+        .barcode-box {
+            width: 35%;
+            text-align: right;
+        }
+
+        .barcode-box img {
+            width: 120px; /* Smaller barcode */
+            height: auto;
         }
     </style>
 </head>
 
 <body>
     <div class="label">
-        <!-- Header -->
-        <div class="header">SOB</div>
 
-        <!-- Footer details -->
-        <div class="footer">
-            <div><strong>Date:</strong> {{ $transaction->created_at->format('d/m/Y h:i A') }}</div>
-            <div><strong>Phone:</strong> {{ $transaction->contact?->mobile ?? '-' }}</div>
-            <div><strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}</div>
-        </div>
-        <div class="barcode" style="text-align:center; margin-top:10px;">
-            @if (!empty($barcode))
-                <img src="data:image/png;base64,{{ $barcode }}" alt="barcode" />
-            @else
-                <span>Barcode loading…</span>
-            @endif
+        <div class="content-box">
+
+            <!-- LEFT SIDE: SENDER + RECEIVER INFO -->
+            <div class="info-box">
+
+                <!-- Sender Info -->
+                <div class="row"><strong>Sender:</strong> SOB</div>
+                <div class="row"><strong>Mobile:</strong> {{ $localtion->mobile ?? '0123456789' }}</div>
+
+                <!-- Receiver Info -->
+                <div class="row"><strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}</div>
+                <div class="row"><strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}</div>
+                <div class="row"><strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}</div>
+
+            </div>
+
+            <!-- RIGHT SIDE: BARCODE -->
+            <div class="barcode-box">
+                @if (!empty($barcode))
+                    <img src="data:image/png;base64,{{ $barcode }}" alt="barcode" />
+                    <div style="margin-top:5px; text-align:right;">
+                        <strong>{{ $transaction->invoice_no }}</strong>
+                    </div>
+                @else
+                    <span>Loading…</span>
+                @endif
+            </div>
+
         </div>
 
     </div>

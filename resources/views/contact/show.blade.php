@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', __('contact.view_contact'))
-
+<script src="https://cdn.tailwindcss.com"></script>
 @section('content')
 
     <!-- Main content -->
@@ -262,6 +262,16 @@
                                         </div>
                                     @endif
                                     <div class="col-md-12">
+                                        <div class="w-full mb-4 flex justify-end">
+                                            <button type="button"
+                                                class="bg-blue-700 rounded-lg text-white text-md font-medium px-4 py-2 add-point-btn"
+                                                data-customer-id="{{ $contact->id }}"
+                                                data-customer-name="{{ $contact->name }}">
+                                                Add Point
+                                            </button>
+                                        </div>
+
+
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-striped" id="rp_log_table"
                                                 width="100%">
@@ -315,6 +325,7 @@
     </div>
     @include('ledger_discount.create')
     @include('contact.reward_model')
+    @include('contact.add_point')
 
 @stop
 @section('javascript')
@@ -435,6 +446,58 @@
                     error: function(xhr) {
                         console.error('Failed to fetch transaction details:', xhr);
                         alert('Unable to load reward details. Please try again.');
+                    }
+                });
+            });
+            // When the Add Point button is clicked
+            $('.add-point-btn').on('click', function() {
+                var customerId = $(this).data('customer-id') || '';
+                var customerName = $(this).data('customer-name') || 'Customer';
+
+                // Fill the modal fields
+                $('#addPointsCustomerName').text(customerName); // matches modal span ID
+
+                // Clear the points input
+                $('#pointsInput').val('');
+
+                // Store customer ID in hidden input inside modal
+                if ($('#rewardCustomerId').length === 0) {
+                    $('<input>').attr({
+                        type: 'hidden',
+                        id: 'rewardCustomerId',
+                        value: customerId
+                    }).appendTo('#add_reward_Modal .modal-body');
+                } else {
+                    $('#rewardCustomerId').val(customerId);
+                }
+
+                // Open the modal
+                $('#add_reward_Modal').modal('show');
+            });
+
+            // Save points button click
+            $('#savePointsBtn').on('click', function() {
+                var points = parseInt($('#pointsInput').val());
+                var customerId = $('#rewardCustomerId').val();
+
+                if (!points || points <= 0) {
+                    toastr.error('Please enter valid points.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/reward/add-points/' + customerId, // your backend route
+                    method: 'POST',
+                    data: {
+                        points: points,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                         toastr.success(response.msg || 'Points added successfully!');
+                        $('#add_reward_Modal').modal('hide');
+                    },
+                    error: function() {
+                         toastr.error('Something went wrong!');
                     }
                 });
             });
