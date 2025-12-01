@@ -1,5 +1,18 @@
 
 $(document).ready(function () {
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof qz === "undefined") {
+            console.error("QZ Tray library not loaded or desktop app not running!");
+            return;
+        }
+
+        // Example: connect to QZ Tray
+        qz.websocket.connect()
+            .then(() => console.log("QZ Tray connected"))
+            .catch(err => console.error("Connection failed:", err));
+    });
+
+
     getTotalUnreadNotifications();
     $('body').on('click', 'label', function (e) {
         var field_id = $(this).attr('for');
@@ -2618,11 +2631,11 @@ function initShippingDropzone() {
                 'model_type': $('#model_type').val(),
                 'model_media_type': $('#model_media_type').val()
             },
-            init: function() {
+            init: function () {
                 let dz = this;
 
                 // Hook form submit
-                $(document).on('submit', 'form#edit_shipping_form', function(e) {
+                $(document).on('submit', 'form#edit_shipping_form', function (e) {
                     e.preventDefault();
                     // Update params from current form values (in case they changed)
                     dz.options.params = {
@@ -2633,14 +2646,14 @@ function initShippingDropzone() {
                     dz.processQueue(); // send files + params together
                 });
 
-                dz.on("queuecomplete", function() {
+                dz.on("queuecomplete", function () {
                     $(".view_modal").modal("hide");
-                    if(typeof sell_table !== "undefined") sell_table.ajax.reload();
-                    if(typeof purchase_order_table !== "undefined") purchase_order_table.ajax.reload();
+                    if (typeof sell_table !== "undefined") sell_table.ajax.reload();
+                    if (typeof purchase_order_table !== "undefined") purchase_order_table.ajax.reload();
                     dz.removeAllFiles(true); // clear Dropzone
                 });
             },
-            success: function(file, response) {
+            success: function (file, response) {
                 response.success ? toastr.success(response.msg) : toastr.error(response.msg);
             }
         });
@@ -2652,7 +2665,7 @@ function initShippingDropzone() {
 // INIT INVOICE DROPZONE
 // =====================
 function initInvoiceDropzone() {
-    $(document).on("change", "#include_invoice_checkbox", function() {
+    $(document).on("change", "#include_invoice_checkbox", function () {
         const $dropzone = $("#invoice_dropzone");
         if ($(this).is(":checked")) {
             $dropzone.show();
@@ -2671,7 +2684,7 @@ function initInvoiceDropzone() {
                         'model_type': $('#model_type').val(),
                         'model_media_type': $('#model_media_type').val()
                     },
-                    init: function() {
+                    init: function () {
                         this.on("addedfile", file => {
                             invoiceFiles.push(file);
                             $("#invoice_status").text(file.name + " ready.");
@@ -2686,7 +2699,7 @@ function initInvoiceDropzone() {
         } else {
             $dropzone.hide();
             $("#invoice_status").text("No invoice selected.");
-            if(invoiceDropzone) invoiceDropzone.removeAllFiles(true);
+            if (invoiceDropzone) invoiceDropzone.removeAllFiles(true);
             invoiceFiles = [];
         }
     });
@@ -2695,7 +2708,7 @@ function initInvoiceDropzone() {
 // =====================
 // FORM SUBMIT
 // =====================
-$(document).on('submit', 'form#edit_shipping_form', function(e) {
+$(document).on('submit', 'form#edit_shipping_form', function (e) {
     e.preventDefault();
     let formData = new FormData(this);
 
@@ -2715,21 +2728,21 @@ $(document).on('submit', 'form#edit_shipping_form', function(e) {
         contentType: false,
         dataType: "json",
         beforeSend: () => __disable_submit_button($(this).find('button[type="submit"]')),
-        success: function(result) {
-            if(result.success) {
+        success: function (result) {
+            if (result.success) {
                 toastr.success(result.msg);
-                if(typeof sell_table !== "undefined") sell_table.ajax.reload();
-                if(typeof purchase_order_table !== "undefined") purchase_order_table.ajax.reload();
+                if (typeof sell_table !== "undefined") sell_table.ajax.reload();
+                if (typeof purchase_order_table !== "undefined") purchase_order_table.ajax.reload();
                 $(".view_modal").modal("hide");
 
                 // Clear arrays and Dropzones
                 shippingFiles = [];
                 invoiceFiles = [];
-                if(shippingDropzone) shippingDropzone.removeAllFiles(true);
-                if(invoiceDropzone) invoiceDropzone.removeAllFiles(true);
+                if (shippingDropzone) shippingDropzone.removeAllFiles(true);
+                if (invoiceDropzone) invoiceDropzone.removeAllFiles(true);
             } else toastr.error(result.msg);
         },
-        error: function(err) {
+        error: function (err) {
             toastr.error("Error submitting form!");
             console.error(err);
         }
@@ -2739,10 +2752,10 @@ $(document).on('submit', 'form#edit_shipping_form', function(e) {
 // =====================
 // Re-init Dropzones every time modal opens
 // =====================
-$(document).on('shown.bs.modal', '.view_modal', function() {
+$(document).on('shown.bs.modal', '.view_modal', function () {
     initShippingDropzone();
 });
-$(document).ready(function() {
+$(document).ready(function () {
     initInvoiceDropzone();
 });
 
