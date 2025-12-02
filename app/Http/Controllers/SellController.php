@@ -1710,14 +1710,14 @@ class SellController extends Controller
             ->where('activity_log.description', 'shipping_edited')
             ->latest()
             ->get();
-            
+
         $apiUser = \DB::table('api_users')
             ->where('contact_id', $transaction->contact->id)
             ->first();
-            
-            \Log::info('Debug: transaction contact', ["contact_id" => $transaction->contact->id]);
 
-            \Log::info('Debug: apiUser', ["api_user" => $apiUser]);
+        \Log::info('Debug: transaction contact', ["contact_id" => $transaction->contact->id]);
+
+        \Log::info('Debug: apiUser', ["api_user" => $apiUser]);
 
         $telegram_ok = $apiUser && $apiUser->telegram_chat_id ? true : false;
 
@@ -1788,6 +1788,11 @@ class SellController extends Controller
                     ->latest()
                     ->take(count($request->file('invoice_files')))
                     ->get();
+                    
+                \Log::info('Debug: invoiceFiles after upload', ['files' => $request->file('invoice_files')]);
+                foreach ($request->file('invoice_files') as $f) {
+                    \Log::info('File exists?', ['path' => $f->getRealPath(), 'exists' => file_exists($f->getRealPath())]);
+                }
 
                 foreach ($uploadedMedias as $m) {
                     $invoiceFiles[] = [
