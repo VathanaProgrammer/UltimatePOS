@@ -1782,17 +1782,22 @@ class SellController extends Controller
                     'shipping_document'
                 );
 
+                // 🔹 Debug: check what actually got inserted in DB
+                \Log::info('Debug: uploaded media after uploadMedia', [
+                    'model_id' => $transaction->id,
+                    'model_media_type' => 'shipping_document',
+                    'files_in_db' => Media::where('model_id', $transaction->id)
+                        ->where('model_media_type', 'shipping_document')
+                        ->get()->toArray()
+                ]);
+
                 // Fetch the REAL media records that system created
                 $uploadedMedias = Media::where('model_id', $transaction->id)
                     ->where('model_media_type', 'shipping_document')
                     ->latest()
                     ->take(count($request->file('invoice_files')))
                     ->get();
-                    
-                \Log::info('Debug: invoiceFiles after upload', ['files' => $request->file('invoice_files')]);
-                foreach ($request->file('invoice_files') as $f) {
-                    \Log::info('File exists?', ['path' => $f->getRealPath(), 'exists' => file_exists($f->getRealPath())]);
-                }
+
 
                 foreach ($uploadedMedias as $m) {
                     $invoiceFiles[] = [
