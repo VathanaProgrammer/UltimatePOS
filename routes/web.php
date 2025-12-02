@@ -114,6 +114,9 @@ Route::middleware(['setData'])->group(function () {
 
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
+    // web.php
+    Route::get('/reward-adjustments-data', [RewardRequstController::class, 'adjustmentsData']);
+
     // routes/web.php
     Route::get('/transactions/{id}/details', [TransactionDetails::class, 'getTransactionDetails']);
 
@@ -458,7 +461,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/sell-return/add/{id}', [SellReturnController::class, 'add']);
 
     Route::get('sells/pos/print-delivery-label/{transaction_id}', [\App\Http\Controllers\SellPosController::class, 'printDeliveryLabel'])
-    ->name('pos.print_delivery_label');
+        ->name('pos.print_delivery_label');
 
     Route::post('/reward/add-points/{id}', [SellPosController::class, 'AddPoint'])->name('add_reward_points');
 

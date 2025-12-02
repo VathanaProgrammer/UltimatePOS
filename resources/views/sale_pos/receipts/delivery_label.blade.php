@@ -66,8 +66,8 @@
                 <div><strong>Date:</strong> {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}</div>
             </div>
             <div class="barcode-box">
-                @if (!empty($barcode))
-                    <img src="data:image/png;base64,{{ $barcode }}" alt="barcode" />
+                @if (!empty($qrcode))
+                    <img src="data:image/png;base64,{{ $qrcode }}" alt="barcode" />
                     <div style="text-align:right; font-size: 9px; margin-top: 1px;">
                     </div>
                 @else

@@ -1710,11 +1710,20 @@ class SellController extends Controller
             ->where('activity_log.description', 'shipping_edited')
             ->latest()
             ->get();
-        \Log::info('Debug: ', ["all activities for this transaction" => $activities]);
+            
+        $apiUser = \DB::table('api_users')
+            ->where('contact_id', $transaction->contact->id)
+            ->first();
+            
+            \Log::info('Debug: transaction contact', ["contact_id" => $transaction->contact->id]);
+
+            \Log::info('Debug: apiUser', ["api_user" => $apiUser]);
+
+        $telegram_ok = $apiUser && $apiUser->telegram_chat_id ? true : false;
 
 
         return view('sell.partials.edit_shipping')
-            ->with(compact('transaction', 'shipping_statuses', 'activities', 'users'));
+            ->with(compact('transaction', 'shipping_statuses', 'activities', 'users', 'telegram_ok'));
     }
 
     /**
@@ -1804,7 +1813,7 @@ class SellController extends Controller
             // Telegram notification
             // ===========================
             $api_user = $transaction->contact?->api_user;
-            if ($api_user && $api_user->telegram_chat_id && $transaction_before->shipping_status !== $transaction->shipping_status)  {
+            if ($api_user && $api_user->telegram_chat_id && $transaction_before->shipping_status !== $transaction->shipping_status) {
                 $messageText = "Your shipping update is complete.";
 
                 if ($transaction_before->shipping_status !== $transaction->shipping_status) {

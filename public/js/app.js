@@ -1,17 +1,5 @@
 
 $(document).ready(function () {
-    document.addEventListener("DOMContentLoaded", function () {
-        if (typeof qz === "undefined") {
-            console.error("QZ Tray library not loaded or desktop app not running!");
-            return;
-        }
-
-        // Example: connect to QZ Tray
-        qz.websocket.connect()
-            .then(() => console.log("QZ Tray connected"))
-            .catch(err => console.error("Connection failed:", err));
-    });
-
 
     getTotalUnreadNotifications();
     $('body').on('click', 'label', function (e) {

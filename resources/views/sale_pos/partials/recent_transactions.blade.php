@@ -79,45 +79,6 @@ function printDeliveryLabel(transaction_id) {
         url: '/sells/pos/print-delivery-label/' + transaction_id,
         dataType: 'json',
         success: function(result) {
-            if (!result.success) {
-                alert(result.msg);
-                return;
-            }
-
-            const htmlContent = result.receipt;
-            const printerName = "DELIVERY_LABEL_PRINTER"; // <-- set your printer name here
-
-            // Connect to QZ Tray if not already connected
-            if (!qz.websocket.isActive()) {
-                qz.websocket.connect().then(() => {
-                    printNow(htmlContent, printerName);
-                }).catch(err => {
-                    alert("Cannot connect to QZ Tray: " + err);
-                });
-            } else {
-                printNow(htmlContent, printerName);
-            }
-
-            function printNow(content, printer) {
-                const config = qz.configs.create(printer);
-                const data = [{ type: 'html', format: 'plain', data: content }];
-                
-                qz.print(config, data)
-                    .then(() => console.log("Printed delivery label to:", printer))
-                    .catch(err => alert("Printing failed: " + err));
-            }
-        }
-    });
-}
-</script>
-
-{{-- <script>
-function printDeliveryLabel(transaction_id) {
-    $.ajax({
-        method: 'GET',
-        url: '/sells/pos/print-delivery-label/' + transaction_id,
-        dataType: 'json',
-        success: function(result) {
             if (result.success) {
                 var iframe = document.createElement('iframe');
                 iframe.style.position = 'absolute';
@@ -159,6 +120,6 @@ function printDeliveryLabel(transaction_id) {
     });
 }
 </script>
- --}}
+
 
 

@@ -262,7 +262,11 @@
                                         </div>
                                     @endif
                                     <div class="col-md-12">
-                                        <div class="w-full mb-4 flex justify-end">
+                                        <div class="w-full mb-4 flex justify-end gap-4">
+                                            <!-- Button to open modal -->
+                                            <button type="button" class="bg-blue-700 rounded-lg text-white text-md font-medium px-4 py-2" id="aa">
+                                                View Adjustments
+                                            </button>
                                             <button type="button"
                                                 class="bg-blue-700 rounded-lg text-white text-md font-medium px-4 py-2 add-point-btn"
                                                 data-customer-id="{{ $contact->id }}"
@@ -326,6 +330,7 @@
     @include('ledger_discount.create')
     @include('contact.reward_model')
     @include('contact.add_point')
+    @include('contact.contact_adjustments')
 
 @stop
 @section('javascript')
@@ -367,12 +372,20 @@
                         name: 'transactions.invoice_no'
                     },
                     {
-                        data: 'rp_earned',
-                        name: 'transactions.rp_earned'
+                        data: 'rp_points',
+                        name: 'rph.points',
+                        render: function(data, type, row) {
+                            if (row.rp_type === 'earn') return data;
+                            return '';
+                        }
                     },
                     {
-                        data: 'rp_redeemed',
-                        name: 'transactions.rp_redeemed'
+                        data: 'rp_points',
+                        name: 'rph.points',
+                        render: function(data, type, row) {
+                            if (row.rp_type === 'redeem') return data;
+                            return '';
+                        }
                     },
                     {
                         data: 'rp_description',
@@ -380,19 +393,77 @@
                         name: 'rph.description'
                     },
                     {
-                        data: 'dt_id', // match the PHP addColumn
+                        data: 'dt_id',
                         name: 'view',
                         orderable: false,
                         searchable: false,
-                        defaultContent: '',
-                        render: function(data, type, row, meta) {
+                        render: function(data, type, row) {
                             if (!data) return '';
                             return '<button class="btn btn-sm bg-primary text-white btn-view-transaction" data-id="' +
                                 data + '">View</button>';
                         }
                     }
                 ]
+
             });
+
+            $('#aa').on('click', function() {
+                var customerId = $(this).data('customer-id');
+
+                if ($.fn.DataTable.isDataTable('#adjustmentTable')) {
+                    $('#adjustmentTable').DataTable().destroy();
+                }
+
+                $('#adjustmentTable').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '/reward-adjustments-data',
+                        data: {
+                            contact_id: customerId
+                        }
+                    },
+                    columns: [{
+                            data: null, // no server-side data, calculate manually
+                            render: function(data, type, row, meta) {
+                                return meta.row + 1; // row number
+                            },
+                            title: 'No'
+                        },
+                        {
+                            data: 'contact_id',
+                            name: 'reward_point_histories.contact_id'
+                        },
+                        {
+                            data: 'points',
+                            name: 'reward_point_histories.points'
+                        },
+                        {
+                            data: 'description',
+                            name: 'reward_point_histories.description'
+                        },
+                        {
+                            data: 'added_by',
+                            name: 'added_by',
+                            defaultContent: 'Admin'
+                        },
+                        {
+                            data: 'created_at',
+                            name: 'reward_point_histories.created_at'
+                        }
+                    ],
+                    order: [
+                        [5, 'desc']
+                    ], // sort by Date column
+                    pageLength: 10,
+                    responsive: true,
+                    autoWidth: false
+                });
+
+                $('#adjustmentModal').modal('show');
+            });
+
+
 
             $(document).on('click', '.btn-view-transaction', function() {
                 var transaction_id = $(this).data('id');
@@ -493,11 +564,11 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
-                         toastr.success(response.msg || 'Points added successfully!');
+                        toastr.success(response.msg || 'Points added successfully!');
                         $('#add_reward_Modal').modal('hide');
                     },
                     error: function() {
-                         toastr.error('Something went wrong!');
+                        toastr.error('Something went wrong!');
                     }
                 });
             });

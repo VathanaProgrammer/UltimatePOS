@@ -64,7 +64,7 @@ use Stripe\Stripe;
 use Yajra\DataTables\Facades\DataTables;
 use App\Events\SellCreatedOrModified;
 use App\RewardHistory;
-use Milon\Barcode\DNS1D;
+use Milon\Barcode\DNS2D;
 
 
 class SellPosController extends Controller
@@ -556,6 +556,14 @@ class SellPosController extends Controller
                             }
                         }
                     }
+
+                    RewardHistory::create([
+                        'contact_id' => $contact_id,
+                        'transaction_id' => $transaction->id,
+                        'points' => $transaction->rp_earned,
+                        'type' => 'earn',
+                        'description' => 'Reward points earned from sale #' . $transaction->id,
+                    ]);
                     //update product stock
                     foreach ($input['products'] as $product) {
                         $decrease_qty = $this->productUtil
@@ -598,13 +606,6 @@ class SellPosController extends Controller
                         $this->transactionUtil->updateCustomerRewardPoints($contact_id, $transaction->rp_earned, 0, $redeemed);
                     }
 
-                    RewardHistory::create([
-                        'contact_id' => $contact_id,
-                        'transaction_id' => $transaction->id,
-                        'points' => $transaction->rp_earned,
-                        'type' => 'earn',
-                        'description' => 'Reward points earned from sale #' . $transaction->id,
-                    ]);
 
                     //Allocate the quantity from purchase and add mapping of
                     //purchase & sell lines in
@@ -2067,11 +2068,14 @@ class SellPosController extends Controller
                 if (!empty($request->input('check_location')) && $request->input('check_location') == true) {
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
+                $qrcode_text = "Invoice: {$transaction->invoice_no}\n"
+                    . "Customer: {$transaction->contact->name}\n"
+                    . "Amount: {$transaction->total}";
 
-                $barcode = (new DNS1D())->getBarcodePNG($transaction->invoice_no, 'C39', 3, 100);
+                $qrcode = (new DNS2D())->getBarcodePNG($qrcode_text, 'QRCODE');
 
                 // Render the delivery label Blade partial
-                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact('transaction', 'printer_type', 'barcode', 'localtion'))->render();
+                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact('transaction', 'printer_type', 'qrcode', 'localtion'))->render();
 
                 return ['success' => 1, 'receipt' => $delivery_label_html];
             } catch (\Exception $e) {
@@ -2083,21 +2087,52 @@ class SellPosController extends Controller
 
     public function AddPoint(Request $request, $id)
     {
-        $business_id = request()->session()->get('user.business_id');
-        $customer = DB::table('contacts')->where('id', $id)->where('business_id', $business_id)->first();
+        $business_id = $request->session()->get('user.business_id');
         $points = $request->input('points');
-        if (empty($customer)) {
-            return ['success' => 0, 'msg' => 'Customer not found'];
-        }
+
         if (empty($points) || !is_numeric($points)) {
             return ['success' => 0, 'msg' => 'Invalid points'];
         }
-        $point = $customer->total_rp + $points;
 
-        DB::table('contacts')->where('id', $id)->where('business_id', $business_id)->update(['total_rp' => $point]);
-        return ['success' => 1, 'msg' => 'Points added successfully', 'total_points' => $point];
+        try {
+            DB::beginTransaction();
+
+            $customer = DB::table('contacts')
+                ->where('id', $id)
+                ->where('business_id', $business_id)
+                ->lockForUpdate() // optional: prevents race conditions
+                ->first();
+
+            if (empty($customer)) {
+                DB::rollBack();
+                return ['success' => 0, 'msg' => 'Customer not found'];
+            }
+
+            $point = $customer->total_rp + $points;
+
+            DB::table('contacts')
+                ->where('id', $id)
+                ->where('business_id', $business_id)
+                ->update(['total_rp' => $point]);
+
+            DB::table('reward_point_histories')->insert([
+                'contact_id' => $id,
+                'points' => $points,
+                'type' => 'addition',
+                'add_by' => auth()->user()->id,
+                'description' => 'Points added by user ' . auth()->user()->username,
+                'created_at' => \Carbon::now(),
+                'updated_at' => \Carbon::now(),
+            ]);
+
+            DB::commit();
+
+            return ['success' => 1, 'msg' => 'Points added successfully', 'total_points' => $point];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['success' => 0, 'msg' => 'Something went wrong: ' . $e->getMessage()];
+        }
     }
-
 
     /**
      * Gives suggetion for product based on category
