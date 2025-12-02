@@ -2700,6 +2700,10 @@ $(document).on('submit', 'form#edit_shipping_form', function (e) {
     e.preventDefault();
     let formData = new FormData(this);
 
+    // PREVENT EMPTY FILES
+    invoiceFiles = invoiceFiles.filter(f => f.size > 0);
+    shippingFiles = shippingFiles.filter(f => f.size > 0);
+
     shippingFiles.forEach(f => formData.append("shipping_documents[]", f));
     invoiceFiles.forEach(f => formData.append("invoice_files[]", f));
 
