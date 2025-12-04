@@ -65,7 +65,7 @@ class DeliveryAuthController extends Controller
             Log::info('Delivery login request', ['data' => $request->all()]);
 
             $credentials = $request->validate([
-                'phone' => 'required|string|exists:users,mobile',
+                'email' => 'required|string|exists:users,email',
             ]);
 
             if (!$token = auth('api_delivery')->attempt($credentials)) {
