@@ -77,6 +77,8 @@ class DeliveryAuthController extends Controller
             }
 
             $user = auth('api_delivery')->user();
+            
+            Log::info('User roles:', ['roles' => $user->getRoleNames()]);
 
             Log::info('Delivery login successful', ['user' => $user]);
             
