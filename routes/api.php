@@ -57,3 +57,11 @@ Route::post('/collector/save', [CustomerController::class, 'store']);
 //     Route::get('/collector/user', [CollectorAuthController::class, 'user']);
 //     Route::post('/collector/logout', [CollectorAuthController::class, 'logout']);
 // });
+
+Route::post('/delivery/login', [DeliveryAuthController::class, 'login']);
+Route::post('/delivery/register', [DeliveryAuthController::class, 'register']);
+
+Route::middleware(['jwt.delivery', 'auth:api_delivery'])->group(function () {
+    Route::get('/delivery/profile', [DeliveryAuthController::class, 'profile']);
+    Route::post('/delivery/logout', [DeliveryAuthController::class, 'logout']);
+});

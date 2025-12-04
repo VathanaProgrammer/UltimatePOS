@@ -10,8 +10,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use HasFactory;
     use Notifiable;
@@ -26,7 +27,7 @@ class User extends Authenticatable
      */
     protected $guarded = ['id'];
 
-    
+
 
     /**
      * The attributes that should be hidden for arrays.
@@ -34,11 +35,24 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     // change api guard to web
     protected $guard_name = 'web';
+
+    // REQUIRED BY JWT
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    // REQUIRED BY JWT
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 
     /**
      * The attributes that should be mutated to dates.
@@ -123,7 +137,7 @@ class User extends Authenticatable
             $all_locations = BusinessLocation::where('business_id', $business_id)->get();
             $permissions = $user->permissions->pluck('name')->all();
             foreach ($all_locations as $location) {
-                if (in_array('location.'.$location->id, $permissions)) {
+                if (in_array('location.' . $location->id, $permissions)) {
                     $permitted_locations[] = $location->id;
                 }
             }
@@ -154,11 +168,11 @@ class User extends Authenticatable
     {
         $user = auth()->user();
         $permitted_locations = $user->permitted_locations();
-        $is_admin = $user->hasAnyPermission('Admin#'.$user->business_id);
+        $is_admin = $user->hasAnyPermission('Admin#' . $user->business_id);
         if ($permitted_locations != 'all' && ! $user->can('superadmin') && ! $is_admin) {
             $permissions = ['access_all_locations'];
             foreach ($permitted_locations as $location_id) {
-                $permissions[] = 'location.'.$location_id;
+                $permissions[] = 'location.' . $location_id;
             }
 
             return $query->whereHas('permissions', function ($q) use ($permissions) {
@@ -180,7 +194,7 @@ class User extends Authenticatable
     public static function forDropdown($business_id, $prepend_none = true, $include_commission_agents = false, $prepend_all = false, $check_location_permission = false)
     {
         $query = User::where('business_id', $business_id)
-                    ->user();
+            ->user();
 
         if (! $include_commission_agents) {
             $query->where('is_cmmsn_agnt', 0);
@@ -216,8 +230,8 @@ class User extends Authenticatable
     public static function saleCommissionAgentsDropdown($business_id, $prepend_none = true)
     {
         $all_cmmsn_agnts = User::where('business_id', $business_id)
-                        ->where('is_cmmsn_agnt', 1)
-                        ->select('id', DB::raw("CONCAT(COALESCE(surname, ''),' ',COALESCE(first_name, ''),' ',COALESCE(last_name,'')) as full_name"));
+            ->where('is_cmmsn_agnt', 1)
+            ->select('id', DB::raw("CONCAT(COALESCE(surname, ''),' ',COALESCE(first_name, ''),' ',COALESCE(last_name,'')) as full_name"));
 
         $users = $all_cmmsn_agnts->pluck('full_name', 'id');
 
@@ -240,7 +254,7 @@ class User extends Authenticatable
     public static function allUsersDropdown($business_id, $prepend_none = true, $prepend_all = false)
     {
         $all_users = User::where('business_id', $business_id)
-                        ->select('id', DB::raw("CONCAT(COALESCE(surname, ''),' ',COALESCE(first_name, ''),' ',COALESCE(last_name,'')) as full_name"));
+            ->select('id', DB::raw("CONCAT(COALESCE(surname, ''),' ',COALESCE(first_name, ''),' ',COALESCE(last_name,'')) as full_name"));
 
         $users = $all_users->pluck('full_name', 'id');
 
@@ -321,7 +335,7 @@ class User extends Authenticatable
         if (isset($this->media->display_url)) {
             $img_src = $this->media->display_url;
         } else {
-            $img_src = 'https://ui-avatars.com/api/?name='.$this->first_name;
+            $img_src = 'https://ui-avatars.com/api/?name=' . $this->first_name;
         }
 
         return $img_src;

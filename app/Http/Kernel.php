@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'superadmin' => \App\Http\Middleware\Superadmin::class,
         'CheckUserLogin' => \App\Http\Middleware\CheckUserLogin::class,
         'jwt.cookie' => \App\Http\Middleware\JwtCookieMiddleware::class,
+        'jwt.delivery' => \App\Http\Middleware\JwtDeliveryCookie::class,
     ];
 }
