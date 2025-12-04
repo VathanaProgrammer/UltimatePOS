@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\CollectorAuthController;
 use App\Http\Controllers\Api\ApiRewardController;
 use App\Http\Controllers\Api\TelegramBotWebhookController;
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\DeliveryAuthController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
