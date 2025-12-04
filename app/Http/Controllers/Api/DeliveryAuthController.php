@@ -77,13 +77,13 @@ class DeliveryAuthController extends Controller
             }
 
             $user = auth('api_delivery')->user();
-            
+
             Log::info('User roles:', ['roles' => $user->getRoleNames()]);
 
             Log::info('Delivery login successful', ['user' => $user]);
-            
-            // Check delivery role
-            if (!$user->hasRole('delivery')) {
+
+            $expectedRole = 'Delivery#' . $user->business_id;
+            if (!$user->hasRole($expectedRole)) {
                 return response()->json([
                     'success' => false,
                     'msg' => 'Unauthorized'
