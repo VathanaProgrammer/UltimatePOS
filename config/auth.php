@@ -54,9 +54,9 @@ return [
             'driver' => 'jwt',
             'provider' => 'collectors',
         ],
-        'collector' => [
+        'api_delivery' => [      // <-- add this
             'driver' => 'jwt',
-            'provider' => 'collectors',
+            'provider' => 'users', // we are using the existing User model
         ],
     ],
 
