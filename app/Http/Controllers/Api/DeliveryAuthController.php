@@ -65,18 +65,25 @@ class DeliveryAuthController extends Controller
             Log::info('Delivery login request', ['data' => $request->all()]);
 
             $credentials = $request->validate([
-                'email' => 'required|string|exists:users,email',
+                'email' => 'required|string|email|exists:users,email',
+                'password' => 'required|string',
             ]);
 
             if (!$token = auth('api_delivery')->attempt($credentials)) {
-                return response()->json(['success' => false, 'msg' => 'Invalid credentials'], 401);
+                return response()->json([
+                    'success' => false,
+                    'msg' => 'Invalid credentials'
+                ], 401);
             }
 
             $user = auth('api_delivery')->user();
 
-            // Check if user has delivery role
+            // Check delivery role
             if (!$user->hasRole('delivery')) {
-                return response()->json(['success' => false, 'msg' => 'Unauthorized'], 403);
+                return response()->json([
+                    'success' => false,
+                    'msg' => 'Unauthorized'
+                ], 403);
             }
 
             Log::info('Delivery login successful', ['user_id' => $user->id]);
@@ -99,10 +106,12 @@ class DeliveryAuthController extends Controller
             );
         } catch (\Exception $e) {
             Log::error('Delivery login error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'msg' => 'Server error: ' . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'msg' => 'Server error: ' . $e->getMessage()
+            ], 500);
         }
     }
-
     // 🔹 Get delivery user profile
     public function profile(Request $request)
     {
