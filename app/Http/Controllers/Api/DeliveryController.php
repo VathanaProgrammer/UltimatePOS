@@ -105,8 +105,8 @@ class DeliveryController extends Controller
             $updated = DB::table('transactions')
                 ->where('id', $transactionId)
                 ->update([
-                    'delivery_person_id' => $deliveryPersonId,
-                    'shipping_status' => 'Assigned', // optional: mark as assigned
+                    'delivery_person' => $deliveryPersonId,
+                    'shipping_status' => 'shipped', // optional: mark as assigned
                     'updated_at' => now()
                 ]);
 
