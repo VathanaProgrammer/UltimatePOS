@@ -50,17 +50,45 @@ class DeliveryController extends Controller
         $qrText = $request->input('qr_text');
 
         try {
-            $json = Crypt::decryptString($qrText);
-            $data = json_decode($json, true);
+            // Decrypt the QR to get transaction ID
+            $transaction_id = Crypt::decryptString($qrText);
 
-            if (!$data || !isset($data['transaction_id'])) {
-                return response()->json(['success' => 0, 'msg' => 'Invalid QR code']);
+            // Fetch transaction info
+            $transaction = DB::table('transactions')
+                ->where('id', $transaction_id)
+                ->first();
+
+            if (!$transaction) {
+                return response()->json([
+                    'success' => 0,
+                    'msg' => 'Transaction not found'
+                ]);
             }
 
-            return response()->json(['success' => 1, 'data' => $data]);
+            // Fetch customer info
+            $contact = DB::table('contacts')
+                ->where('id', $transaction->contact_id)
+                ->first();
+
+            // Prepare data for frontend
+            $data = [
+                'id' => $transaction->id,
+                'order_no' => $transaction->invoice_no,
+                'customer_name' => $contact ? $contact->name : 'Unknown',
+                'address' => $transaction->shipping_address ?? ($contact ? $contact->address_line_1 : ''),
+                'cod_amount' => $transaction->final_total,
+            ];
+
+            return response()->json([
+                'success' => 1,
+                'data' => $data
+            ]);
         } catch (\Exception $e) {
             \Log::error($e);
-            return response()->json(['success' => 0, 'msg' => 'Invalid QR code']);
+            return response()->json([
+                'success' => 0,
+                'msg' => 'Invalid QR code'
+            ]);
         }
     }
 }

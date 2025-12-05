@@ -2068,19 +2068,8 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-                // Prepare QR code payload as JSON
-                $qrData = [
-                    'transaction_id' => $transaction->id,
-                    'order_no' => $transaction->invoice_no,
-                    'customer_name' => $transaction->contact->name,
-                    'address' => $transaction->shipping_address ?? $transaction->contact->address,
-                    'cod_amount' => $transaction->total,
-                ];
-
-                // Encrypt the JSON string
-                $qrText = \Illuminate\Support\Facades\Crypt::encryptString(json_encode($qrData));
-
-                // Generate QR code
+                // Backend: generate QR
+                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id); // just the ID
                 $qrcode = (new DNS2D())->getBarcodePNG($qrText, 'QRCODE');
 
                 // Render delivery label Blade
