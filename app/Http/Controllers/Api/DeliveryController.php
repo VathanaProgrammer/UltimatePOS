@@ -159,7 +159,7 @@ class DeliveryController extends Controller
             "📞 *Phone:* {$request->phone}\n" .
             "📍 *Address:* {$request->address_detail}\n" .
             "🧭 Lat: {$request->latitude}\n" .
-            "invoice_no: {$request->invoie_no}\n" .
+            "invoice_no: {$request->invoice_no}\n" .
             "🧭 Lon: {$request->longitude}\n";
         
         // ---- send message ----
