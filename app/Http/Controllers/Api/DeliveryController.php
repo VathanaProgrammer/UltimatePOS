@@ -102,33 +102,43 @@ class DeliveryController extends Controller
         }
 
         try {
+            DB::beginTransaction(); // start transaction
+
             $updated = DB::table('transactions')
                 ->where('id', $transactionId)
                 ->update([
                     'delivery_person' => $deliveryPersonId,
-                    'shipping_status' => 'shipped', // optional: mark as assigned
+                    'shipping_status' => 'shipped', // mark as assigned
                     'updated_at' => now()
                 ]);
 
-            if ($updated) {
-                return response()->json([
-                    'success' => 1,
-                    'msg' => 'Delivery person assigned successfully',
-                    'data' => 'transaction id: ' . $transactionId . 'and delivery person: ' . $deliveryPersonId
-                ]);
-            } else {
+            if (!$updated) {
+                DB::rollBack(); // rollback if update failed
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Failed to assign delivery person or already assigned',
-                    'data' => 'transaction id: ' . $transactionId . 'and delivery person: ' . $deliveryPersonId
+                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
                 ]);
             }
+
+            // Example: If you want to do more DB operations here, all of them will be in the transaction
+            // DB::table('logs')->insert([...]);
+
+            DB::commit(); // commit only if everything succeeded
+
+            return response()->json([
+                'success' => 1,
+                'msg' => 'Delivery person assigned successfully',
+                'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+            ]);
         } catch (\Exception $e) {
+            DB::rollBack(); // rollback if exception occurs
             \Log::error($e);
+
             return response()->json([
                 'success' => 0,
                 'msg' => 'Error while assigning delivery person',
-                'data' => 'transaction id: ' . $transactionId . 'and delivery person: ' . $deliveryPersonId
+                'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
             ], 500);
         }
     }
