@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\ApiRewardController;
 use App\Http\Controllers\Api\TelegramBotWebhookController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DeliveryAuthController;
+use App\Http\Controllers\Api\DeliveryController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -65,4 +66,5 @@ Route::post('/delivery/register', [DeliveryAuthController::class, 'register']);
 Route::middleware(['jwt.delivery', 'auth:api_delivery'])->group(function () {
     Route::get('/delivery/profile', [DeliveryAuthController::class, 'profile']);
     Route::post('/delivery/logout', [DeliveryAuthController::class, 'logout']);
+     Route::get('/delivery/orders', [DeliveryController::class, 'getOrders']);
 });
