@@ -6,25 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
-
     public function up()
     {
         Schema::table('c_customers', function (Blueprint $table) {
-            // Drop old foreign key if exists
-            $sm = Schema::getConnection()->getDoctrineSchemaManager();
-            $indexes = $sm->listTableIndexes('c_customers');
-            if (isset($indexes['collector_id_foreign'])) {
-                $table->dropForeign(['collector_id']);
+            // Rename old collector_id to keep data safe
+            if (Schema::hasColumn('c_customers', 'collector_id')) {
+                $table->renameColumn('collector_id', 'old_collector_id');
             }
 
-            // Only modify foreign key without adding column again
-            $table->unsignedBigInteger('collector_id')->nullable()->change();
-
+            // Add new collector_id referencing users.id
+            $table->unsignedBigInteger('collector_id')->nullable()->after('id');
             $table->foreign('collector_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('users')
+                ->onDelete('set null');
         });
     }
 
@@ -32,6 +27,11 @@ return new class extends Migration
     {
         Schema::table('c_customers', function (Blueprint $table) {
             $table->dropForeign(['collector_id']);
+            $table->dropColumn('collector_id');
+
+            if (Schema::hasColumn('c_customers', 'old_collector_id')) {
+                $table->renameColumn('old_collector_id', 'collector_id');
+            }
         });
     }
 };
