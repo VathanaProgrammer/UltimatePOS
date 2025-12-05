@@ -14,7 +14,7 @@ return new class extends Migration
 
         // Create c_customers table
         Schema::create('c_customers', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->string('name');
             $table->string('phone')->nullable();
             $table->decimal('latitude', 10, 7)->nullable();
@@ -32,7 +32,7 @@ return new class extends Migration
 
         // Create c_photos table
         Schema::create('c_photos', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->unsignedInteger('customer_id');
             $table->string('image_url');
             $table->timestamps();
