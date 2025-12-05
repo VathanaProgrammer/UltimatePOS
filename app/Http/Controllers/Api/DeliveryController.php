@@ -105,14 +105,14 @@ class DeliveryController extends Controller
             DB::beginTransaction(); // start transaction
 
             $updated = DB::table('transactions')
-                ->where('id', $transactionId)
+                ->where('invoice_no', $transactionId)
                 ->update([
                     'delivery_person' => $deliveryPersonId,
                     'shipping_status' => 'shipped', // mark as assigned
                     'updated_at' => now()
                 ]);
 
-            $transaction = DB::table('transactions')->where('id', $transactionId)->first();
+            $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
             if (!$transaction) {
                 return response()->json([
                     'success' => 0,
