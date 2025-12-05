@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->text('address_detail')->nullable();
-            $table->unsignedBigInteger('collector_id')->nullable();
+            $table->unsignedInteger('collector_id')->nullable();
             $table->timestamps();
 
             // Foreign key to users table
@@ -33,7 +33,7 @@ return new class extends Migration
         // Create c_photos table
         Schema::create('c_photos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('customer_id');
+            $table->unsignedInteger('customer_id');
             $table->string('image_url');
             $table->timestamps();
 
