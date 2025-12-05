@@ -167,7 +167,7 @@ class DeliveryController extends Controller
         return [
             'success' => 1,
             'msg' => 'Saved + sent to Telegram',
-            'data' => $text
+            'data' => $request->all()
         ];
     }
 }
