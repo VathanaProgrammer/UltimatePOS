@@ -113,12 +113,11 @@ class DeliveryController extends Controller
             }
 
             // 2. Check if already assigned
-            if ($transaction->delivery_person) {
-                DB::rollBack();
+            if ($transaction->delivery_person !== null && $transaction->delivery_person != '') {
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Delivery person already assigned',
-                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $transaction->delivery_person
+                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
                 ]);
             }
 
