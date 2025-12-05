@@ -67,4 +67,5 @@ Route::middleware(['jwt.delivery'])->group(function () {
     Route::post('/delivery/logout', [DeliveryAuthController::class, 'logout']);
     Route::get('/delivery/orders', [DeliveryController::class, 'getOrders']);
     Route::post('/delivery/decrypt-qr', [DeliveryController::class, 'decryptQr']);
+    Route::post('/delivery/confirm-delivery', [DeliveryController::class, 'assignDeliveryPerson']);
 });
