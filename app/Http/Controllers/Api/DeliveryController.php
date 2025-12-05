@@ -86,9 +86,6 @@ class DeliveryController extends Controller
         }
     }
 
-    /**
-     * Assign a delivery person to a transaction
-     */
     public function assignDeliveryPerson(Request $request)
     {
         $transactionId = $request->input('transaction_id');
@@ -102,46 +99,39 @@ class DeliveryController extends Controller
         }
 
         try {
-            DB::beginTransaction(); // start transaction
+            DB::beginTransaction();
 
-            $updated = DB::table('transactions')
-                ->where('invoice_no', $transactionId)
-                ->update([
-                    'delivery_person' => $deliveryPersonId,
-                    'shipping_status' => 'shipped', // mark as assigned
-                    'updated_at' => now()
-                ]);
-
+            // 1. Fetch transaction first
             $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
+
             if (!$transaction) {
+                DB::rollBack();
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Transaction not found'
                 ], 404);
             }
 
-            if ($transaction->delivery_person == $deliveryPersonId) {
+            // 2. Check if already assigned
+            if ($transaction->delivery_person) {
+                DB::rollBack();
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Delivery person already assigned',
-                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $transaction->delivery_person
                 ]);
             }
 
-            if (!$updated) {
-                DB::rollBack(); // rollback if update failed
-                return response()->json([
-                    'success' => 0,
-                    'msg' => 'Failed to assign delivery person or already assigned',
-                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+            // 3. Update
+            DB::table('transactions')
+                ->where('invoice_no', $transactionId)
+                ->update([
+                    'delivery_person' => $deliveryPersonId,
+                    'shipping_status' => 'shipped',
+                    'updated_at' => now()
                 ]);
-            }
 
-
-            // Example: If you want to do more DB operations here, all of them will be in the transaction
-            // DB::table('logs')->insert([...]);
-
-            DB::commit(); // commit only if everything succeeded
+            DB::commit();
 
             return response()->json([
                 'success' => 1,
@@ -149,9 +139,8 @@ class DeliveryController extends Controller
                 'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
             ]);
         } catch (\Exception $e) {
-            DB::rollBack(); // rollback if exception occurs
+            DB::rollBack();
             \Log::error($e);
-
             return response()->json([
                 'success' => 0,
                 'msg' => 'Error while assigning delivery person',
