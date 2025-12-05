@@ -152,6 +152,7 @@ class DeliveryController extends Controller
     public function save(Request $request)
     {
         $groupId = '-5083476540'; // your group ID
+        $invoice = addcslashes($request->invoice_no, '_*[]()~`>#+-=|{}.!/');
 
         $text =
             "📦 *Drop Off Completed*\n\n" .
@@ -159,7 +160,7 @@ class DeliveryController extends Controller
             "📞 *Phone:* {$request->phone}\n" .
             "📍 *Address:* {$request->address_detail}\n" .
             "🧭 Lat: {$request->latitude}\n" .
-            "invoice_no: {$request->invoice_no}\n" .
+            "# invoice_no: {$invoice}\n" .
             "🧭 Lon: {$request->longitude}\n";
         
         // ---- send message ----
@@ -167,7 +168,7 @@ class DeliveryController extends Controller
         return [
             'success' => 1,
             'msg' => 'Saved + sent to Telegram',
-            'data' => $request->all()
+            'data' => $text
         ];
     }
 }
