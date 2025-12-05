@@ -2059,7 +2059,6 @@ class SellPosController extends Controller
                     ->where('id', $transaction->location_id)
                     ->first();
 
-
                 if (empty($transaction)) {
                     return ['success' => 0, 'msg' => trans('messages.something_went_wrong')];
                 }
@@ -2068,22 +2067,40 @@ class SellPosController extends Controller
                 if (!empty($request->input('check_location')) && $request->input('check_location') == true) {
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
-                $qrcode_text = "Invoice: {$transaction->invoice_no}\n"
-                    . "Customer: {$transaction->contact->name}\n"
-                    . "Amount: {$transaction->total}";
 
-                $qrcode = (new DNS2D())->getBarcodePNG($qrcode_text, 'QRCODE');
+                // Prepare QR code payload as JSON
+                $qrData = [
+                    'transaction_id' => $transaction->id,
+                    'order_no' => $transaction->invoice_no,
+                    'customer_name' => $transaction->contact->name,
+                    'address' => $transaction->shipping_address ?? $transaction->contact->address,
+                    'cod_amount' => $transaction->total,
+                ];
 
-                // Render the delivery label Blade partial
-                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact('transaction', 'printer_type', 'qrcode', 'localtion'))->render();
+                // Encrypt the JSON string
+                $qrText = \Illuminate\Support\Facades\Crypt::encryptString(json_encode($qrData));
+
+                // Generate QR code
+                $qrcode = (new DNS2D())->getBarcodePNG($qrText, 'QRCODE');
+
+                // Render delivery label Blade
+                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
+                    'transaction',
+                    'printer_type',
+                    'qrcode',
+                    'localtion'
+                ))->render();
 
                 return ['success' => 1, 'receipt' => $delivery_label_html];
             } catch (\Exception $e) {
-                \Log::emergency('File:' . $e->getFile() . ' Line:' . $e->getLine() . ' Message:' . $e->getMessage());
+                \Log::emergency('File:' . $e->getFile() .
+                    ' Line:' . $e->getLine() .
+                    ' Message:' . $e->getMessage());
                 return ['success' => 0, 'msg' => trans('messages.something_went_wrong')];
             }
         }
     }
+
 
     public function AddPoint(Request $request, $id)
     {
