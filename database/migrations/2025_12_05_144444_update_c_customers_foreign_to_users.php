@@ -10,13 +10,12 @@ return new class extends Migration
     public function up()
     {
         Schema::table('c_customers', function (Blueprint $table) {
-            // Drop old foreign key if it exists
+            // Drop old foreign key
             $table->dropForeign(['collector_id']);
+            $table->dropColumn('collector_id'); // drop column to avoid ->change()
 
-            // Make sure type matches users.id (bigInteger if needed)
-            $table->unsignedInteger('collector_id')->nullable()->change();
-
-            // Add new foreign key to users table
+            // Add new column referencing users table
+            $table->unsignedBigInteger('collector_id')->nullable()->after('id');
             $table->foreign('collector_id')
                 ->references('id')
                 ->on('users')
@@ -27,8 +26,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('c_customers', function (Blueprint $table) {
-            // Remove foreign key to users
             $table->dropForeign(['collector_id']);
+            $table->dropColumn('collector_id');
         });
     }
 };
