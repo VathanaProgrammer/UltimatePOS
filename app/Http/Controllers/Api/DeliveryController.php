@@ -11,7 +11,7 @@ class DeliveryController extends Controller
     //
     public function __construct()
     {
-        $this->middleware(['jwt.delivery', 'auth:api_delivery']);
+        $this->middleware(['jwt.delivery']);
     }
 
     public function getOrders()
