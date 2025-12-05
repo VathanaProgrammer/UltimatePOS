@@ -159,13 +159,15 @@ class DeliveryController extends Controller
             "📞 *Phone:* {$request->phone}\n" .
             "📍 *Address:* {$request->address_detail}\n" .
             "🧭 Lat: {$request->latitude}\n" .
+            "invoice_no: {$request->invoie_no}\n" .
             "🧭 Lon: {$request->longitude}\n";
-
+        
         // ---- send message ----
         TelegramService::sendImagesToGroup($request->file('photos'));
         return [
             'success' => 1,
-            'msg' => 'Saved + sent to Telegram'
+            'msg' => 'Saved + sent to Telegram',
+            'data' => $text
         ];
     }
 }
