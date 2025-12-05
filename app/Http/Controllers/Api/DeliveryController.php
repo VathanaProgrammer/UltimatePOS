@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Crypt;
 
 class DeliveryController extends Controller
 {
@@ -41,6 +42,25 @@ class DeliveryController extends Controller
                 'message' => 'Failed to fetch orders',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function decryptQr(Request $request)
+    {
+        $qrText = $request->input('qr_text');
+
+        try {
+            $json = Crypt::decryptString($qrText);
+            $data = json_decode($json, true);
+
+            if (!$data || !isset($data['transaction_id'])) {
+                return response()->json(['success' => 0, 'msg' => 'Invalid QR code']);
+            }
+
+            return response()->json(['success' => 1, 'data' => $data]);
+        } catch (\Exception $e) {
+            \Log::error($e);
+            return response()->json(['success' => 0, 'msg' => 'Invalid QR code']);
         }
     }
 }

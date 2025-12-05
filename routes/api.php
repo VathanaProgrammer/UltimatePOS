@@ -43,15 +43,14 @@ Route::middleware(['jwt.cookie', 'auth:api'])->group(function () {
 
     Route::get('/addresses/all', [AddressController::class, 'show']);
     Route::post('/addresses', [AddressController::class, 'store']);
-
 });
 
 Route::middleware(['jwt.cookie'])->get('/collector/user', [CollectorAuthController::class, 'user']);
 
 // Collector Auth Routes
 Route::post('/collector/register', [CollectorAuthController::class, 'register']);
-Route::post('/collector/login', [CollectorAuthController::class, 'login']); 
-Route::get('/collector/index', [CollectorAuthController::class, 'index']); 
+Route::post('/collector/login', [CollectorAuthController::class, 'login']);
+Route::get('/collector/index', [CollectorAuthController::class, 'index']);
 Route::post('/collector/save', [CustomerController::class, 'store']);
 
 
@@ -66,5 +65,6 @@ Route::post('/delivery/register', [DeliveryAuthController::class, 'register']);
 Route::middleware(['jwt.delivery'])->group(function () {
     Route::get('/delivery/profile', [DeliveryAuthController::class, 'profile']);
     Route::post('/delivery/logout', [DeliveryAuthController::class, 'logout']);
-     Route::get('/delivery/orders', [DeliveryController::class, 'getOrders']);
+    Route::get('/delivery/orders', [DeliveryController::class, 'getOrders']);
+    Route::post('/decrypt-qr', [DeliveryController::class, 'decryptQr']);
 });
