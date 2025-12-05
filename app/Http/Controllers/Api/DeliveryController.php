@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Crypt;
 
 class DeliveryController extends Controller
 {
-    //
     public function __construct()
     {
         $this->middleware(['jwt.delivery']);
@@ -21,7 +20,6 @@ class DeliveryController extends Controller
             $orders = DB::table('transactions as t')
                 ->leftJoin('contacts as c', 'c.id', '=', 't.contact_id')
                 ->select(
-                    // Use COALESCE to get the first non-null value
                     DB::raw("COALESCE(c.first_name, c.last_name, c.name) as customer_name"),
                     'c.mobile as phone',
                     't.shipping_address as address',
@@ -50,10 +48,8 @@ class DeliveryController extends Controller
         $qrText = $request->input('qr_text');
 
         try {
-            // Decrypt the QR to get transaction ID
             $transaction_id = Crypt::decryptString($qrText);
 
-            // Fetch transaction info
             $transaction = DB::table('transactions')
                 ->where('id', $transaction_id)
                 ->first();
@@ -65,12 +61,10 @@ class DeliveryController extends Controller
                 ]);
             }
 
-            // Fetch customer info
             $contact = DB::table('contacts')
                 ->where('id', $transaction->contact_id)
                 ->first();
 
-            // Prepare data for frontend
             $data = [
                 'id' => $transaction->id,
                 'order_no' => $transaction->invoice_no,
@@ -89,6 +83,53 @@ class DeliveryController extends Controller
                 'success' => 0,
                 'msg' => 'Invalid QR code'
             ]);
+        }
+    }
+
+    /**
+     * Assign a delivery person to a transaction
+     */
+    public function assignDeliveryPerson(Request $request)
+    {
+        $transactionId = $request->input('transaction_id');
+        $deliveryPersonId = $request->input('delivery_person');
+
+        if (!$transactionId || !$deliveryPersonId) {
+            return response()->json([
+                'success' => 0,
+                'msg' => 'Transaction ID and Delivery Person ID are required'
+            ], 400);
+        }
+
+        try {
+            $updated = DB::table('transactions')
+                ->where('id', $transactionId)
+                ->update([
+                    'delivery_person_id' => $deliveryPersonId,
+                    'shipping_status' => 'Assigned', // optional: mark as assigned
+                    'updated_at' => now()
+                ]);
+
+            if ($updated) {
+                return response()->json([
+                    'success' => 1,
+                    'msg' => 'Delivery person assigned successfully',
+                    'data' => 'transaction id: ' . $transactionId . 'and delivery person: ' . $deliveryPersonId
+                ]);
+            } else {
+                return response()->json([
+                    'success' => 0,
+                    'msg' => 'Failed to assign delivery person or already assigned',
+                    'data' => 'transaction id: ' . $transactionId . 'and delivery person: ' . $deliveryPersonId
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error($e);
+            return response()->json([
+                'success' => 0,
+                'msg' => 'Error while assigning delivery person',
+                'data' => 'transaction id: ' . $transactionId . 'and delivery person: ' . $deliveryPersonId
+            ], 500);
         }
     }
 }
