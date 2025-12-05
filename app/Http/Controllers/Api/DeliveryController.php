@@ -20,7 +20,8 @@ class DeliveryController extends Controller
             $orders = DB::table('transactions as t')
                 ->leftJoin('contacts as c', 'c.id', '=', 't.contact_id')
                 ->select(
-                    'c.first_name as customer_name',
+                    // Use COALESCE to get the first non-null value
+                    DB::raw("COALESCE(c.first_name, c.last_name, c.name) as customer_name"),
                     'c.mobile as phone',
                     't.shipping_address as address',
                     't.invoice_no as order_no',
