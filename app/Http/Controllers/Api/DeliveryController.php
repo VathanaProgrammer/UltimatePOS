@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
+use App\Services\TelegramService;
 
 class DeliveryController extends Controller
 {
@@ -146,5 +147,25 @@ class DeliveryController extends Controller
                 'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
             ], 500);
         }
+    }
+
+    public function save(Request $request)
+    {
+        $groupId = '-5083476540'; // your group ID
+
+        $text =
+            "📦 *Drop Off Completed*\n\n" .
+            "👤 *Customer:* {$request->name}\n" .
+            "📞 *Phone:* {$request->phone}\n" .
+            "📍 *Address:* {$request->address_detail}\n" .
+            "🧭 Lat: {$request->latitude}\n" .
+            "🧭 Lon: {$request->longitude}\n";
+
+        // ---- send message ----
+        TelegramService::sendImagesToGroup($request->file('photos'));
+        return [
+            'success' => 1,
+            'msg' => 'Saved + sent to Telegram'
+        ];
     }
 }

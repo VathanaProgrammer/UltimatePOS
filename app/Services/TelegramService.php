@@ -143,4 +143,71 @@ class TelegramService
 
         return response()->json(['ok' => true]);
     }
+
+    public static function sendImagesToGroup(array $files)
+    {
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $groupChatId = '-5083476540';
+
+        // Filter only real uploaded images
+        $images = [];
+
+        foreach ($files as $file) {
+            if ($file instanceof \Illuminate\Http\UploadedFile) {
+                $ext = strtolower($file->getClientOriginalExtension());
+
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $images[] = [
+                        'path' => $file->getRealPath(),
+                        'name' => $file->getClientOriginalName()
+                    ];
+                }
+            }
+        }
+
+        if (empty($images)) {
+            Log::warning("TelegramService: No images to send");
+            return false;
+        }
+
+        // ----- Build media group -----
+        $media = [];
+        $multipart = [];
+
+        foreach ($images as $img) {
+            $media[] = [
+                'type' => 'photo',
+                'media' => 'attach://' . $img['name']
+            ];
+
+            // Attach image file
+            $multipart[] = [
+                'name' => $img['name'],
+                'contents' => fopen($img['path'], 'r'),
+                'filename' => $img['name']
+            ];
+        }
+
+        // Chat ID + Media group JSON
+        $multipart[] = [
+            'name' => 'chat_id',
+            'contents' => $groupChatId
+        ];
+
+        $multipart[] = [
+            'name' => 'media',
+            'contents' => json_encode($media, JSON_UNESCAPED_UNICODE)
+        ];
+
+        // ----- SEND TO TELEGRAM -----
+        $res = Http::withoutVerifying()
+            ->asMultipart()
+            ->post("https://api.telegram.org/bot{$token}/sendMediaGroup", $multipart);
+
+        Log::info("TelegramService sendImagesToGroup response", [
+            'telegram_response' => $res->json()
+        ]);
+
+        return true;
+    }
 }
