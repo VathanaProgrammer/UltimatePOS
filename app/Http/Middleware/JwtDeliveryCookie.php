@@ -16,10 +16,21 @@ class JwtDeliveryCookie
         }
 
         try {
-            JWTAuth::setToken($token)->authenticate();
-            auth()->shouldUse('api_delivery'); // use delivery guard
+            // Set the guard for delivery
+            auth()->shouldUse('api_delivery');
+
+            // Authenticate the token
+            $user = JWTAuth::setToken($token)->authenticate();
+
+            if (!$user) {
+                return response()->json(['message' => 'Unauthorized (user not found)'], 401);
+            }
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            return response()->json(['message' => 'Token expired'], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['message' => 'Token invalid'], 401);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Token invalid: '.$e->getMessage()], 401);
+            return response()->json(['message' => 'Token error: ' . $e->getMessage()], 401);
         }
 
         return $next($request);
