@@ -112,6 +112,22 @@ class DeliveryController extends Controller
                     'updated_at' => now()
                 ]);
 
+            $transaction = DB::table('transactions')->where('id', $transactionId)->first();
+            if (!$transaction) {
+                return response()->json([
+                    'success' => 0,
+                    'msg' => 'Transaction not found'
+                ], 404);
+            }
+
+            if ($transaction->delivery_person == $deliveryPersonId) {
+                return response()->json([
+                    'success' => 0,
+                    'msg' => 'Delivery person already assigned',
+                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+                ]);
+            }
+
             if (!$updated) {
                 DB::rollBack(); // rollback if update failed
                 return response()->json([
@@ -120,6 +136,7 @@ class DeliveryController extends Controller
                     'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
                 ]);
             }
+
 
             // Example: If you want to do more DB operations here, all of them will be in the transaction
             // DB::table('logs')->insert([...]);
