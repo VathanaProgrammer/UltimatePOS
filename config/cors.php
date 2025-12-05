@@ -25,7 +25,8 @@ return [
         'http://localhost:3000',
         'https://data-collector-ten.vercel.app',
         'https://sob-ecommerce.vercel.app',
-        'https://order.syspro.asia'
+        'https://order.syspro.asia',
+        'https://delivery.syspro.asia'
     ],
 
     'allowed_origins_patterns' => [],
