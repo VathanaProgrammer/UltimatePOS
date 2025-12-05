@@ -63,7 +63,7 @@ Route::post('/collector/save', [CustomerController::class, 'store']);
 Route::post('/delivery/login', [DeliveryAuthController::class, 'login']);
 Route::post('/delivery/register', [DeliveryAuthController::class, 'register']);
 
-Route::middleware(['jwt.delivery', 'auth:api_delivery'])->group(function () {
+Route::middleware(['jwt.delivery'])->group(function () {
     Route::get('/delivery/profile', [DeliveryAuthController::class, 'profile']);
     Route::post('/delivery/logout', [DeliveryAuthController::class, 'logout']);
      Route::get('/delivery/orders', [DeliveryController::class, 'getOrders']);
