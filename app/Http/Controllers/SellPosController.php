@@ -2069,42 +2069,25 @@ class SellPosController extends Controller
                 if (!empty($request->input('check_location')) && $request->input('check_location') == true) {
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
-                // Encrypt your transaction ID
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
+                // Generate SVG QR code
+                // Generate SVG QR code
+                $qrcode = QrCode::format('svg')
+                    ->size(120)
+                    ->margin(0)
+                    ->color(0, 0, 0)
+                    ->backgroundColor(255, 255, 255)
+                    ->eyeColor(0, 0, 0, 0)       // top-left black
+                    ->eyeColor(1, 0, 0, 0)       // top-right black
+                    ->eyeColor(2, 0, 50, 255)    // bottom-left blue
+                    ->generate($qrText);
 
-                // Generate QR code as SVG
-                $svg = QrCode::format('svg')->size(120)->margin(0)->generate($qrText);
-
-                // Load SVG as XML
-                $xml = simplexml_load_string($svg);
-                $namespaces = $xml->getNamespaces(true);
-
-                // Convert SimpleXML to DOM for easier manipulation
-                $dom = new \DOMDocument();
-                $dom->loadXML($svg);
-
-                // Get all <rect> elements (QR modules)
-                $rects = $dom->getElementsByTagName('rect');
-
-                // Coordinates for bottom-left eye (depends on QR size, adjust if needed)
-                $eyeSize = 21; // typical QR eye is 7x7 modules * 3 for scaling
-                $scale = 3;    // how much bigger you want the eye
-
-                foreach ($rects as $rect) {
-                    $x = (float)$rect->getAttribute('x');
-                    $y = (float)$rect->getAttribute('y');
-
-                    // Detect bottom-left eye area (rough estimate, adjust to your QR size)
-                    if ($x < 7 && $y > 112) { // assuming size=120, bottom-left corner
-                        $w = (float)$rect->getAttribute('width');
-                        $h = (float)$rect->getAttribute('height');
-                        $rect->setAttribute('width', $w * $scale);
-                        $rect->setAttribute('height', $h * $scale);
-                    }
-                }
-
-                // Save modified SVG
-                $qrcode = $dom->saveXML();
+                // Make bottom-left eye MASSIVE
+                $qrcode = str_replace(
+                    '<g id="eye-bottom-left">',
+                    '<g id="eye-bottom-left" transform="scale(5) translate(-50,-50)">', // huge eye
+                    $qrcode
+                );
 
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
