@@ -27,9 +27,6 @@
 
 namespace App\Http\Controllers;
 
-use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
-use BaconQrCode\Renderer\Image\PhpImageBackEnd;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Account;
 use App\Brands;
 use App\Business;
@@ -67,6 +64,7 @@ use Stripe\Stripe;
 use Yajra\DataTables\Facades\DataTables;
 use App\Events\SellCreatedOrModified;
 use App\RewardHistory;
+use Milon\Barcode\DNS2D;
 
 
 class SellPosController extends Controller
@@ -2069,25 +2067,10 @@ class SellPosController extends Controller
                 if (!empty($request->input('check_location')) && $request->input('check_location') == true) {
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
-                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
-                // Generate SVG QR code
-                // Generate SVG QR code
-                $qrcode = QrCode::format('svg')
-                    ->size(100)
-                    ->margin(0)
-                    ->color(0, 0, 0)
-                    ->backgroundColor(255, 255, 255)
-                    ->eyeColor(0, 0, 0, 0)       // top-left black
-                    ->eyeColor(1, 0, 0, 0)       // top-right black
-                    ->eyeColor(2, 0, 50, 255)    // bottom-left blue
-                    ->generate($qrText);
 
-                // Make bottom-left eye MASSIVE
-                $qrcode = str_replace(
-                    '<g id="eye-bottom-left">',
-                    '<g id="eye-bottom-left" transform="scale(5) translate(-50,-50)">', // huge eye
-                    $qrcode
-                );
+                // Backend: generate QR
+                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id); // just the ID
+                $qrcode = (new DNS2D())->getBarcodePNG($qrText, 'QRCODE');
 
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
