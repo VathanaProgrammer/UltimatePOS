@@ -133,7 +133,7 @@ class DeliveryController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'Transaction not found'
+                    'msg' => 'Transaction_not_found'
                 ], 404);
             }
 
@@ -141,7 +141,7 @@ class DeliveryController extends Controller
             if ($transaction->delivery_person !== null && $transaction->delivery_person != '') {
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'Delivery person already assigned',
+                    'msg' => 'Delivery_person_already_assigned',
                     'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
                 ]);
             }
@@ -175,36 +175,61 @@ class DeliveryController extends Controller
 
     public function save(Request $request)
     {
-        $groupId = '-5083476540'; // your group ID
-        $invoice = addcslashes($request->invoice_no, '_*[]()~`>#+-=|{}.!/');
+        DB::beginTransaction(); // start transaction
+        try {
+            $groupId = '-5083476540'; // your Telegram group ID
+            $invoice = addcslashes($request->invoice_no, '_*[]()~`>#+-=|{}.!/');
 
-        $text =
-            "📦 *Drop Off Completed*\n\n" .
-            "👤 *Customer:* {$request->name}\n" .
-            "📞 *Phone:* {$request->phone}\n" .
-            "📍 *Address:* {$request->address_detail}\n" .
-            "🧭 Lat: {$request->latitude}\n" .
-            "# invoice_no: {$invoice}\n" .
-            "🧭 Lon: {$request->longitude}\n" .
-            "User id from token: " . auth()->user()->id . "\n" .
-            "User id from token: " . auth()->id();
+            $text =
+                "📦 *Drop Off Completed*\n\n" .
+                "👤 *Customer:* {$request->name}\n" .
+                "📞 *Phone:* {$request->phone}\n" .
+                "📍 *Address:* {$request->address_detail}\n" .
+                "🧭 Lat: {$request->latitude}\n" .
+                "# invoice_no: {$invoice}\n" .
+                "🧭 Lon: {$request->longitude}\n" .
+                "User id from token: " . auth()->user()->id . "\n" .
+                "User id from token: " . auth()->id();
 
-        $transaction = DB::table("transactions")
-            ->where("invoice_no", $request->invoice_no)
-            ->first();
+            // Fetch transaction
+            $transaction = DB::table("transactions")
+                ->where("invoice_no", $request->invoice_no)
+                ->first();
 
-        if (!$transaction) {
+            if (!$transaction) {
+                return [
+                    'success' => 0,
+                    'msg' => 'Transaction not found!'
+                ];
+            }
+
+            // Update delivery_person if empty/null and set shipping_status to delivered
+            DB::table('transactions')
+                ->where('invoice_no', $request->invoice_no)
+                ->update([
+                    'shipping_status' => 'delivered',
+                    'delivery_person' => $transaction->delivery_person ?: auth()->id(),
+                    'updated_at' => now()
+                ]);
+
+            
+            TelegramService::sendImagesToGroup($request->file('photos'));
+
+            DB::commit();
+
+            return [
+                'success' => 1,
+                'msg' => 'Saved, marked as delivered, and sent to Telegram',
+                'data' => $text
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error($e);
             return [
                 'success' => 0,
-                'msg' => 'Transaction not found!'
+                'msg' => 'Failed to save or update',
+                'error' => $e->getMessage()
             ];
         }
-        // ---- send message ----
-        //TelegramService::sendImagesToGroup($request->file('photos'));
-        return [
-            'success' => 1,
-            'msg' => 'Saved + sent to Telegram',
-            'data' => $text
-        ];
     }
 }
