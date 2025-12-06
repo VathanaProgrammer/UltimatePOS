@@ -27,6 +27,7 @@
 
 namespace App\Http\Controllers;
 
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Account;
 use App\Brands;
 use App\Business;
@@ -2068,10 +2069,15 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-                // Backend: generate QR
-                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id); // just the ID
-                $qrcode = (new DNS2D())->getBarcodePNG($qrText, 'QRCODE');
 
+                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
+
+                // Generate a styled QR code as SVG or PNG
+                $qrcode = QrCode::format('svg') // or 'png'
+                    ->size(200)        // width & height
+                    ->color(0, 0, 255) // blue instead of black
+                    ->backgroundColor(255, 255, 255) // white background
+                    ->generate($qrText);
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
