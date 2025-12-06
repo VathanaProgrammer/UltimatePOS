@@ -62,6 +62,24 @@ class DeliveryController extends Controller
                 ]);
             }
 
+            // --- CHECK STATUS ---
+            $status = strtolower($transaction->shipping_status ?? '');
+
+            if ($status === 'delivered') {
+                return response()->json([
+                    'success' => 0,
+                    'msg' => 'This order is already delivered.'
+                ]);
+            }
+
+            if ($status === 'cancelled') {
+                return response()->json([
+                    'success' => 0,
+                    'msg' => 'This order is cancelled.'
+                ]);
+            }
+            // --------------------
+
             $contact = DB::table('contacts')
                 ->where('id', $transaction->contact_id)
                 ->first();
@@ -86,6 +104,7 @@ class DeliveryController extends Controller
             ]);
         }
     }
+
 
     public function assignDeliveryPerson(Request $request)
     {
@@ -162,9 +181,19 @@ class DeliveryController extends Controller
             "🧭 Lat: {$request->latitude}\n" .
             "# invoice_no: {$invoice}\n" .
             "🧭 Lon: {$request->longitude}\n";
-        
+
+        $transaction = DB::table("transactions")
+            ->where("invoice_no", $request->invoice_no)
+            ->first();
+
+        if(!$transaction) {
+            return [
+                'success' => 0,
+                'msg' => 'Transaction not found!'
+            ];
+        } 
         // ---- send message ----
-        TelegramService::sendImagesToGroup($request->file('photos'));
+        //TelegramService::sendImagesToGroup($request->file('photos'));
         return [
             'success' => 1,
             'msg' => 'Saved + sent to Telegram',

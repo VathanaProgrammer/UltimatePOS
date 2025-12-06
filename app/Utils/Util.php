@@ -1259,6 +1259,7 @@ class Util
         $statuses = [
             'ordered' => __('lang_v1.ordered'),
             'packed' => __('lang_v1.packed'),
+            'pick-up' => ('Pick-Up'),
             'shipped' => __('lang_v1.shipped'),
             'delivered' => __('lang_v1.delivered'),
             'cancelled' => __('restaurant.cancelled'),
