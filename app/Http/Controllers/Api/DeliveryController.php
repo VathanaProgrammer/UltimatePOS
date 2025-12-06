@@ -18,6 +18,8 @@ class DeliveryController extends Controller
     public function getOrders()
     {
         try {
+            $deliveryId = auth()->id(); // current delivery user ID
+
             $orders = DB::table('transactions as t')
                 ->leftJoin('contacts as c', 'c.id', '=', 't.contact_id')
                 ->select(
@@ -28,6 +30,8 @@ class DeliveryController extends Controller
                     't.final_total as cod_amount',
                     't.shipping_status'
                 )
+                ->where('t.delivery_person', $deliveryId) // only orders for this delivery person
+                ->whereNotIn('t.shipping_status', ['cancelled', 'delivered']) // exclude
                 ->orderBy('t.transaction_date', 'asc')
                 ->get();
 
@@ -43,6 +47,7 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
+
 
     public function decryptQr(Request $request)
     {
@@ -180,7 +185,7 @@ class DeliveryController extends Controller
             "📍 *Address:* {$request->address_detail}\n" .
             "🧭 Lat: {$request->latitude}\n" .
             "# invoice_no: {$invoice}\n" .
-            "🧭 Lon: {$request->longitude}\n".
+            "🧭 Lon: {$request->longitude}\n" .
             "User id from token: " . auth()->user()->id . "\n" .
             "User id from token: " . auth()->id();
 
@@ -188,12 +193,12 @@ class DeliveryController extends Controller
             ->where("invoice_no", $request->invoice_no)
             ->first();
 
-        if(!$transaction) {
+        if (!$transaction) {
             return [
                 'success' => 0,
                 'msg' => 'Transaction not found!'
             ];
-        } 
+        }
         // ---- send message ----
         //TelegramService::sendImagesToGroup($request->file('photos'));
         return [
