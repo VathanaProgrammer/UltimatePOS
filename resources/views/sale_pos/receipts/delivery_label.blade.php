@@ -5,7 +5,7 @@
     <title>SOB - {{ $transaction->invoice_no }}</title>
     <meta charset="utf-8">
     <!-- Optional Bootstrap for styling -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -27,11 +27,13 @@
             margin-bottom: 4px;
         }
 
-        .company-info, .customer-info {
+        .company-info,
+        .customer-info {
             margin-bottom: 4px;
         }
 
-        .company-info div, .customer-info .row {
+        .company-info div,
+        .customer-info .row {
             margin-bottom: 1px;
         }
 
@@ -49,9 +51,8 @@
             Mobile: {{ $localtion->mobile ?? '0123456789' }}<br>
             Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
         </div>
-
         <div class="qr-code">
-            {!! QrCode::size(400)->generate(\Illuminate\Support\Facades\Crypt::encryptString($transaction->id)) !!}
+            {!! QrCode::size(500)->errorCorrection('L')->generate(\Illuminate\Support\Facades\Crypt::encryptString($transaction->id)) !!}
         </div>
 
         <div class="customer-info">
