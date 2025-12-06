@@ -2070,13 +2070,21 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
-
-                $qrcode = QrCode::size(120)
+                // Generate SVG QR code
+                $qrcode = QrCode::format('svg')
+                    ->size(120)
                     ->margin(0)
-                    ->color(0, 0, 0)                 // black
-                    ->backgroundColor(255, 255, 255) // white
-                    ->eyeColor(2, 0, 50, 255)        // only bottom-left eye colored
+                    ->color(0, 0, 0)
+                    ->backgroundColor(255, 255, 255)
+                    ->eyeColor(2, 0, 50, 255) // bottom-left eye colored
                     ->generate($qrText);
+
+                // Make bottom-left eye bigger by modifying the SVG
+                $qrcode = str_replace(
+                    '<g id="eye-bottom-left">',
+                    '<g id="eye-bottom-left" transform="scale(1.8) translate(-12,-12)">', // bigger eye
+                    $qrcode
+                );
 
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
