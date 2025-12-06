@@ -42,7 +42,7 @@
         }
 
         .barcode-box img {
-            width: 50px; /* smaller barcode */
+            width: 70px; /* smaller barcode */
             height: auto;
         }
 
