@@ -70,3 +70,7 @@ Route::middleware(['jwt.delivery'])->group(function () {
     Route::post('/delivery/confirm-delivery', [DeliveryController::class, 'assignDeliveryPerson']);
     Route::post('/delivery/save-drop-off', [DeliveryController::class, 'save']);
 });
+
+Route::get('delivery/check-session', function () {
+    return response()->json(['alive' => true]);
+})->middleware('jwt.delivery'); // same middleware
