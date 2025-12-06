@@ -27,10 +27,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Crypt;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Account;
 use App\Brands;
 use App\Business;
@@ -2072,19 +2068,18 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-                $encryptedId = Crypt::encryptString($transaction->id);
+                // Backend: generate QR
+                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id); // just the ID
+                $qrcode = base64_encode(
+                    \Illuminate\Support\Facades\Crypt::format('png')
+                        ->size(600)
+                        ->errorCorrection('L')
+                        ->margin(0)
+                        ->generate($qrText, [
+                            'version' => 4
+                        ])
+                );
 
-                $qrcode =
-                    QrCode::format('svg')       // SVG allows styling
-                        ->size(400)             // big QR
-                        ->margin(0)             // no extra margin
-                        ->errorCorrection('L')  // low density → fewer points inside
-                        ->style('square')       // less crowded than 'dot'
-                        ->eyeColor(0, 0, 0, 255)  // top-left
-                        ->eyeColor(1, 0, 0, 255)  // top-right
-                        ->eyeColor(2, 0, 50, 255) // bottom-left
-                        ->generate($encryptedId)
-                ;
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
