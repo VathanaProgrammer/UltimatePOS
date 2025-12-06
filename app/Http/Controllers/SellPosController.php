@@ -2073,8 +2073,8 @@ class SellPosController extends Controller
                 // Generate SVG QR code
                 // Generate SVG QR code
                 $qrcode = QrCode::format('svg')
-                    ->size(120)
-                    ->margin(30)
+                    ->size(150)
+                    ->margin(0)
                     ->color(0, 0, 0)
                     ->backgroundColor(255, 255, 255)
                     ->eyeColor(0, 0, 0, 0)       // top-left black
