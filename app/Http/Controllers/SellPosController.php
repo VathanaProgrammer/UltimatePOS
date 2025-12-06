@@ -26,7 +26,10 @@
  */
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Account;
 use App\Brands;
 use App\Business;
@@ -2068,9 +2071,19 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-                // Backend: generate QR
-                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id); // just the ID
-                $qrcode = (new DNS2D())->getBarcodePNG($qrText, 'QRCODE');
+                // Generate a short token
+                $token = Str::random(8);
+
+                // Store encrypted transaction ID in cache for lookup
+                Cache::put('qr_' . $token, Crypt::encryptString($transaction->id), now()->addHours(1));
+
+                // Generate a clean, big QR with the short token
+                $qrcode = base64_encode(
+                    QrCode::format('png')
+                        ->size(400)           // big QR
+                        ->errorCorrection('L') // low density
+                        ->generate(url('/qr/' . $token)) // encode URL with token
+                );
 
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(

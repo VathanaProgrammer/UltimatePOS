@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\TelegramBotWebhookController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DeliveryAuthController;
 use App\Http\Controllers\Api\DeliveryController;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -70,6 +72,14 @@ Route::middleware(['jwt.delivery'])->group(function () {
     Route::post('/delivery/confirm-delivery', [DeliveryController::class, 'assignDeliveryPerson']);
     Route::post('/delivery/save-drop-off', [DeliveryController::class, 'save']);
     Route::post('/delivery/save-comment', [DeliveryController::class, 'save_comment']);
+
+    Route::get('/qr/{token}', function ($token) {
+        $encryptedId = Cache::get('qr_' . $token);
+        abort_if(!$encryptedId, 404);
+        $transactionId = Crypt::decryptString($encryptedId);
+        // Redirect or show transaction info
+        return redirect()->route('transaction.show', $transactionId);
+    });
 });
 
 Route::get('delivery/check-session', function () {

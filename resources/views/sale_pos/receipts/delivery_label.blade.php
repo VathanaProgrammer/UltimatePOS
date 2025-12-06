@@ -51,8 +51,8 @@
             Mobile: {{ $localtion->mobile ?? '0123456789' }}<br>
             Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
         </div>
-        <div class="qr-code">
-            {!! QrCode::size(500)->errorCorrection('L')->generate(\Illuminate\Support\Facades\Crypt::encryptString($transaction->id)) !!}
+        <div class="qr-code" style="text-align:center; margin-top:20px;">
+            <img src="data:image/png;base64,{{ $qr }}" alt="QR Code" />
         </div>
 
         <div class="customer-info">
