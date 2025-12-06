@@ -34,19 +34,6 @@
         .customer-info .row {
             margin-bottom: 1px;
         }
-
-        .qr-code {
-            text-align: center;
-            margin-top: 6px;
-            border-top: 1px solid #000;
-            padding-top: 4px;
-        }
-
-        .qr-code svg,
-        .qr-code img {
-            width: 80px;
-            height: 80px;
-        }
     </style>
 </head>
 
