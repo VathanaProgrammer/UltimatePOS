@@ -69,6 +69,7 @@ Route::middleware(['jwt.delivery'])->group(function () {
     Route::post('/delivery/decrypt-qr', [DeliveryController::class, 'decryptQr']);
     Route::post('/delivery/confirm-delivery', [DeliveryController::class, 'assignDeliveryPerson']);
     Route::post('/delivery/save-drop-off', [DeliveryController::class, 'save']);
+    Route::post('/delivery/save-comment', [DeliveryController::class, 'save_comment']);
 });
 
 Route::get('delivery/check-session', function () {

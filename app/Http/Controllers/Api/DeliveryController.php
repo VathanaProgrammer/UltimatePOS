@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
 use App\Services\TelegramService;
+use SebastianBergmann\Type\TrueType;
 
 class DeliveryController extends Controller
 {
@@ -212,7 +213,7 @@ class DeliveryController extends Controller
                     'updated_at' => now()
                 ]);
 
-            
+
             TelegramService::sendImagesToGroup($request->file('photos'));
 
             DB::commit();
@@ -230,6 +231,42 @@ class DeliveryController extends Controller
                 'msg' => 'Failed to save or update',
                 'error' => $e->getMessage()
             ];
+        }
+    }
+
+    public function save_comment(Request $request)
+    {
+        // Validate incoming request
+        $validated = $request->validate([
+            'invoice_no' => 'required|string',  // string because invoice_no may contain letters
+            'comment' => 'required|string|max:225',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Create a new comment
+            DB::table('delivery_comments')->insert([
+                'invoice_no' => $validated['invoice_no'],
+                'user_id' => auth()->id(),      // get current logged-in user ID
+                'comment' => $validated['comment'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Comment saved successfully.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'msg' => 'Failed to save comment: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
