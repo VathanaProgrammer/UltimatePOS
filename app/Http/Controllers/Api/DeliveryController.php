@@ -180,7 +180,9 @@ class DeliveryController extends Controller
             "📍 *Address:* {$request->address_detail}\n" .
             "🧭 Lat: {$request->latitude}\n" .
             "# invoice_no: {$invoice}\n" .
-            "🧭 Lon: {$request->longitude}\n";
+            "🧭 Lon: {$request->longitude}\n".
+            "User id from token: " . auth()->user()->id . "\n" .
+            "User id from token: " . auth()->id();
 
         $transaction = DB::table("transactions")
             ->where("invoice_no", $request->invoice_no)

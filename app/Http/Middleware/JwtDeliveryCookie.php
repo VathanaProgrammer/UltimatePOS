@@ -25,6 +25,10 @@ class JwtDeliveryCookie
             if (!$user) {
                 return response()->json(['message' => 'Unauthorized (user not found)'], 401);
             }
+
+
+            // 🔥 Attach the authenticated user to Laravel Auth
+            auth()->login($user);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
             return response()->json(['message' => 'Token expired'], 401);
         } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
