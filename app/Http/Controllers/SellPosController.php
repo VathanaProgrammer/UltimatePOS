@@ -2072,15 +2072,16 @@ class SellPosController extends Controller
 
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
 
-                $qrcode = QrCode::format('svg')  // <-- use SVG
-                    ->size(200)
-                    ->color(0, 0, 0)
-                    ->backgroundColor(255, 255, 255)
+                // Generate a fancy SVG QR code
+                $qrcode = QrCode::size(120)               // bigger QR
+                    ->margin(0)                           // remove extra margin
+                    ->color(0, 50, 255)                   // nice blue color
+                    ->backgroundColor(255, 255, 255, 0)   // transparent background
+                    ->eyeColor(0, 255, 0, 0)              // top-left corner "eye" color green
+                    ->eyeColor(1, 255, 0, 0)              // top-right eye
+                    ->eyeColor(2, 255, 0, 0)              // bottom-left eye
+                    ->style('dots')                        // change modules to dots
                     ->generate($qrText);
-
-                // Now in Blade, just output raw SVG
-
-
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
