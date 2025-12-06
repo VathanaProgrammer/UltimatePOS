@@ -2071,13 +2071,11 @@ class SellPosController extends Controller
                 // Backend: generate QR
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id); // just the ID
                 $qrcode = base64_encode(
-                    \Illuminate\Support\Facades\Crypt::format('png')
+                    \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
                         ->size(600)
                         ->errorCorrection('L')
                         ->margin(0)
-                        ->generate($qrText, [
-                            'version' => 4
-                        ])
+                        ->generate($qrText, ['version' => 4])
                 );
 
                 // Render delivery label Blade
