@@ -151,7 +151,7 @@ class DeliveryController extends Controller
                 ->where('invoice_no', $transactionId)
                 ->update([
                     'delivery_person' => $deliveryPersonId,
-                    'shipping_status' => 'shipped',
+                    'shipping_status' => 'pick-up',
                     'updated_at' => now()
                 ]);
 
