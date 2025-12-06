@@ -52,7 +52,7 @@
             Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
         </div>
         <div class="qr-code" style="text-align:center; margin-top:20px;">
-            <img src="data:image/png;base64,{{ $qr }}" alt="QR Code" />
+            <img src="data:image/png;base64,{{ $qrcode }}" alt="QR Code" />
         </div>
 
         <div class="customer-info">
