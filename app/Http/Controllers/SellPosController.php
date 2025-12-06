@@ -2071,18 +2071,21 @@ class SellPosController extends Controller
                 }
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
                 // Generate SVG QR code
-                $qrcode = QrCode::format('svg')
+                // Generate SVG QR code
+                $svg = QrCode::format('svg')
                     ->size(120)
                     ->margin(0)
                     ->color(0, 0, 0)
                     ->backgroundColor(255, 255, 255)
-                    ->eyeColor(2, 0, 50, 255) // bottom-left eye colored
+                    ->eyeColor(0, 0, 0, 0)       // top-left black
+                    ->eyeColor(1, 0, 0, 0)       // top-right black
+                    ->eyeColor(2, 0, 50, 255)    // bottom-left blue
                     ->generate($qrText);
 
                 // Make bottom-left eye bigger by modifying the SVG
                 $qrcode = str_replace(
                     '<g id="eye-bottom-left">',
-                    '<g id="eye-bottom-left" transform="scale(3) translate(-30,-30)">', // bigger eye
+                    '<g id="eye-bottom-left" transform="scale(5) translate(-50,-50)">', // bigger eye
                     $qrcode
                 );
 
