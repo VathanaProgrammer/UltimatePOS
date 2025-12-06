@@ -225,5 +225,6 @@ return [
         'Redis' => Illuminate\Support\Facades\Redis::class,
         'Menu' => Nwidart\Menus\Facades\Menu::class,
         'Pesapal' => Knox\Pesapal\Facades\Pesapal::class,
+        'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
     ])->toArray(),
 ];
