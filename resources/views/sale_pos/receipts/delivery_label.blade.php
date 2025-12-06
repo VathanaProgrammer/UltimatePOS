@@ -6,21 +6,24 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px; /* smaller font */
+            font-size: 10px;
+            /* smaller font */
             margin: 0;
             padding: 0;
         }
 
         .label {
             padding: 5px;
-            width: 150px; /* narrower label */
+            width: 150px;
+            /* narrower label */
             margin: 0 auto;
         }
 
         .header {
             font-weight: bold;
             text-align: center;
-            font-size: 12px; /* smaller header */
+            font-size: 12px;
+            /* smaller header */
             margin-bottom: 4px;
         }
 
@@ -42,7 +45,8 @@
         }
 
         .barcode-box img {
-            width: 50px; /* smaller barcode */
+            width: 50px;
+            /* smaller barcode */
             height: auto;
         }
 
@@ -67,9 +71,7 @@
             </div>
             <div class="barcode-box">
                 @if (!empty($qrcode))
-                    <img src="data:image/png;base64,{{ $qrcode }}" alt="barcode" />
-                    <div style="text-align:right; font-size: 9px; margin-top: 1px;">
-                    </div>
+                    {!! $qrcode !!}
                 @else
                     <span>Loading…</span>
                 @endif

@@ -27,6 +27,8 @@
 
 namespace App\Http\Controllers;
 
+use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
+use BaconQrCode\Renderer\Image\PhpImageBackEnd;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Account;
 use App\Brands;
@@ -65,7 +67,6 @@ use Stripe\Stripe;
 use Yajra\DataTables\Facades\DataTables;
 use App\Events\SellCreatedOrModified;
 use App\RewardHistory;
-use Milon\Barcode\DNS2D;
 
 
 class SellPosController extends Controller
@@ -2069,15 +2070,17 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
 
-                // Generate a styled QR code as SVG or PNG
-                $qrcode = QrCode::format('svg') // or 'png'
-                    ->size(200)        // width & height
-                    ->color(0, 0, 255) // blue instead of black
-                    ->backgroundColor(255, 255, 255) // white background
+                $qrcode = QrCode::format('svg')  // <-- use SVG
+                    ->size(200)
+                    ->color(0, 0, 0)
+                    ->backgroundColor(255, 255, 255)
                     ->generate($qrText);
+
+                // Now in Blade, just output raw SVG
+
+
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
