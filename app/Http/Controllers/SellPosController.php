@@ -2069,19 +2069,18 @@ class SellPosController extends Controller
                 if (!empty($request->input('check_location')) && $request->input('check_location') == true) {
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
-
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
 
-                // Generate a fancy SVG QR code
-                $qrcode = QrCode::size(120)               // bigger QR
-                    ->margin(0)                           // remove extra margin
-                    ->color(0, 50, 255)                   // nice blue color
-                    ->backgroundColor(255, 255, 255, 0)   // transparent background
-                    ->eyeColor(0, 255, 0, 0)              // top-left corner "eye" color green
-                    ->eyeColor(1, 255, 0, 0)              // top-right eye
-                    ->eyeColor(2, 255, 0, 0)              // bottom-left eye
-                    ->style('dots')                        // change modules to dots
+                $qrcode = QrCode::size(120)                   // QR size
+                    ->margin(0)                               // remove extra margin
+                    ->color(0, 50, 255)                       // blue modules
+                    ->backgroundColor(255, 255, 255, 0)       // transparent background
+                    ->eyeColor(0, 255, 0, 0)                  // top-left eye green
+                    ->eyeColor(1, 255, 0, 0)                  // top-right eye green
+                    ->eyeColor(2, 255, 0, 0)                  // bottom-left eye green
+                    ->style('dot')                             // correct style name
                     ->generate($qrText);
+
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
