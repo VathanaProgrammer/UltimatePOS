@@ -2074,7 +2074,7 @@ class SellPosController extends Controller
 
                 $encryptedId = Crypt::encryptString($transaction->id);
 
-                $qrcode = base64_encode(
+                $qrcode =
                     QrCode::format('svg')       // SVG allows styling
                         ->size(400)             // big QR
                         ->margin(0)             // no extra margin
@@ -2084,7 +2084,7 @@ class SellPosController extends Controller
                         ->eyeColor(1, 0, 0, 255)  // top-right
                         ->eyeColor(2, 0, 50, 255) // bottom-left
                         ->generate($encryptedId)
-                );
+                ;
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
