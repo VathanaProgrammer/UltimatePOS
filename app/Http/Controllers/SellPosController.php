@@ -2082,7 +2082,7 @@ class SellPosController extends Controller
                 // Make bottom-left eye bigger by modifying the SVG
                 $qrcode = str_replace(
                     '<g id="eye-bottom-left">',
-                    '<g id="eye-bottom-left" transform="scale(1.8) translate(-12,-12)">', // bigger eye
+                    '<g id="eye-bottom-left" transform="scale(3) translate(-30,-30)">', // bigger eye
                     $qrcode
                 );
 
