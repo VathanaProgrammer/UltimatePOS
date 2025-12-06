@@ -2071,11 +2071,12 @@ class SellPosController extends Controller
                 }
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
 
-                $qrcode = QrCode::size(200)               // QR size
-                    ->margin(0)                            // remove extra margin
-                    ->color(0, 0, 0)                       // black modules
-                    ->backgroundColor(255, 255, 255)       // white background
-                    ->eyeColor(2, 0, 50, 255)              // only bottom-left eye blue
+                $qrcode = QrCode::size(120)
+                    ->margin(0)
+                    ->color(0, 0, 0)                      // black modules
+                    ->backgroundColor(255, 255, 255)      // white background
+                    ->eyeColor(2, 0, 50, 255)             // bottom-left eye blue
+                    ->eyeRadius(2, 0.8)                    // make bottom-left eye bigger
                     ->generate($qrText);
 
                 // Render delivery label Blade
