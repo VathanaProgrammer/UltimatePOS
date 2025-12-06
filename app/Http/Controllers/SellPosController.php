@@ -2071,7 +2071,7 @@ class SellPosController extends Controller
                 }
                 $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id);
 
-                $qrcode = QrCode::size(120)               // QR size
+                $qrcode = QrCode::size(200)               // QR size
                     ->margin(0)                            // remove extra margin
                     ->color(0, 0, 0)                       // black modules
                     ->backgroundColor(255, 255, 255)       // white background
