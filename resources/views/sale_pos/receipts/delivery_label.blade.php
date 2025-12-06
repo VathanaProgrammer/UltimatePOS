@@ -3,80 +3,57 @@
 
 <head>
     <title>SOB - {{ $transaction->invoice_no }}</title>
+    <meta charset="utf-8">
+    <!-- Optional Bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px; /* smaller font */
+            font-size: 10px;
             margin: 0;
             padding: 0;
         }
 
         .label {
             padding: 5px;
-            width: 150px; /* narrower label */
+            width: 250px;
             margin: 0 auto;
         }
 
         .header {
             font-weight: bold;
             text-align: center;
-            font-size: 12px; /* smaller header */
+            font-size: 12px;
             margin-bottom: 4px;
         }
 
-        .top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 5px;
-            border-bottom: 1px solid #000;
+        .company-info, .customer-info {
+            margin-bottom: 4px;
         }
 
-        .company-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .company-info div {
+        .company-info div, .customer-info .row {
             margin-bottom: 1px;
         }
 
-        .barcode-box img {
-            width: 100px; /* smaller barcode */
-            height: auto;
-        }
-
-        .customer-info {
-            margin-top: 4px;
-        }
-
-        .customer-info .row {
-            margin-bottom: 1px;
+        .qr-code {
+            text-align: center;
+            margin: 10px 0;
         }
     </style>
 </head>
 
 <body>
     <div class="label">
-        <!-- Top row: company info + barcode -->
-        <div class="top-row">
-            <div class="company-info">
-                <div><strong>Sender:</strong> SOB</div>
-                <div><strong>Mobile:</strong> {{ $localtion->mobile ?? '0123456789' }}</div>
-                <div><strong>Date:</strong> {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}</div>
-            </div>
-            <div class="barcode-box">
-                @if (!empty($qrcode))
-                    <img src="data:image/png;base64,{{ $qrcode }}" alt="barcode" />
-                    <div style="text-align:right; font-size: 9px; margin-top: 1px;">
-                    </div>
-                @else
-                    <span>Loading…</span>
-                @endif
-            </div>
+        <div class="header">
+            <strong>Sender: SOB</strong><br>
+            Mobile: {{ $localtion->mobile ?? '0123456789' }}<br>
+            Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
         </div>
 
-        <!-- Customer info at bottom -->
+        <div class="qr-code">
+            {!! QrCode::size(400)->generate(\Illuminate\Support\Facades\Crypt::encryptString($transaction->id)) !!}
+        </div>
+
         <div class="customer-info">
             <div class="row"><strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}</div>
             <div class="row"><strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}</div>
