@@ -4,8 +4,7 @@
 <head>
     <title>SOB - {{ $transaction->invoice_no }}</title>
     <meta charset="utf-8">
-    <!-- Optional Bootstrap for styling -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,47 +19,58 @@
             margin: 0 auto;
         }
 
-        .header {
-            font-weight: bold;
-            text-align: center;
-            font-size: 12px;
-            margin-bottom: 4px;
+        /* Top row: sender info + QR on right */
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
         }
 
-        .company-info,
+        .sender-info {
+            font-size: 11px;
+            line-height: 1.2;
+            max-width: 150px;
+        }
+
+        .qr-box img {
+            width: 60px;
+            height: 60px;
+        }
+
         .customer-info {
-            margin-bottom: 4px;
+            margin-top: 10px;
+            line-height: 1.3;
         }
 
-        .company-info div,
-        .customer-info .row {
-            margin-bottom: 1px;
-        }
-
-        .qr-code {
-            text-align: center;
-            margin: 10px 0;
+        .customer-info div {
+            margin-bottom: 2px;
         }
     </style>
 </head>
 
 <body>
     <div class="label">
-        <div class="header">
-            <strong>Sender: SOB</strong><br>
-            Mobile: {{ $localtion->mobile ?? '0123456789' }}<br>
-            Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
-        </div>
-        <div class="qr-code" style="text-align:center; margin-top:20px;">
-            <img src="data:image/png;base64,{{ $qrcode }}" alt="QR Code" style="width:50px; height:50px;">
 
+        <!-- Top row -->
+        <div class="top-row">
+            <div class="sender-info">
+                <strong>Sender: SOB</strong><br>
+                Mobile: {{ $localtion->mobile ?? '0123456789' }}<br>
+                Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
+            </div>
+
+            <div class="qr-box">
+                <img src="data:image/png;base64,{{ $qrcode }}" alt="QR Code">
+            </div>
         </div>
 
+        <!-- Receiver info section -->
         <div class="customer-info">
-            <div class="row"><strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}</div>
-            <div class="row"><strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}</div>
-            <div class="row"><strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}</div>
+            <div><strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}</div>
+            <div><strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}</div>
+            <div><strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}</div>
         </div>
+
     </div>
 </body>
 
