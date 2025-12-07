@@ -4,22 +4,20 @@
 <head>
     <title>SOB - {{ $transaction->invoice_no }}</title>
     <meta charset="utf-8">
-
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-size: 7px;
             margin: 0;
             padding: 0;
         }
 
         .label {
-            padding: 5px;
-            width: 250px;
-            margin: 0 auto;
+            width: 100px; /* SUPER SMALL PAPER */
+            padding: 2px;
         }
 
-        /* Top row: sender info + QR on right */
+        /* Top: sender info on left, QR on right */
         .top-row {
             display: flex;
             justify-content: space-between;
@@ -27,23 +25,18 @@
         }
 
         .sender-info {
-            font-size: 11px;
-            line-height: 1.2;
-            max-width: 150px;
+            width: 60px; /* leave room for QR */
+            line-height: 1.1;
         }
 
         .qr-box img {
-            width: 60px;
-            height: 60px;
+            width: 35px;
+            height: 35px;
         }
 
-        .customer-info {
-            margin-top: 10px;
-            line-height: 1.3;
-        }
-
-        .customer-info div {
-            margin-bottom: 2px;
+        .receiver-info {
+            margin-top: 4px;
+            line-height: 1.1;
         }
     </style>
 </head>
@@ -51,24 +44,24 @@
 <body>
     <div class="label">
 
-        <!-- Top row -->
+        <!-- Top Section -->
         <div class="top-row">
             <div class="sender-info">
-                <strong>Sender: SOB</strong><br>
+                <strong>SOB</strong><br>
                 Mobile: {{ $localtion->mobile ?? '0123456789' }}<br>
-                Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
+                {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
             </div>
 
             <div class="qr-box">
-                <img src="data:image/png;base64,{{ $qrcode }}" alt="QR Code">
+                <img src="data:image/png;base64,{{ $qrcode }}" alt="QR">
             </div>
         </div>
 
-        <!-- Receiver info section -->
-        <div class="customer-info">
-            <div><strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}</div>
-            <div><strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}</div>
-            <div><strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}</div>
+        <!-- Bottom: Receiver -->
+        <div class="receiver-info">
+            <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}<br>
+            <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}<br>
+            <strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}
         </div>
 
     </div>
