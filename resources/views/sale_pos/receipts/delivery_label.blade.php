@@ -8,8 +8,6 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 7px;
-            margin: 0;
-            padding: 0;
         }
 
         .label {
