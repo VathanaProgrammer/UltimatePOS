@@ -55,7 +55,7 @@ class DeliveryController extends Controller
         $qrText = $request->input('qr_text');
 
         try {
-            $transaction_id = Crypt::decryptString($qrText);
+            $transaction_id = (int) $qrText;
 
             $transaction = DB::table('transactions')
                 ->where('id', $transaction_id)
