@@ -149,46 +149,38 @@ class TelegramService
         $token = env('TELEGRAM_BOT_TOKEN');
         $groupChatId = '-5083476540';
 
-        // Filter only real uploaded images
-        $images = [];
-
-        foreach ($files as $file) {
-            if ($file instanceof \Illuminate\Http\UploadedFile) {
-                $ext = strtolower($file->getClientOriginalExtension());
-
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                    $images[] = [
-                        'path' => $file->getRealPath(),
-                        'name' => $file->getClientOriginalName()
-                    ];
-                }
-            }
-        }
-
-        if (empty($images)) {
+        if (empty($files)) {
             Log::warning("TelegramService: No images to send");
             return false;
         }
 
-        // ----- Build media group -----
         $media = [];
         $multipart = [];
 
-        foreach ($images as $img) {
+        foreach ($files as $img) {
+            // Support both UploadedFile and plain path array
+            if ($img instanceof \Illuminate\Http\UploadedFile) {
+                $path = $img->getRealPath();
+                $name = $img->getClientOriginalName();
+            } elseif (is_array($img) && isset($img['path'], $img['name'])) {
+                $path = $img['path'];
+                $name = $img['name'];
+            } else {
+                continue;
+            }
+
             $media[] = [
                 'type' => 'photo',
-                'media' => 'attach://' . $img['name']
+                'media' => 'attach://' . $name
             ];
 
-            // Attach image file
             $multipart[] = [
-                'name' => $img['name'],
-                'contents' => fopen($img['path'], 'r'),
-                'filename' => $img['name']
+                'name' => $name,
+                'contents' => fopen($path, 'r'),
+                'filename' => $name
             ];
         }
 
-        // Chat ID + Media group JSON
         $multipart[] = [
             'name' => 'chat_id',
             'contents' => $groupChatId
@@ -199,7 +191,6 @@ class TelegramService
             'contents' => json_encode($media, JSON_UNESCAPED_UNICODE)
         ];
 
-        // ----- SEND TO TELEGRAM -----
         $res = Http::withoutVerifying()
             ->asMultipart()
             ->post("https://api.telegram.org/bot{$token}/sendMediaGroup", $multipart);

@@ -217,6 +217,7 @@ class DeliveryController extends Controller
                 'updated_at' => now(),
             ]);
 
+            // Insert each photo into c_photos
             if ($request->hasFile('photos')) {
                 $photoPaths = [];
                 foreach ($request->file('photos') as $photo) {
@@ -244,7 +245,7 @@ class DeliveryController extends Controller
                 }
 
                 // Send all photos to Telegram
-                \App\Services\TelegramService::sendImagesToGroup($photoPaths);
+                TelegramService::sendImagesToGroup($photoPaths);
             }
 
 
@@ -256,9 +257,6 @@ class DeliveryController extends Controller
                     'delivery_person' => $transaction->delivery_person ?: auth()->id(),
                     'updated_at' => now()
                 ]);
-
-            // Send images to Telegram
-
 
             DB::commit();
 
