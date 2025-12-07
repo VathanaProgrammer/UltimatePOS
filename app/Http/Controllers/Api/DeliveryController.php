@@ -100,14 +100,14 @@ class DeliveryController extends Controller
             if ($status === 'delivered') {
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'This_order_is_already_delivered.'
+                    'msg' => 'This_order_is_already_delivered'
                 ]);
             }
 
             if ($status === 'cancelled') {
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'This_order_is_cancelled.'
+                    'msg' => 'This_order_is_cancelled'
                 ]);
             }
             // --------------------
