@@ -90,7 +90,7 @@ class DeliveryController extends Controller
             if (!$transaction) {
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'Transaction not found'
+                    'msg' => 'Transaction_not_found'
                 ]);
             }
 
@@ -100,14 +100,14 @@ class DeliveryController extends Controller
             if ($status === 'delivered') {
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'This order is already delivered.'
+                    'msg' => 'This_order_is_already_delivered.'
                 ]);
             }
 
             if ($status === 'cancelled') {
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'This order is cancelled.'
+                    'msg' => 'This_order_is_cancelled.'
                 ]);
             }
             // --------------------
@@ -132,7 +132,7 @@ class DeliveryController extends Controller
             \Log::error($e);
             return response()->json([
                 'success' => 0,
-                'msg' => 'Invalid QR code'
+                'msg' => 'Invalid_QR_code'
             ]);
         }
     }
