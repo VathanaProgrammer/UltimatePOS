@@ -217,19 +217,23 @@ class DeliveryController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Make sure the folder exists
-            if (!Storage::disk('public')->exists('dropoff_photos')) {
-                Storage::disk('public')->makeDirectory('dropoff_photos');
-            }
-
-
             // Insert each photo into c_photos
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('dropoff_photos', 'public'); // adjust storage disk
+                    // Ensure the folder exists in public/
+                    $destinationPath = public_path('dropoff_photos');
+                    if (!file_exists($destinationPath)) {
+                        mkdir($destinationPath, 0775, true);
+                    }
+
+                    // Store the photo in public/dropoff_photos
+                    $filename = time() . '_' . $photo->getClientOriginalName();
+                    $photo->move($destinationPath, $filename);
+
+                    // Save the path in DB
                     DB::table('c_photos')->insert([
                         'customer_id' => $customerId,
-                        'image_url' => $path,
+                        'image_url' => 'dropoff_photos/' . $filename,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
