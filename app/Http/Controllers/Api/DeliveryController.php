@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
 use App\Services\TelegramService;
 use SebastianBergmann\Type\TrueType;
+use Illuminate\Support\Facades\Storage;
 
 class DeliveryController extends Controller
 {
@@ -215,6 +216,12 @@ class DeliveryController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // Make sure the folder exists
+            if (!Storage::disk('public')->exists('dropoff_photos')) {
+                Storage::disk('public')->makeDirectory('dropoff_photos');
+            }
+
 
             // Insert each photo into c_photos
             if ($request->hasFile('photos')) {
