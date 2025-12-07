@@ -27,6 +27,9 @@
 
 namespace App\Http\Controllers;
 
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevel;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
 use App\Account;
 use App\Brands;
 use App\Business;
@@ -2068,16 +2071,18 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-                // Backend: generate QR
-                $qrText = \Illuminate\Support\Facades\Crypt::encryptString($transaction->id); // just the ID
+                // Clean, simple QR using SimpleSoftwareIO\QrCode
+                $qrText = (string) $transaction->id;   // <-- no encryption, clean short QR
+
                 $qrcode = base64_encode(
                     \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
-                        ->size(600)
-                        ->errorCorrection('L')
-                        ->margin(0)
-                        ->generate($qrText, ['version' => 4])
+                        ->size(600)                    // big clear QR
+                        ->errorCorrection('L')         // low EC for less density
+                        ->margin(0)                    // remove border if you want
+                        ->generate($qrText, [
+                            'version' => 4             // small version = BIG square modules
+                        ])
                 );
-
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
