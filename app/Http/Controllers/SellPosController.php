@@ -2076,10 +2076,9 @@ class SellPosController extends Controller
 
                 $qrcode = base64_encode(
                     \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
-                        ->size(600)
+                        ->size(120)
                         ->errorCorrection('L')
-                        ->margin(0)
-                        ->version(4)      // <-- THIS IS THE CORRECT WAY
+                        ->margin(0)    // <-- THIS IS THE CORRECT WAY
                         ->generate($qrText)
                 );
                 // Render delivery label Blade
