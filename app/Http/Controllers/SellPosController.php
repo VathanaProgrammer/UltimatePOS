@@ -2076,7 +2076,7 @@ class SellPosController extends Controller
 
                 $qrcode = base64_encode(
                     \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
-                        ->size(120)
+                        ->size(400)
                         ->errorCorrection('L')
                         ->margin(0)    // <-- THIS IS THE CORRECT WAY
                         ->generate($qrText)
