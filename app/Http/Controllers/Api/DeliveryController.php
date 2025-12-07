@@ -176,7 +176,7 @@ class DeliveryController extends Controller
 
     public function save(Request $request)
     {
-        DB::beginTransaction(); // start transaction
+        DB::beginTransaction();
         try {
             $groupId = '-5083476540'; // your Telegram group ID
             $invoice = addcslashes($request->invoice_no, '_*[]()~`>#+-=|{}.!/');
@@ -204,7 +204,32 @@ class DeliveryController extends Controller
                 ];
             }
 
-            // Update delivery_person if empty/null and set shipping_status to delivered
+            // Insert customer data into c_customers
+            $customerId = DB::table('c_customers')->insertGetId([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'address_detail' => $request->address_detail,
+                'collector_id' => auth()->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Insert each photo into c_photos
+            if ($request->hasFile('photos')) {
+                foreach ($request->file('photos') as $photo) {
+                    $path = $photo->store('dropoff_photos', 'public'); // adjust storage disk
+                    DB::table('c_photos')->insert([
+                        'customer_id' => $customerId,
+                        'image_url' => $path,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            // Update transaction as delivered
             DB::table('transactions')
                 ->where('invoice_no', $request->invoice_no)
                 ->update([
@@ -213,14 +238,14 @@ class DeliveryController extends Controller
                     'updated_at' => now()
                 ]);
 
-
+            // Send images to Telegram
             TelegramService::sendImagesToGroup($request->file('photos'));
 
             DB::commit();
 
             return [
                 'success' => 1,
-                'msg' => 'Saved, marked as delivered, and sent to Telegram',
+                'msg' => 'Saved, marked as delivered, inserted customer & photos, and sent to Telegram',
                 'data' => $text
             ];
         } catch (\Exception $e) {
