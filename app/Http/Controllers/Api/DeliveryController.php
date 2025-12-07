@@ -217,28 +217,36 @@ class DeliveryController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Insert each photo into c_photos
             if ($request->hasFile('photos')) {
+                $photoPaths = [];
                 foreach ($request->file('photos') as $photo) {
-                    // Ensure the folder exists in public/
                     $destinationPath = public_path('dropoff_photos');
                     if (!file_exists($destinationPath)) {
                         mkdir($destinationPath, 0775, true);
                     }
 
-                    // Store the photo in public/dropoff_photos
                     $filename = time() . '_' . $photo->getClientOriginalName();
                     $photo->move($destinationPath, $filename);
 
-                    // Save the path in DB
+                    // Save to DB
                     DB::table('c_photos')->insert([
                         'customer_id' => $customerId,
                         'image_url' => 'dropoff_photos/' . $filename,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
+
+                    // Add path for Telegram
+                    $photoPaths[] = [
+                        'path' => $destinationPath . '/' . $filename,
+                        'name' => $filename
+                    ];
                 }
+
+                // Send all photos to Telegram
+                \App\Services\TelegramService::sendImagesToGroup($photoPaths);
             }
+
 
             // Update transaction as delivered
             DB::table('transactions')
@@ -250,7 +258,7 @@ class DeliveryController extends Controller
                 ]);
 
             // Send images to Telegram
-            TelegramService::sendImagesToGroup($request->file('photos'));
+
 
             DB::commit();
 
