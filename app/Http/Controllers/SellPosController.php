@@ -2076,12 +2076,11 @@ class SellPosController extends Controller
 
                 $qrcode = base64_encode(
                     \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
-                        ->size(600)                    // big clear QR
-                        ->errorCorrection('L')         // low EC for less density
-                        ->margin(0)                    // remove border if you want
-                        ->generate($qrText, [
-                            'version' => 4             // small version = BIG square modules
-                        ])
+                        ->size(600)
+                        ->errorCorrection('L')
+                        ->margin(0)
+                        ->version(4)      // <-- THIS IS THE CORRECT WAY
+                        ->generate($qrText)
                 );
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
