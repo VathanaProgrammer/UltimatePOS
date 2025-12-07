@@ -22,6 +22,7 @@ class DeliveryController extends Controller
         try {
             $deliveryId = auth()->id(); // current delivery user ID
 
+            // Fetch orders assigned to this delivery person
             $orders = DB::table('transactions as t')
                 ->leftJoin('contacts as c', 'c.id', '=', 't.contact_id')
                 ->select(
@@ -30,12 +31,35 @@ class DeliveryController extends Controller
                     't.shipping_address as address',
                     't.invoice_no as order_no',
                     't.final_total as cod_amount',
-                    't.shipping_status'
+                    't.shipping_status',
+                    't.id as transaction_id' // we need this for comments join
                 )
-                ->where('t.delivery_person', $deliveryId) // only orders for this delivery person
-                ->whereNotIn('t.shipping_status', ['cancelled', 'delivered']) // exclude
+                ->where('t.delivery_person', $deliveryId)
+                ->whereNotIn('t.shipping_status', ['cancelled', 'delivered'])
                 ->orderBy('t.transaction_date', 'asc')
                 ->get();
+
+            // Loop through orders and attach comments with user info
+            $orders->transform(function ($order) {
+                $comments = DB::table('delivery_comments as dc')
+                    ->join('users as u', 'u.id', '=', 'dc.user_id')
+                    ->select(
+                        'dc.id',
+                        'dc.comment',
+                        'dc.created_at',
+                        'u.id as user_id',
+                        'u.first_name',
+                        'u.last_name',
+                        'u.username',
+                        'u.image_url as profile_pic'
+                    )
+                    ->where('dc.invoice_no', $order->order_no)
+                    ->orderBy('dc.created_at', 'asc')
+                    ->get();
+
+                $order->comments = $comments; // attach comments array
+                return $order;
+            });
 
             return response()->json([
                 'success' => true,
@@ -49,6 +73,7 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
+
 
 
     public function decryptQr(Request $request)
