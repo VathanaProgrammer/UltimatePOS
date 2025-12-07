@@ -317,7 +317,7 @@ class DeliveryController extends Controller
         try {
             // Validate input
             $request->validate([
-                'profile_pic' => 'required|image|max:5048', // max 2MB
+                'profile_pic' => 'required|image|max:5048', // max ~5MB
             ]);
 
             $user = $request->user();
@@ -331,16 +331,25 @@ class DeliveryController extends Controller
                 ], 400);
             }
 
-            // Store file in public/profile_pics
-            $path = $file->store('profile_pics', 'public');
+            // Ensure the folder exists in public/profile_pics
+            $destinationPath = public_path('profile_pics');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0775, true);
+            }
+
+            // Create unique filename
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            // Move file to public/profile_pics
+            $file->move($destinationPath, $filename);
 
             // Update user's profile picture
-            $user->image_url = 'storage/' . $path;
+            $user->image_url = 'profile_pics/' . $filename;
             $user->save();
-            
+
             return response()->json([
                 'success' => true,
-                'image_url' => asset('storage/' . $path),
+                'image_url' => asset('profile_pics/' . $filename),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Validation errors
