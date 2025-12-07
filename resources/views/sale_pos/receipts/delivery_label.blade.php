@@ -10,11 +10,6 @@
             font-size: 7px;
         }
 
-        .label {
-            width: 100px; /* SUPER SMALL PAPER */
-            padding: 2px;
-        }
-
         /* Top: sender info on left, QR on right */
         .top-row {
             display: flex;
