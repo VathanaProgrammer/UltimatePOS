@@ -72,14 +72,7 @@ Route::middleware(['jwt.delivery'])->group(function () {
     Route::post('/delivery/confirm-delivery', [DeliveryController::class, 'assignDeliveryPerson']);
     Route::post('/delivery/save-drop-off', [DeliveryController::class, 'save']);
     Route::post('/delivery/save-comment', [DeliveryController::class, 'save_comment']);
-
-    Route::get('/qr/{token}', function ($token) {
-        $encryptedId = Cache::get('qr_' . $token);
-        abort_if(!$encryptedId, 404);
-        $transactionId = Crypt::decryptString($encryptedId);
-        // Redirect or show transaction info
-        return redirect()->route('transaction.show', $transactionId);
-    });
+    Route::post('delivery/update-profile-pic', [DeliveryController::class, 'update_profile_pic']);
 });
 
 Route::get('delivery/check-session', function () {

@@ -311,4 +311,54 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
+
+    public function update_profile_pic(Request $request)
+    {
+        try {
+            // Validate input
+            $request->validate([
+                'profile_pic' => 'required|image|max:5048', // max 2MB
+            ]);
+
+            $user = $request->user();
+
+            // Check if file exists
+            $file = $request->file('profile_pic');
+            if (!$file) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No file uploaded.',
+                ], 400);
+            }
+
+            // Store file in public/profile_pics
+            $path = $file->store('profile_pics', 'public');
+
+            // Update user's profile picture
+            $user->image_url = 'storage/' . $path;
+            $user->save();
+            
+            return response()->json([
+                'success' => true,
+                'image_url' => asset('storage/' . $path),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            // Other errors
+            \Log::error('Failed to update profile pic', [
+                'error' => $e->getMessage(),
+                'user_id' => $request->user()->id ?? null,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update profile picture. Please try again.',
+            ], 500);
+        }
+    }
 }
