@@ -8,6 +8,13 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 7px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .label {
+            width: 100px; /* SUPER SMALL PAPER */
+            padding: 2px;
         }
 
         /* Top: sender info on left, QR on right */
