@@ -60,7 +60,6 @@
             <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}<br>
             <strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}
         </div>
-
     </div>
 </body>
 
