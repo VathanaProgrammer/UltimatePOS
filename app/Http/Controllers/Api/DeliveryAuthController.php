@@ -100,7 +100,7 @@ class DeliveryAuthController extends Controller
             ])->cookie(
                 'delivery_token',
                 $token,
-                60 * 24 * 30,
+                5,
                 '/',
                 '.syspro.asia',
                 true,
