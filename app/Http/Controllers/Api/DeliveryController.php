@@ -143,6 +143,7 @@ class DeliveryController extends Controller
 
     public function assignDeliveryPerson(Request $request)
     {
+        \Log::info('error', ["error" => $request->all()]);
         $transactionId = $request->input('transaction_id');
         $deliveryPersonId = $request->input('delivery_person');
 
