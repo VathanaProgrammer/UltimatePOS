@@ -29,20 +29,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $isDocker = getenv('APP_ENV') === 'testing'; // set this in your CLI or docker-compose
+        $appEnv = getenv('APP_ENV') ?: config('app.env'); // Apache or CLI
 
-        if ($isDocker) {
-            // override database settings dynamically
+        if ($appEnv === 'testing') {
+            // Use Docker testing DB
             config([
                 'database.connections.mysql.host' => '127.0.0.1',
-                'database.connections.mysql.port' => 3307, // Docker DB port
+                'database.connections.mysql.port' => 3307, // Docker MySQL port
                 'database.connections.mysql.database' => 'ultimatepos_dev',
                 'database.connections.mysql.username' => 'vathana',
                 'database.connections.mysql.password' => 'vathana@123#@!',
             ]);
-            logger()->info("Docker detected: using testing DB ultimatepos_dev.");
+            logger()->info("Testing DB detected: using ultimatepos_dev.");
         } else {
-            logger()->info("Production environment: using local DB ultimatepos.");
+            // Use production DB (from .env)
+            logger()->info("Production DB detected: using ultimatepos.");
         }
         ini_set('memory_limit', '-1');
         set_time_limit(0);
