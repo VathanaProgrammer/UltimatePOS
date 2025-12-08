@@ -148,6 +148,7 @@ class DeliveryController extends Controller
         $deliveryPersonId = $request->input('delivery_person');
 
         if (!$transactionId || !$deliveryPersonId) {
+            \Log::info('error', ["error" => 'Transaction ID and Delivery Person ID are required']);
             return response()->json([
                 'success' => 0,
                 'msg' => 'Transaction ID and Delivery Person ID are required'
@@ -162,6 +163,7 @@ class DeliveryController extends Controller
 
             if (!$transaction) {
                 DB::rollBack();
+                \Log::info('error', ["error" => 'Transaction_not_found']);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Transaction_not_found'
@@ -170,6 +172,7 @@ class DeliveryController extends Controller
 
             // 2. Check if already assigned
             if ($transaction->delivery_person !== null && $transaction->delivery_person != '') {
+                 \Log::info('error', ["error" => 'Delivery_person_already_assigned']);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Delivery_person_already_assigned',
