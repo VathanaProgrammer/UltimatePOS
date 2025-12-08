@@ -28,7 +28,7 @@ class DeliveryController extends Controller
                 ->select(
                     DB::raw("COALESCE(c.first_name, c.last_name, c.name) as customer_name"),
                     'c.mobile as phone',
-                    't.shipping_address as address',
+                    DB::raw("COALESCE(NULLIF(t.shipping_details, ''), t.shipping_address) as address"),
                     't.invoice_no as order_no',
                     't.final_total as cod_amount',
                     't.shipping_status',
