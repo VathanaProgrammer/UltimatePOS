@@ -29,21 +29,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $appEnv = getenv('APP_ENV') ?: config('app.env'); // Apache or CLI
+        $env = getenv('APP_ENV') ?: config('app.env'); // CLI or web
 
-        if ($appEnv === 'testing') {
-            // Use Docker testing DB
+        if ($env === 'testing') {
+            // Switch to dev database
             config([
-                'database.connections.mysql.host' => '127.0.0.1',
-                'database.connections.mysql.port' => 3307, // Docker MySQL port
                 'database.connections.mysql.database' => 'ultimatepos_dev',
                 'database.connections.mysql.username' => 'vathana',
                 'database.connections.mysql.password' => 'vathana@123#@!',
             ]);
-            logger()->info("Testing DB detected: using ultimatepos_dev.");
+            logger()->info("Using ultimatepos_dev database.");
         } else {
-            // Use production DB (from .env)
-            logger()->info("Production DB detected: using ultimatepos.");
+            // Use production database from .env
+            logger()->info("Using ultimatepos database.");
         }
         ini_set('memory_limit', '-1');
         set_time_limit(0);
