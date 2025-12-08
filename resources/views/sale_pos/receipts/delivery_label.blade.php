@@ -29,8 +29,8 @@
         }
 
         .qr-box img {
-            width: 45px; /* bigger QR */
-            height: 45px;
+            width: 55px; /* bigger QR */
+            height: 55px;
         }
 
         .receiver-info {
