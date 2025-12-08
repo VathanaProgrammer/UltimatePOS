@@ -29,20 +29,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $env = getenv('APP_ENV') ?: config('app.env'); // CLI or web
-
-        if ($env === 'testing') {
-            // Switch to dev database
-            config([
-                'database.connections.mysql.database' => 'ultimatepos_dev',
-                'database.connections.mysql.username' => 'vathana',
-                'database.connections.mysql.password' => 'vathana@123#@!',
-            ]);
-            logger()->info("Using ultimatepos_dev database.");
-        } else {
-            // Use production database from .env
-            logger()->info("Using ultimatepos database.");
-        }
         ini_set('memory_limit', '-1');
         set_time_limit(0);
 
