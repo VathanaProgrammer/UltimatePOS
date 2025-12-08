@@ -89,6 +89,8 @@ class DeliveryAuthController extends Controller
                     'msg' => 'Unauthorized'
                 ], 403);
             }
+            $ttl = 5; // minutes
+            $token = JWTAuth::factory()->setTTL($ttl)->fromUser($user);
 
             Log::info('Delivery login successful', ['user_id' => $user->id]);
 
@@ -100,7 +102,7 @@ class DeliveryAuthController extends Controller
             ])->cookie(
                 'delivery_token',
                 $token,
-                60 * 24 * 30,
+                $ttl,
                 '/',
                 '.syspro.asia',
                 true,
