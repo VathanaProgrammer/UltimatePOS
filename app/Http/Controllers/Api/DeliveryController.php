@@ -145,7 +145,7 @@ class DeliveryController extends Controller
     {
         \Log::info('error', ["error" => $request->all()]);
         $transactionId = $request->input('transaction_id');
-        $deliveryPersonId = $request->input('delivery_person');
+        $deliveryPersonId = auth()->id();
 
         if (!$transactionId || !$deliveryPersonId) {
             \Log::info('error', ["error" => 'Transaction ID and Delivery Person ID are required']);
