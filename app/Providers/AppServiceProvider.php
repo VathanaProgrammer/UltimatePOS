@@ -29,11 +29,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Detect if Docker container is running
-        $isDocker = getenv('APP_ENV') === 'testing'; // or any flag you want
+        $env = env('APP_ENV', 'production'); // fallback to production
 
-        if ($isDocker) {
-            // Docker testing DB
+        if ($env === 'testing') {
+            // Override DB config for testing (Docker MySQL)
             config([
                 'database.connections.mysql.host' => '127.0.0.1',
                 'database.connections.mysql.port' => 3307,
@@ -41,13 +40,11 @@ class AppServiceProvider extends ServiceProvider
                 'database.connections.mysql.username' => 'vathana',
                 'database.connections.mysql.password' => 'vathana@123#@!',
             ]);
-            logger()->info("Docker detected: using testing DB ultimatepos_dev.");
+
+            logger()->info("APP_ENV=testing: using testing DB ultimatepos_dev");
         } else {
-            // Production DB (from .env)
-            logger()->info("Production: using local DB ultimatepos.");
+            logger()->info("APP_ENV=production: using production DB ultimatepos");
         }
-
-
         ini_set('memory_limit', '-1');
         set_time_limit(0);
 
