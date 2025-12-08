@@ -88,6 +88,7 @@ class DeliveryController extends Controller
                 ->first();
 
             if (!$transaction) {
+                \Log::info("error", ["error" => "transaction not found!"]);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Transaction_not_found'
@@ -98,6 +99,7 @@ class DeliveryController extends Controller
             $status = strtolower($transaction->shipping_status ?? '');
 
             if ($status === 'delivered') {
+                \Log::info("error", ["error" => "This_order_is_already_delivered"]);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'This_order_is_already_delivered'
@@ -105,6 +107,7 @@ class DeliveryController extends Controller
             }
 
             if ($status === 'cancelled') {
+                 \Log::info("error", ["error" => "This_order_is_cancelled"]);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'This_order_is_cancelled'
@@ -129,7 +132,7 @@ class DeliveryController extends Controller
                 'data' => $data
             ]);
         } catch (\Exception $e) {
-            \Log::error($e);
+            \Log::error("catch" . $e);
             return response()->json([
                 'success' => 0,
                 'msg' => 'Invalid_QR_code'
