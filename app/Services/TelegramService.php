@@ -144,7 +144,7 @@ class TelegramService
         return response()->json(['ok' => true]);
     }
 
-    public static function sendImagesToGroup(array $files)
+    public static function sendImagesToGroup(array $files, string $caption = '')
     {
         $token = env('TELEGRAM_BOT_TOKEN');
         $groupChatId = '-5083476540';
@@ -157,8 +157,7 @@ class TelegramService
         $media = [];
         $multipart = [];
 
-        foreach ($files as $img) {
-            // Support both UploadedFile and plain path array
+        foreach ($files as $index => $img) {
             if ($img instanceof \Illuminate\Http\UploadedFile) {
                 $path = $img->getRealPath();
                 $name = $img->getClientOriginalName();
@@ -169,10 +168,18 @@ class TelegramService
                 continue;
             }
 
-            $media[] = [
+            $photo = [
                 'type' => 'photo',
                 'media' => 'attach://' . $name
             ];
+
+            // Only first image can have caption
+            if ($index === 0 && !empty($caption)) {
+                $photo['caption'] = $caption;
+                $photo['parse_mode'] = 'Markdown';
+            }
+
+            $media[] = $photo;
 
             $multipart[] = [
                 'name' => $name,

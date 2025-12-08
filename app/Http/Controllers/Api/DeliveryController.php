@@ -107,7 +107,7 @@ class DeliveryController extends Controller
             }
 
             if ($status === 'cancelled') {
-                 \Log::info("error", ["error" => "This_order_is_cancelled"]);
+                \Log::info("error", ["error" => "This_order_is_cancelled"]);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'This_order_is_cancelled'
@@ -172,7 +172,7 @@ class DeliveryController extends Controller
 
             // 2. Check if already assigned
             if ($transaction->delivery_person !== null && $transaction->delivery_person != '') {
-                 \Log::info('error', ["error" => 'Delivery_person_already_assigned']);
+                \Log::info('error', ["error" => 'Delivery_person_already_assigned']);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Delivery_person_already_assigned',
@@ -276,12 +276,17 @@ class DeliveryController extends Controller
                         'name' => $filename
                     ];
                 }
+                $user = auth()->user();
+                $fullName = $user->first_name;
+                if (!empty($user->last_name)) {
+                    $fullName .= ' ' . $user->last_name;
+                }
+                $email = $user->email ?? '';
+                $userInfoLine = "Delivered by: {$fullName}" . ($email ? " ({$email})" : "");
 
                 // Send all photos to Telegram
-                TelegramService::sendImagesToGroup($photoPaths);
+                TelegramService::sendImagesToGroup($photoPaths, $userInfoLine);
             }
-
-
             // Update transaction as delivered
             DB::table('transactions')
                 ->where('invoice_no', $request->invoice_no)
