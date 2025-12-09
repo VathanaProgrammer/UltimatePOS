@@ -54,6 +54,11 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function username()
+    {
+        return 'username';
+    }
+
     /**
      * The attributes that should be mutated to dates.
      *
