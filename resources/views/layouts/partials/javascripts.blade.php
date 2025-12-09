@@ -188,23 +188,24 @@
                 $('.side-bar').removeClass('small-view-side-active');
             }
 
-            if($('.side-bar').hasClass('small-view-side-active')){
+            if ($('.side-bar').hasClass('small-view-side-active')) {
                 $('.overlay').fadeIn('slow');
             }
         });
 
-        $(document).on('click', function (e) {
+        $(document).on('click', function(e) {
             $('[data-toggle="popover"]').popover();
 
-            $(document).on('click', function (e) {
-                $('[data-toggle="popover"]').each(function () {
+            $(document).on('click', function(e) {
+                $('[data-toggle="popover"]').each(function() {
                     // Check if the clicked element is the popover button or inside the popover
-                    if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                    if (!$(this).is(e.target) && $(this).has(e.target).length === 0 &&
+                        $('.popover').has(e.target).length === 0) {
                         $(this).popover('hide');
                     }
                 });
             });
-            
+
         });
 
         $('.side-bar-collapse').click(function() {
@@ -213,12 +214,55 @@
 
         $('.dt-buttons.btn-group').find('a.btn').removeClass('btn-default');
         $('.dt-buttons.btn-group').find('a.btn').removeClass('btn');
-        
+
         // $('.date_range').on('show.daterangepicker', function (ev, picker) {
         //     $(picker.container).insertAfter($(this));
         // });
-   
+        window.printDeliveryLabel = function(transaction_id) {
+            $.ajax({
+                method: 'GET',
+                url: '/sells/pos/print-delivery-label/' + transaction_id,
+                dataType: 'json',
+                success: function(result) {
+                    if (result.success) {
+                        var iframe = document.createElement('iframe');
+                        iframe.style.position = 'absolute';
+                        iframe.style.width = '0px';
+                        iframe.style.height = '0px';
+                        iframe.style.border = '0';
+                        document.body.appendChild(iframe);
+
+                        var doc = iframe.contentWindow.document;
+                        doc.open();
+                        doc.write(result.receipt);
+                        doc.close();
+
+                        // Wait for all images in iframe to load
+                        var images = doc.getElementsByTagName('img');
+                        var loadedCount = 0;
+
+                        if (images.length === 0) {
+                            // No images, print immediately
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+                            document.body.removeChild(iframe);
+                        } else {
+                            for (var i = 0; i < images.length; i++) {
+                                images[i].onload = function() {
+                                    loadedCount++;
+                                    if (loadedCount === images.length) {
+                                        iframe.contentWindow.focus();
+                                        iframe.contentWindow.print();
+                                        document.body.removeChild(iframe);
+                                    }
+                                };
+                            }
+                        }
+                    } else {
+                        alert(result.msg);
+                    }
+                }
+            });
+        }
     });
 </script>
-
-
