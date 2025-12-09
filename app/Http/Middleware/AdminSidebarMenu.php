@@ -891,6 +891,13 @@ class AdminSidebarMenu
                                 ['icon' => '', 'active' => in_array(request()->segment(1), ['invoice-schemes', 'invoice-layouts'])]
                             );
                         }
+                        if (auth()->user()->can('invoice_settings.access')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\InvoiceSchemeController::class, 'index']),
+                                __('Currency Settings'),
+                                ['icon' => '', 'active' => in_array(request()->segment(1), ['invoice-schemes', 'invoice-layouts'])]
+                            );
+                        }
                         if (auth()->user()->can('barcode_settings.access')) {
                             $sub->url(
                                 action([\App\Http\Controllers\BarcodeController::class, 'index']),
