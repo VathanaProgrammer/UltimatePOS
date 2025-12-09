@@ -277,7 +277,7 @@ class DeliveryController extends Controller
                     ];
                 }
                 $user = auth()->user();
-                $fullName = $user->username;
+                $fullName = $user->first_name;
                 if (!empty($user->last_name)) {
                     $fullName .= ' ' . $user->last_name;
                 }
