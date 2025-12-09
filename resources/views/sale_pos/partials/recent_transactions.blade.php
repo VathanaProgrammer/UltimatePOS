@@ -73,7 +73,7 @@
     <p>@lang('sale.no_recent_transactions')</p>
 @endif
 <script>
-function printDeliveryLabel(transaction_id) {
+window.printDeliveryLabel = function (transaction_id) {
     $.ajax({
         method: 'GET',
         url: '/sells/pos/print-delivery-label/' + transaction_id,
