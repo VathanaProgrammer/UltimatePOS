@@ -72,7 +72,7 @@ class DeliveryAuthController extends Controller
             if (!$token = auth('api_delivery')->attempt($credentials)) {
                 return response()->json([
                     'success' => false,
-                    'msg' => 'Invalid credentials'
+                    'msg' => 'Invalid_email_or_password'
                 ], 401);
             }
 
