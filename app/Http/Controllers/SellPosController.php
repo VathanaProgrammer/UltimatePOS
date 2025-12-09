@@ -2099,6 +2099,58 @@ class SellPosController extends Controller
         }
     }
 
+    public function printDeliveryLabelInSellList(Request $request, $transaction_id)
+    {
+        if ($request->ajax()) {
+            try {
+                $business_id = $request->session()->get('user.business_id');
+
+                $transaction = Transaction::where('business_id', $business_id)
+                    ->where('id', $transaction_id)
+                    ->with(['contact', 'location', 'products'])
+                    ->first();
+
+                $localtion = DB::table('business_locations')
+                    ->where('id', $transaction->location_id)
+                    ->first();
+
+                if (empty($transaction)) {
+                    return ['success' => 0, 'msg' => trans('messages.something_went_wrong')];
+                }
+
+                $printer_type = 'browser';
+                if (!empty($request->input('check_location')) && $request->input('check_location') == true) {
+                    $printer_type = $transaction->location->receipt_printer_type;
+                }
+
+                // Clean, simple QR using SimpleSoftwareIO\QrCode
+                $qrText = (string) $transaction->id;   // <-- no encryption, clean short QR
+
+                $qrcode = base64_encode(
+                    \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+                        ->size(400)
+                        ->errorCorrection('L')
+                        ->margin(0)    // <-- THIS IS THE CORRECT WAY
+                        ->generate($qrText)
+                );
+                // Render delivery label Blade
+                $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
+                    'transaction',
+                    'printer_type',
+                    'qrcode',
+                    'localtion'
+                ))->render();
+
+                return ['success' => 1, 'receipt' => $delivery_label_html];
+            } catch (\Exception $e) {
+                \Log::emergency('File:' . $e->getFile() .
+                    ' Line:' . $e->getLine() .
+                    ' Message:' . $e->getMessage());
+                return ['success' => 0, 'msg' => trans('messages.something_went_wrong')];
+            }
+        }
+    }
+
 
     public function AddPoint(Request $request, $id)
     {
@@ -2148,6 +2200,8 @@ class SellPosController extends Controller
             return ['success' => 0, 'msg' => 'Something went wrong: ' . $e->getMessage()];
         }
     }
+
+    
 
     /**
      * Gives suggetion for product based on category

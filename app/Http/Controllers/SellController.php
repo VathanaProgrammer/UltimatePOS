@@ -501,7 +501,15 @@ class SellController extends Controller
                             $html .= '<li><a href="#" data-href="' . action([\App\Http\Controllers\SellController::class, 'editShipping'], [$row->id]) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-truck" aria-hidden="true"></i>' . __('lang_v1.edit_shipping') . '</a></li>';
                         }
 
-                        $html .= '<li><a href="#" data-href="' . action([\App\Http\Controllers\SellController::class, 'editShipping'], [$row->id]) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-shipping-fast" aria-hidden="true"></i>' . __('Print Delivery Label'). $row->id . '</a></li>';
+                        $html .= '<li>
+                                    <a href="#" 
+                                    data-href="' . action([\App\Http\Controllers\SellPosController::class, 'printDeliveryLabel'], [$row->id]) . '" 
+                                    class="btn-modal" 
+                                    data-container=".view_modal">
+                                    <i class="fas fa-shipping-fast" aria-hidden="true"></i> '
+                                                            . __('Print Delivery Label') . '
+                                    </a>
+                                </li>';
 
                         if ($row->type == 'sell') {
                             if (auth()->user()->can('print_invoice')) {
