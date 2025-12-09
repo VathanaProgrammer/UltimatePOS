@@ -503,9 +503,7 @@ class SellController extends Controller
 
                         $html .= '<li>
                                     <a href="#" 
-                                    data-href="' . action([\App\Http\Controllers\SellPosController::class, 'printDeliveryLabel'], [$row->id]) . '" 
-                                    class="btn-modal" 
-                                    data-container=".view_modal">
+                                    data-href="' . action([\App\Http\Controllers\SellPosController::class, 'printDeliveryLabel'], [$row->id]) . '">
                                     <i class="fas fa-shipping-fast" aria-hidden="true"></i> '
                                                             . __('Print Delivery Label') . '
                                     </a>
