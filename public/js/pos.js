@@ -1353,16 +1353,16 @@ $(document).ready(function () {
         }
     });
 
-    $('#exchange_rate').change(function () {
-        var curr_exchange_rate = 1;
-        if ($(this).val()) {
-            curr_exchange_rate = __read_number($(this));
-        }
+    // $('#exchange_rate').change(function () {
+    //     var curr_exchange_rate = 1;
+    //     if ($(this).val()) {
+    //         curr_exchange_rate = __read_number($(this));
+    //     }
 
-        var total_payable = __read_number($('input#final_total_input'));
-        var shown_total = total_payable * curr_exchange_rate;
-        $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
-    });
+    //     var total_payable = __read_number($('input#final_total_input'));
+    //     var shown_total = total_payable * curr_exchange_rate;
+    //     $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
+    // });
 
 
     $('select#price_group').change(function () {
@@ -1902,22 +1902,6 @@ function pos_total_row() {
     saveFormDataToLocalStorage();
 
 }
-
-
-// Recalculate on exchange rate input change
-var exchange_rate_input = document.getElementById('_exchange_rate');
-if (exchange_rate_input) {
-    exchange_rate_input.addEventListener('input', pos_total_row);
-}
-
-$('#_exchange_rate').on('input', function () {
-    pos_total_row(); // recalc totals when exchange rate changes
-});
-
-function format_riel(amount) {
-    return amount.toLocaleString('en-US'); // keeps it as-is, no decimals added
-}
-
 
 function get_subtotal() {
     var price_total = 0;
