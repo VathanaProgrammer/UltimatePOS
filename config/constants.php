@@ -43,7 +43,7 @@ return [
 
     'product_img_path' => 'img',
 
-    'enable_sell_in_diff_currency' => false,
+    'enable_sell_in_diff_currency' => true,
     'currency_exchange_rate' => 1,
     'orders_refresh_interval' => 600, //Auto refresh interval on Kitchen and Orders page in seconds,
 
