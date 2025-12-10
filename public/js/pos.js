@@ -1367,7 +1367,9 @@ $(document).ready(function () {
         var total_riel = Math.round(total_payable_usd * curr_exchange_rate);
 
         // Update the Riel span
-        var riel_span = $('#total_riel'); // or .price_total_riel if class
+        $('.price_total_riel').each(function () {
+            $(this).text(total_riel.toLocaleString('en-US'));
+        });
         if (riel_span.length) {
             riel_span.text(total_riel.toLocaleString('en-US'));
         } else {
