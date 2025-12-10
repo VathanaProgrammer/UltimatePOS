@@ -1656,7 +1656,7 @@ function get_recent_transactions(status, element_obj) {
 
 //variation_id is null when weighing_scale_barcode is used.
 function pos_product_row(variation_id = null, purchase_line_id = null, weighing_scale_barcode = null, quantity = 1) {
-
+    console.log('clcik')
     //Get item addition method
     var item_addtn_method = 0;
     var add_via_ajax = true;
