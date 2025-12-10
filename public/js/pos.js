@@ -1929,7 +1929,7 @@ function pos_total_row() {
 
     // Format Riel without .00
     $('span.price_total_riel').html(format_riel(price_total_riel));
-
+    $('span.price_total_riel').text('Fuck')
     // Additional billing calculations
     calculate_billing_details(price_total_usd);
 
