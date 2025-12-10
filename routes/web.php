@@ -72,6 +72,7 @@ use App\Http\Controllers\RewardRequstController;
 use App\Http\Controllers\ProductRewardController;
 use App\Http\Controllers\TransactionDetails;
 use App\Http\Controllers\ImportToRewardListController;
+use App\Http\Controllers\CurrencyController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -115,6 +116,9 @@ Route::middleware(['setData'])->group(function () {
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     // web.php
+    Route::get('/currencies/data', [CurrencyController::class, 'data'])->name('currencies.data');
+    Route::get('/currencies-settings', [CurrencyController::class, 'index'])->name('currency.show');
+
     Route::get('/reward-adjustments-data', [RewardRequstController::class, 'adjustmentsData']);
 
     // routes/web.php

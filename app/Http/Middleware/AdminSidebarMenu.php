@@ -893,9 +893,9 @@ class AdminSidebarMenu
                         }
                         if (auth()->user()->can('invoice_settings.access')) {
                             $sub->url(
-                                action([\App\Http\Controllers\InvoiceSchemeController::class, 'index']),
+                                route('currency.show'),
                                 __('Currency Settings'),
-                                ['icon' => '', 'active' => in_array(request()->segment(1), ['invoice-schemes', 'invoice-layouts'])]
+                                ['icon' => '', 'active' => request()->is('currencies-settings')]
                             );
                         }
                         if (auth()->user()->can('barcode_settings.access')) {
