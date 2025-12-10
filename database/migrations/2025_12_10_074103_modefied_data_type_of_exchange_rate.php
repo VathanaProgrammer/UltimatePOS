@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('currencies', function (Blueprint $table) {
             //
-            $table->integer('exchange_rate')->nullable()->default(0);
+            $table->integer('exchange_rate')->nullable()->default(0)->change();
         });
     }
 
