@@ -20,14 +20,14 @@ class CurrencyController extends Controller
 
         return DataTables::of($query)
             ->addColumn('action', function ($row) {
-                // Dropdown menu for edit/delete
+                // Colored dropdown button
                 $html = '<div class="btn-group">
-                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    Actions <span class="caret"></span>
+                <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    Actions
                 </button>
                 <ul class="dropdown-menu dropdown-menu-left" role="menu">
                     <li>
-                        <a href="javascript:void(0)" class="edit-btn dropdown-item"
+                        <a href="javascript:void(0)" class="edit-btn dropdown-item text-warning"
                             data-id="' . $row->id . '"
                             data-country="' . $row->country . '"
                             data-currency="' . $row->currency . '"
@@ -41,7 +41,7 @@ class CurrencyController extends Controller
                         </a>
                     </li>
                     <li>
-                        <a href="javascript:void(0)" class="delete-btn dropdown-item"
+                        <a href="javascript:void(0)" class="delete-btn dropdown-item text-danger"
                             data-id="' . $row->id . '"
                             data-toggle="modal" data-target="#deleteModal">
                             <i class="fas fa-trash"></i> Delete
@@ -55,6 +55,7 @@ class CurrencyController extends Controller
             ->rawColumns(['action'])
             ->make(true);
     }
+
 
 
     public function update(Request $request, $id)
