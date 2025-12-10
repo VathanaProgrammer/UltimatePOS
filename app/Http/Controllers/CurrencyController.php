@@ -22,7 +22,7 @@ class CurrencyController extends Controller
             ->addColumn('action', function ($row) {
                 // Colored dropdown button
                 $html = '<div class="btn-group">
-    <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn btn-info btn-sm mb-2 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
         Actions
     </button>
     <ul class="dropdown-menu dropdown-menu-left" role="menu">
