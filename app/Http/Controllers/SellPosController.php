@@ -281,7 +281,7 @@ class SellPosController extends Controller
         //Added check because $users is of no use if enable_contact_assign if false
         $users = config('constants.enable_contact_assign') ? User::forDropdown($business_id, false, false, false, true) : [];
         $currency = DB::table('currencies')->where('country', 'Cambodia')->first();
-        $exchange_rate = $currency ? $currency->exchange_rate : 0.00;
+        $_exchange_rate = $currency ? $currency->exchange_rate : 0.00;
         return view('sale_pos.create')
             ->with(compact(
                 'edit_discount',
@@ -315,7 +315,7 @@ class SellPosController extends Controller
                 'default_invoice_schemes',
                 'invoice_layouts',
                 'users',
-                "exchange_rate"
+                "_exchange_rate"
             ));
     }
 
