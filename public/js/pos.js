@@ -1909,33 +1909,33 @@ function pos_total_row() {
         total_quantity += __read_number($(this).find('input.pos_quantity'));
     });
 
-    // Updating shipping charges
-    $('span#shipping_charges_amount').text(
-        __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
-    );
-
-    // Update total quantity
-    $('span.total_quantity').each(function () {
-        $(this).html(__number_f(total_quantity));
-    });
-
-    // Update USD total
+    $('span.total_quantity').html(__number_f(total_quantity));
     $('span.price_total').html(__currency_trans_from_en(price_total_usd, false));
 
-    // ---------- Calculate Riel ----------
-    // Riel total
-    var exchange_rate = parseFloat($('#exchange_rate').val()) || 1;
-    var price_total_riel = Math.round(price_total_usd * exchange_rate);
-    $('span.price_total_riel').html(price_total_riel.toLocaleString('en-US'));
-    // Additional billing calculations
-    calculate_billing_details(price_total_usd);
-
-    if ($('input[name="is_serial_no"]').length > 0 && $('input[name="is_serial_no"]').val() == 1) {
-        update_serial_no();
+    // ---------- Riel ----------
+    var exchange_rate_input = document.getElementById('exchange_rate');
+    if (!exchange_rate_input) {
+        console.warn('Exchange rate input not found');
+        return; // stop if input doesn't exist
     }
+    var exchange_rate = parseFloat(exchange_rate_input.value) || 1;
+    var price_total_riel = Math.round(price_total_usd * exchange_rate);
 
-    // store on any update
+    var riel_span = document.querySelector('span.price_total_riel');
+    if (!riel_span) {
+        console.warn('Riel total span not found');
+        return;
+    }
+    riel_span.textContent = price_total_riel.toLocaleString('en-US');
+
+    calculate_billing_details(price_total_usd);
     saveFormDataToLocalStorage();
+}
+
+// Recalculate on exchange rate input change
+var exchange_rate_input = document.getElementById('exchange_rate');
+if (exchange_rate_input) {
+    exchange_rate_input.addEventListener('input', pos_total_row);
 }
 
 $('#exchange_rate').on('input', function () {
