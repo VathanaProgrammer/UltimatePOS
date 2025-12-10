@@ -65,15 +65,6 @@
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-6 col-md-4 d-flex justify-content-end mb-3">
-        {!! Form::label('_exchange_rate', 'Exchange Rate', ['class' => 'form-label mr-2']) !!}
-        {!! Form::number('_exchange_rate', $_exchange_rate ?? 0.00, [
-            'class' => 'form-control text-right',
-            'step' => '0.01',
-            'placeholder' => '0.00',
-			'id' => '_exchange_rate',
-        ]) !!}
-    </div>
 
 </div>
 <div class="row">
