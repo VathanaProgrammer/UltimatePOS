@@ -2042,6 +2042,11 @@ function calculate_billing_details(price_total) {
 
     $(document).trigger('invoice_total_calculated');
 
+    var total_riel = Math.round(total_payable_rounded * curr_exchange_rate);
+    $('.price_total_riel').each(function () {
+        $(this).text(total_riel.toLocaleString('en-US'));
+    })
+
     calculate_balance_due();
 }
 
