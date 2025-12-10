@@ -315,7 +315,7 @@ class SellPosController extends Controller
                 'default_invoice_schemes',
                 'invoice_layouts',
                 'users',
-                
+                "exchange_rate"
             ));
     }
 
