@@ -8,7 +8,7 @@
             <h1 class="text-3xl font-semibold text-gray-800">Currency</h1>
             <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" data-toggle="modal"
                 data-target="#categoryModal">
-                <i class="fa fa-plus mr-2"></i> Add Category
+                <i class="fa fa-plus mr-2"></i> Add Currency
             </button>
         </header>
 
@@ -24,7 +24,7 @@
                             <th class="px-3 py-2">Symbol</th>
                             <th class="px-3 py-2">Thousand Separator</th>
                             <th class="px-3 py-2">Decimal Separator</th>
-                            <th class="px-3 py-2">Symbol</th>
+                            <th class="px-3 py-2">Action</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -32,6 +32,8 @@
             </div>
         </div>
     </section>
+    @include('settings.delete_model')
+    @include('settings.currenc_model')
 @endsection
 
 @section('javascript')
@@ -78,65 +80,51 @@
                 ]
             });
 
-
-            // Add Category form submission via AJAX
-            $('#categoryForm').submit(function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: '{{ route('category_e.store') }}',
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function(res) {
-                        toastr.success(res.msg);
-                        $('#categoryModal').modal('hide');
-                        table.ajax.reload();
-                        $('#categoryForm')[0].reset();
-                    },
-                    error: function(err) {
-                        toastr.error(err.responseJSON?.msg || 'Failed to add category');
-                    }
-                });
-            });
-
-            // Open Edit Modal and prefill values
+            // ----------------------
+            // OPEN EDIT MODAL
+            // ----------------------
             $(document).on('click', '.edit-btn', function() {
-                let id = $(this).data('id');
-                $('#categoryModal #category_id').val(id);
-                $('#categoryModal #name').val($(this).data('name'));
-                $('#categoryModal #description').val($(this).data('description'));
-                $('#categoryModal #catalog_id').val($(this).data('catalog_id')).trigger('change');
-                $('#categoryModal .modal-title').text('Edit Category');
-                $('#categoryForm').attr('action', '{{ url('category_e') }}/' + id);
-                $('#categoryModal').modal('show');
+                $('#currency_id').val($(this).data('id'));
+                $('#country').val($(this).data('country'));
+                $('#currency').val($(this).data('currency'));
+                $('#code').val($(this).data('code'));
+                $('#symbol').val($(this).data('symbol'));
+                $('#thousand_separator').val($(this).data('thousand'));
+                $('#decimal_separator').val($(this).data('decimal'));
+                $('.modal-title').text("Edit Currency");
+
+                $('#currencyForm').attr('action', '/currency/update/' + $(this).data('id'));
             });
 
-            // Handle form submit for Add or Update dynamically
-            $('#categoryForm').off('submit').on('submit', function(e) {
-                e.preventDefault();
-                let actionUrl = $(this).attr('action');
+
+            // ----------------------
+            // OPEN DELETE MODAL
+            // ----------------------
+            $(document).on('click', '.delete-btn', function() {
+                $('#delete_id').val($(this).data('id'));
+            });
+
+
+            // ----------------------
+            // CONFIRM DELETE
+            // ----------------------
+            $('#confirmDelete').click(function() {
+                let id = $('#delete_id').val();
+
                 $.ajax({
-                    url: actionUrl,
-                    type: ($(this).find('#category_id').val()) ? 'PUT' : 'POST',
-                    data: $(this).serialize(),
-                    success: function(res) {
-                        toastr.success(res.msg);
-                        $('#categoryModal').modal('hide');
-                        table.ajax.reload();
-                        $('#categoryForm')[0].reset();
-                        $('#categoryModal .modal-title').text('Add Category');
+                    url: '/currency/delete/' + id,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
                     },
-                    error: function(err) {
-                        toastr.error(err.responseJSON?.msg || 'Failed to save category');
+                    success: function(res) {
+                        $('#deleteModal').modal('hide');
+                        toastr.success('Currency deleted');
+                        table.ajax.reload();
                     }
                 });
             });
 
-            // Reset modal on close
-            $('#categoryModal').on('hidden.bs.modal', function() {
-                $('#categoryForm')[0].reset();
-                $('#categoryForm').attr('action', '{{ route('category_e.store') }}');
-                $('#categoryModal .modal-title').text('Add Category');
-            });
         });
     </script>
 @endsection
