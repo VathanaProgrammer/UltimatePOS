@@ -1913,7 +1913,7 @@ function pos_total_row() {
     $('span.price_total').html(__currency_trans_from_en(price_total_usd, false));
 
     // ---------- Riel ----------
-    var exchange_rate_input = document.getElementById('exchange_rate');
+    var exchange_rate_input = document.getElementById('_exchange_rate');
     if (!exchange_rate_input) {
         console.warn('Exchange rate input not found');
         return; // stop if input doesn't exist
@@ -1933,12 +1933,12 @@ function pos_total_row() {
 }
 
 // Recalculate on exchange rate input change
-var exchange_rate_input = document.getElementById('exchange_rate');
+var exchange_rate_input = document.getElementById('_exchange_rate');
 if (exchange_rate_input) {
     exchange_rate_input.addEventListener('input', pos_total_row);
 }
 
-$('#exchange_rate').on('input', function () {
+$('#_exchange_rate').on('input', function () {
     pos_total_row(); // recalc totals when exchange rate changes
 });
 
