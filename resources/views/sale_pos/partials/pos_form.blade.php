@@ -65,11 +65,6 @@
             </div>
         </div>
     </div>
-	@php
-    $exchange_rate = $exchange_rate ?? 0; // default if null
-    $exchange_rate = rtrim(rtrim(number_format($exchange_rate, 4, '.', ''), '0'), '.'); 
-    // This removes trailing zeros and the dot if unnecessary
-@endphp
     <div class="col-12 col-sm-6 col-md-4 d-flex justify-content-end mb-3">
         {!! Form::label('exchange_rate', 'Exchange Rate', ['class' => 'form-label mr-2']) !!}
         {!! Form::number('exchange_rate', $exchange_rate ?? 0.00, [
