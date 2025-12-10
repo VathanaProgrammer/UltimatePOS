@@ -75,7 +75,8 @@
                     {
                         data: 'action',
                         orderable: false,
-                        searchable: false
+                        searchable: false,
+                        width: '120px'
                     }
                 ]
             });
