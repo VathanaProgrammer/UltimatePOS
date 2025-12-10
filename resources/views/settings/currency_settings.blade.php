@@ -17,10 +17,14 @@
                 <table id="categories_table" class="w-full text-sm text-left text-gray-700">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-3 py-2">Name</th>
-                            <th class="px-3 py-2">Catalog</th>
-                            <th class="px-3 py-2">Description</th>
-                            <th class="px-3 py-2">Action</th>
+                            <th class="px-3 py-2">Country</th>
+                            <th class="px-3 py-2">Currency</th>
+                            <th class="px-3 py-2">Exchange Rate</th>
+                            <th class="px-3 py-2">Code</th>
+                            <th class="px-3 py-2">Symbol</th>
+                            <th class="px-3 py-2">Thousand Separator</th>
+                            <th class="px-3 py-2">Decimal Separator</th>
+                            <th class="px-3 py-2">Symbol</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -45,6 +49,11 @@
                         data: 'currency',
                         title: "Currency"
                     },
+                    {
+                        data: 'exchange_rate',
+                        title: "Exchange Rate"
+                    },
+
                     {
                         data: 'code',
                         title: "Code"
