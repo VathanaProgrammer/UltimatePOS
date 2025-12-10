@@ -265,6 +265,7 @@
             });
         }
 
+        
         console.log($('span.price_total_riel').length);
     });
 </script>
