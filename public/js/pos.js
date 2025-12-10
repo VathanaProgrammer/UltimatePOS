@@ -1923,18 +1923,10 @@ function pos_total_row() {
     $('span.price_total').html(__currency_trans_from_en(price_total_usd, false));
 
     // ---------- Calculate Riel ----------
-    var exchange_rate = parseFloat($('#exchange_rate').val()) || 1; // get current exchange rate
-    var price_total_riel = price_total_usd * exchange_rate;
-
-    // Format Riel without .00
-    $('span.price_total_riel').html(format_riel(price_total_riel));
-    $('span.price_total_riel').text('Fuck')
-    // Add safety: make sure span exists
-    if ($('span.price_total_riel').length === 0) {
-        console.warn('price_total_riel span not found');
-    } else {
-        $('span.price_total_riel').html(format_riel(price_total_usd * exchange_rate));
-    }
+    // Riel total
+    var exchange_rate = parseFloat($('#exchange_rate').val()) || 1;
+    var price_total_riel = Math.round(price_total_usd * exchange_rate);
+    $('span.price_total_riel').html(price_total_riel.toLocaleString('en-US'));
     // Additional billing calculations
     calculate_billing_details(price_total_usd);
 
