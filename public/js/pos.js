@@ -1872,51 +1872,37 @@ function pos_each_row(row_obj) {
     __write_number(row_obj.find('input.item_tax'), unit_price_inc_tax - discounted_unit_price);
 }
 //Original
-// function pos_total_row() {
-//     var total_quantity = 0;
-//     var price_total = get_subtotal();
-//     $('table#pos_table tbody tr').each(function() {
-//         total_quantity = total_quantity + __read_number($(this).find('input.pos_quantity'));
-//     });
-
-//     //updating shipping charges
-//     $('span#shipping_charges_amount').text(
-//         __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
-//     );
-
-//     $('span.total_quantity').each(function() {
-//         $(this).html(__number_f(total_quantity));
-//     });
-
-//     //$('span.unit_price_total').html(unit_price_total);
-//     $('span.price_total').html(__currency_trans_from_en(price_total, false));
-//     calculate_billing_details(price_total);
-
-//     if (
-//         $('input[name="is_serial_no"]').length > 0 &&
-//         $('input[name="is_serial_no"]').val() == 1
-//     ) {
-//         update_serial_no();
-//     }
-//     // store on any update
-//     saveFormDataToLocalStorage();
-
-// }
-
 function pos_total_row() {
     var total_quantity = 0;
-    var price_total_usd = get_subtotal(); // USD total
-
-    $('table#pos_table tbody tr').each(function () {
-        total_quantity += __read_number($(this).find('input.pos_quantity'));
+    var price_total = get_subtotal();
+    $('table#pos_table tbody tr').each(function() {
+        total_quantity = total_quantity + __read_number($(this).find('input.pos_quantity'));
     });
 
-    $('span.total_quantity').html(__number_f(total_quantity));
-    $('span.price_total').html(__currency_trans_from_en(price_total_usd, false));
+    //updating shipping charges
+    $('span#shipping_charges_amount').text(
+        __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
+    );
 
-    calculate_billing_details(price_total_usd);
+    $('span.total_quantity').each(function() {
+        $(this).html(__number_f(total_quantity));
+    });
+
+    //$('span.unit_price_total').html(unit_price_total);
+    $('span.price_total').html(__currency_trans_from_en(price_total, false));
+    calculate_billing_details(price_total);
+
+    if (
+        $('input[name="is_serial_no"]').length > 0 &&
+        $('input[name="is_serial_no"]').val() == 1
+    ) {
+        update_serial_no();
+    }
+    // store on any update
     saveFormDataToLocalStorage();
+
 }
+
 
 // Recalculate on exchange rate input change
 var exchange_rate_input = document.getElementById('_exchange_rate');
