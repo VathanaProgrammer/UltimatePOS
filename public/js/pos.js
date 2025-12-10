@@ -1875,7 +1875,7 @@ function pos_each_row(row_obj) {
 function pos_total_row() {
     var total_quantity = 0;
     var price_total = get_subtotal();
-    $('table#pos_table tbody tr').each(function () {
+    $('table#pos_table tbody tr').each(function() {
         total_quantity = total_quantity + __read_number($(this).find('input.pos_quantity'));
     });
 
@@ -1884,7 +1884,7 @@ function pos_total_row() {
         __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
     );
 
-    $('span.total_quantity').each(function () {
+    $('span.total_quantity').each(function() {
         $(this).html(__number_f(total_quantity));
     });
 
@@ -1981,13 +1981,9 @@ function calculate_billing_details(price_total) {
     if ($('#exchange_rate').length > 0 && $('#exchange_rate').val()) {
         curr_exchange_rate = __read_number($('#exchange_rate'));
     }
-    // var shown_total = total_payable_rounded * curr_exchange_rate;
-    // $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
-
-    var total_riel = Math.round(total_payable_rounded * curr_exchange_rate);
-    $('span#total_payable').text(total_riel.toLocaleString('en-US') + ' ៛');
-
-
+    var shown_total = total_payable_rounded;
+    $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
+    
     $('span.total_payable_span').text(__currency_trans_from_en(total_payable_rounded, true));
 
     //Check if edit form then don't update price.
