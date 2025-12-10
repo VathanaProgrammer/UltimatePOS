@@ -1353,16 +1353,17 @@ $(document).ready(function () {
         }
     });
 
-    // $('#exchange_rate').change(function () {
-    //     var curr_exchange_rate = 1;
-    //     if ($(this).val()) {
-    //         curr_exchange_rate = __read_number($(this));
-    //     }
+    $('#exchange_rate').change(function () {
+        var curr_exchange_rate = 1;
+        if ($(this).val()) {
+            curr_exchange_rate = __read_number($(this));
+        }
 
-    //     var total_payable = __read_number($('input#final_total_input'));
-    //     var shown_total = total_payable * curr_exchange_rate;
-    //     $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
-    // });
+        var total_payable = __read_number($('input#final_total_input'));
+        var shown_total = total_payable * curr_exchange_rate;
+        $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
+    });
+
 
     $('select#price_group').change(function () {
         $('input#hidden_price_group').val($(this).val());
