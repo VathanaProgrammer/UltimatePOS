@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('currencies', function (Blueprint $table) {
             //
-            DB::statement('ALTER TABLE currencies MODIFY exchange_rate INT 0;');
+            DB::statement('ALTER TABLE currencies MODIFY exchange_rate INT DEFAULT 0 NULL;');
         });
     }
 
