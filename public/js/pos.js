@@ -2001,6 +2001,11 @@ function calculate_billing_details(price_total) {
     calculate_balance_due();
 }
 
+$('#exchange_rate').on('input change', function () {
+    pos_total_row(); // this will recalc everything including Riel
+});
+
+
 function pos_discount(total_amount) {
     var calculation_type = $('#discount_type').val();
     var calculation_amount = __read_number($('#discount_amount'));
