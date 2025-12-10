@@ -1795,7 +1795,7 @@ function pos_product_row(variation_id = null, purchase_line_id = null, weighing_
                     //For initial discount if present
                     var line_total = __read_number(this_row.find('input.pos_line_total'));
                     this_row.find('span.pos_line_total_text').text(line_total);
-
+                    console.log('fdfdfd')
                     pos_total_row();
 
                     //Check if multipler is present then multiply it when a new row is added.
