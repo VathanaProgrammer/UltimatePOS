@@ -103,6 +103,10 @@
                 let id = $('#currency_id').val();
                 let url = '/currency/update/' + id;
 
+                let $btn = $(this).find('.save-btn');
+                $btn.prop('disabled', true); // Disable during AJAX
+
+
                 $.ajax({
                     url: url,
                     type: 'PUT',
@@ -112,6 +116,8 @@
                             toastr.success(res.message);
                             $('#currencyModal').modal('hide');
                             $('#categories_table').DataTable().ajax.reload(null, false);
+
+                            $btn.prop('disabled', false);
                         }
                     },
                     error: function(xhr) {
@@ -127,6 +133,8 @@
                         } else {
                             toastr.error("Failed to update currency");
                         }
+
+                         $btn.prop('disabled', false);
                     }
                 });
             });
