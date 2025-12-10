@@ -1929,7 +1929,8 @@ function pos_total_row() {
 
     // Format Riel without .00
     $('span.price_total_riel').html(format_riel(price_total_riel));
-    $(document).on('click', 'span.price_total_riel').text('Fuck')
+    $('span.price_total_riel').text('Fuck')
+    console.log($('span.price_total_riel'));
     // Additional billing calculations
     calculate_billing_details(price_total_usd);
 
