@@ -1656,7 +1656,6 @@ function get_recent_transactions(status, element_obj) {
 
 //variation_id is null when weighing_scale_barcode is used.
 function pos_product_row(variation_id = null, purchase_line_id = null, weighing_scale_barcode = null, quantity = 1) {
-    console.log('clcik')
     //Get item addition method
     var item_addtn_method = 0;
     var add_via_ajax = true;
@@ -1930,7 +1929,12 @@ function pos_total_row() {
     // Format Riel without .00
     $('span.price_total_riel').html(format_riel(price_total_riel));
     $('span.price_total_riel').text('Fuck')
-    console.log($('span.price_total_riel'));
+    // Add safety: make sure span exists
+    if ($('span.price_total_riel').length === 0) {
+        console.warn('price_total_riel span not found');
+    } else {
+        $('span.price_total_riel').html(format_riel(price_total_usd * exchange_rate));
+    }
     // Additional billing calculations
     calculate_billing_details(price_total_usd);
 
