@@ -134,7 +134,7 @@
                             toastr.error("Failed to update currency");
                         }
 
-                         $btn.prop('disabled', false);
+                        $btn.prop('disabled', false);
                     }
                 });
             });
@@ -150,6 +150,7 @@
             // ----------------------
             // CONFIRM DELETE
             // ----------------------
+            // Confirm delete
             $('#confirmDelete').click(function() {
                 let id = $('#delete_id').val();
 
@@ -162,11 +163,13 @@
                     success: function(res) {
                         $('#deleteModal').modal('hide');
                         toastr.success('Currency deleted');
-                        table.ajax.reload();
+                        $('#categories_table').DataTable().ajax.reload(null, false);
+                    },
+                    error: function(xhr) {
+                        toastr.error(xhr.responseJSON?.message || "Failed to delete currency");
                     }
                 });
             });
-
         });
     </script>
 @endsection
