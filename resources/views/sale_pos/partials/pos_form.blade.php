@@ -65,9 +65,13 @@
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-6 col-md-4 mb-3">
-        <label for="exchange_rate">Exchange Rate</label>
-        <input type="number" step="0.0001" id="exchange_rate" name="exchange_rate" class="form-control">
+    <div class="col-12 col-sm-6 col-md-4 d-flex justify-content-end mb-3">
+        {!! Form::label('exchange_rate', 'Exchange Rate', ['class' => 'form-label mr-2']) !!}
+        {!! Form::number('exchange_rate', null, [
+            'class' => 'form-control text-right',
+            'step' => '0.0001',
+            'placeholder' => '0.0000',
+        ]) !!}
     </div>
 
 </div>
