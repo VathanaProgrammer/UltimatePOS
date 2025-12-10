@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('currencies', function (Blueprint $table) {
             //
-            $table->integer('exchange_rate')->nullable()->default(0)->change();
+            DB::statement('ALTER TABLE currencies MODIFY exchange_rate INT 0;');
         });
     }
 
