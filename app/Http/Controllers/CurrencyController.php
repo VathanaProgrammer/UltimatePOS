@@ -29,7 +29,7 @@ class CurrencyController extends Controller
             data-symbol="' . $row->symbol . '"
             data-thousand="' . $row->thousand_separator . '"
             data-decimal="' . $row->decimal_separator . '"
-            data-exchange_rate="'.$row->exchange_rate.'"
+            data-exchange_rate="' . $row->exchange_rate . '"
             data-toggle="modal" data-target="#currencyModal">
             Edit
         </button>
@@ -44,5 +44,44 @@ class CurrencyController extends Controller
 
             ->rawColumns(['action'])
             ->make(true);
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+
+            // Validation
+            $validated = $request->validate([
+                'country'             => 'required|string|max:255',
+                'currency'            => 'required|string|max:255',
+                'exchange_rate'       => 'required|numeric|min:0',
+                'code'                => 'required|string|max:10',
+                'symbol'              => 'required|string|max:10',
+                'thousand_separator'  => 'required|string|max:5',
+                'decimal_separator'   => 'required|string|max:5',
+            ]);
+
+            // Update database
+            Currency::where('id', $id)->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Currency updated successfully'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            // return validation error to UI
+            return response()->json([
+                'success' => false,
+                'errors'  => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 }

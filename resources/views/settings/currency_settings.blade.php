@@ -97,6 +97,39 @@
                 $('#currencyForm').attr('action', '/currency/update/' + $(this).data('id'));
             });
 
+            $('#currencyForm').on('submit', function(e) {
+                e.preventDefault();
+
+                let id = $('#currency_id').val();
+                let url = '/currency/update/' + id;
+
+                $.ajax({
+                    url: url,
+                    type: 'PUT',
+                    data: $(this).serialize(),
+                    success: function(res) {
+                        if (res.success) {
+                            toastr.success(res.message);
+                            $('#currencyModal').modal('hide');
+                            $('#categories_table').DataTable().ajax.reload(null, false);
+                        }
+                    },
+                    error: function(xhr) {
+
+                        if (xhr.status === 422) {
+                            let errors = xhr.responseJSON.errors;
+
+                            // show ALL validation errors
+                            $.each(errors, function(field, messages) {
+                                toastr.error(messages[0]);
+                            });
+
+                        } else {
+                            toastr.error("Failed to update currency");
+                        }
+                    }
+                });
+            });
 
             // ----------------------
             // OPEN DELETE MODAL

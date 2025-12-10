@@ -116,6 +116,7 @@ Route::middleware(['setData'])->group(function () {
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     // web.php
+    Route::put('/currency/update/{id}', [CurrencyController::class, 'update']);
     Route::get('/currencies/data', [CurrencyController::class, 'data'])->name('currencies.data');
     Route::get('/currencies-settings', [CurrencyController::class, 'index'])->name('currency.show');
 
