@@ -71,6 +71,7 @@
             'class' => 'form-control text-right',
             'step' => '0.01',
             'placeholder' => '0.00',
+			'id' => 'exchange_rate',
         ]) !!}
     </div>
 
