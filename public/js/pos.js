@@ -1354,26 +1354,27 @@ $(document).ready(function () {
     });
 
     $('#exchange_rate').change(function () {
-        var curr_exchange_rate = 1;
-        if ($(this).val()) {
-            curr_exchange_rate = __read_number($(this));
-        }
+        var curr_exchange_rate = __read_number($(this)) || 1;
 
-        var total_payable = __read_number($('input#final_total_input'));
-        var shown_total = total_payable * curr_exchange_rate;
-        $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
+        // Get the total in USD from the input
+        var total_payable_usd = __read_number($('#final_total_input'));
 
-        var exchange_rate = parseFloat(curr_exchange_rate) || 1;
-        var price_total_riel = Math.round(price_total_usd * exchange_rate);
+        // Update displayed total in selected currency (formatted)
+        var shown_total = total_payable_usd * curr_exchange_rate;
+        $('#total_payable').text(__currency_trans_from_en(shown_total, false));
 
-        var riel_span = document.querySelector('span.price_total_riel');
-        if (!riel_span) {
+        // Calculate Riel from #total_payable
+        var total_riel = Math.round(total_payable_usd * curr_exchange_rate);
+
+        // Update the Riel span
+        var riel_span = $('#total_riel'); // or .price_total_riel if class
+        if (riel_span.length) {
+            riel_span.text(total_riel.toLocaleString('en-US'));
+        } else {
             console.warn('Riel total span not found');
-            return;
         }
-        riel_span.text(price_total_riel.toLocaleString('en-US'));
-
     });
+
 
     $('select#price_group').change(function () {
         $('input#hidden_price_group').val($(this).val());
