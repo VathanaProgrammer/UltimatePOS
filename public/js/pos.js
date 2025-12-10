@@ -1364,26 +1364,6 @@ $(document).ready(function () {
     //     $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
     // });
 
-    $('#exchange_rate').change(function () {
-        var curr_exchange_rate = __read_number($(this)) || 1;
-
-        // Get the total in USD from the input
-        var total_payable_usd = __read_number($('#final_total_input'));
-
-        // Update displayed total in selected currency (formatted)
-        var shown_total = total_payable_usd * curr_exchange_rate;
-        $('#total_payable').text(__currency_trans_from_en(shown_total, false));
-
-        // Calculate Riel from #final_total_input
-        var total_riel = Math.round(total_payable_usd * curr_exchange_rate);
-
-        // Update all spans with class price_total_riel
-        $('.price_total_riel').each(function () {
-            $(this).text(total_riel.toLocaleString('en-US'));
-        });
-    });
-
-
     $('select#price_group').change(function () {
         $('input#hidden_price_group').val($(this).val());
     });
