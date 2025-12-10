@@ -67,10 +67,10 @@
     </div>
     <div class="col-12 col-sm-6 col-md-4 d-flex justify-content-end mb-3">
         {!! Form::label('exchange_rate', 'Exchange Rate', ['class' => 'form-label mr-2']) !!}
-        {!! Form::number('exchange_rate', null, [
+        {!! Form::number('exchange_rate', $exchange_rate ?? 0.00, [
             'class' => 'form-control text-right',
-            'step' => '0.0001',
-            'placeholder' => '0.0000',
+            'step' => '0.01',
+            'placeholder' => '0.00',
         ]) !!}
     </div>
 
