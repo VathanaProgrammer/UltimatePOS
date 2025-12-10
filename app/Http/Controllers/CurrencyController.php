@@ -22,33 +22,34 @@ class CurrencyController extends Controller
             ->addColumn('action', function ($row) {
                 // Colored dropdown button
                 $html = '<div class="btn-group">
-                <button type="button" class="btn btn-outline-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    Actions
-                </button>
-                <ul class="dropdown-menu dropdown-menu-left" role="menu">
-                    <li>
-                        <a href="javascript:void(0)" class="edit-btn dropdown-item text-warning"
-                            data-id="' . $row->id . '"
-                            data-country="' . $row->country . '"
-                            data-currency="' . $row->currency . '"
-                            data-code="' . $row->code . '"
-                            data-symbol="' . $row->symbol . '"
-                            data-thousand="' . $row->thousand_separator . '"
-                            data-decimal="' . $row->decimal_separator . '"
-                            data-exchange_rate="' . $row->exchange_rate . '"
-                            data-toggle="modal" data-target="#currencyModal">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)" class="delete-btn dropdown-item text-danger"
-                            data-id="' . $row->id . '"
-                            data-toggle="modal" data-target="#deleteModal">
-                            <i class="fas fa-trash"></i> Delete
-                        </a>
-                    </li>
-                </ul>
-            </div>';
+    <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        Actions
+    </button>
+    <ul class="dropdown-menu dropdown-menu-left" role="menu">
+        <li>
+            <a href="javascript:void(0)" class="edit-btn dropdown-item text-warning"
+                data-id="' . $row->id . '"
+                data-country="' . $row->country . '"
+                data-currency="' . $row->currency . '"
+                data-code="' . $row->code . '"
+                data-symbol="' . $row->symbol . '"
+                data-thousand="' . $row->thousand_separator . '"
+                data-decimal="' . $row->decimal_separator . '"
+                data-exchange_rate="' . $row->exchange_rate . '"
+                data-toggle="modal" data-target="#currencyModal">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        </li>
+        <li>
+            <a href="javascript:void(0)" class="delete-btn dropdown-item text-danger"
+                data-id="' . $row->id . '"
+                data-toggle="modal" data-target="#deleteModal">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </li>
+    </ul>
+</div>';
+
 
                 return $html;
             })
