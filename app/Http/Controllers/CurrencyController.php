@@ -61,8 +61,19 @@ class CurrencyController extends Controller
                 'decimal_separator'   => 'required|string|max:5',
             ]);
 
-            // Update database
-            Currency::where('id', $id)->update($validated);
+            // Update with DB
+            DB::table('currencies')
+                ->where('id', $id)
+                ->update([
+                    'country'             => $validated['country'],
+                    'currency'            => $validated['currency'],
+                    'exchange_rate'       => $validated['exchange_rate'],
+                    'code'                => $validated['code'],
+                    'symbol'              => $validated['symbol'],
+                    'thousand_separator'  => $validated['thousand_separator'],
+                    'decimal_separator'   => $validated['decimal_separator'],
+                    'updated_at'          => now()
+                ]);
 
             return response()->json([
                 'success' => true,
