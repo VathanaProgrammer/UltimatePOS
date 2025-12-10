@@ -1924,7 +1924,7 @@ function pos_total_row() {
     $('span.price_total').html(__currency_trans_from_en(price_total_usd, false));
 
     // ---------- Calculate Riel ----------
-    var exchange_rate = parseFloat($('input#exchange_rate').val()) || 0; // get current exchange rate
+    var exchange_rate = parseFloat($('#exchange_rate').val()) || 1; // get current exchange rate
     var price_total_riel = price_total_usd * exchange_rate;
     $('span.price_total_riel').html(__currency_trans_from_en(price_total_riel, false));
 
@@ -1938,6 +1938,10 @@ function pos_total_row() {
     // store on any update
     saveFormDataToLocalStorage();
 }
+
+$('#exchange_rate').on('input', function() {
+    pos_total_row(); // recalc totals when exchange rate changes
+});
 
 
 function get_subtotal() {
