@@ -1353,6 +1353,17 @@ $(document).ready(function () {
         }
     });
 
+    // $('#exchange_rate').change(function () {
+    //     var curr_exchange_rate = 1;
+    //     if ($(this).val()) {
+    //         curr_exchange_rate = __read_number($(this));
+    //     }
+
+    //     var total_payable = __read_number($('input#final_total_input'));
+    //     var shown_total = total_payable * curr_exchange_rate;
+    //     $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
+    // });
+
     $('#exchange_rate').change(function () {
         var curr_exchange_rate = __read_number($(this)) || 1;
 
@@ -1363,18 +1374,13 @@ $(document).ready(function () {
         var shown_total = total_payable_usd * curr_exchange_rate;
         $('#total_payable').text(__currency_trans_from_en(shown_total, false));
 
-        // Calculate Riel from #total_payable
+        // Calculate Riel from #final_total_input
         var total_riel = Math.round(total_payable_usd * curr_exchange_rate);
 
-        // Update the Riel span
+        // Update all spans with class price_total_riel
         $('.price_total_riel').each(function () {
             $(this).text(total_riel.toLocaleString('en-US'));
         });
-        if (riel_span.length) {
-            riel_span.text(total_riel.toLocaleString('en-US'));
-        } else {
-            console.warn('Riel total span not found');
-        }
     });
 
 
