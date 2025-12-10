@@ -25,6 +25,12 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Exchange Rate</label>
+                        <input type="number" step="0.0001" id="exchange_rate" name="exchange_rate"
+                            class="form-control">
+                    </div>
+
+                    <div class="form-group">
                         <label>Code</label>
                         <input type="text" id="code" name="code" class="form-control">
                     </div>

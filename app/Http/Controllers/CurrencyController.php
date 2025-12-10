@@ -29,6 +29,7 @@ class CurrencyController extends Controller
             data-symbol="' . $row->symbol . '"
             data-thousand="' . $row->thousand_separator . '"
             data-decimal="' . $row->decimal_separator . '"
+            data-exchange_rate="'.$row->exchange_rate.'"
             data-toggle="modal" data-target="#currencyModal">
             Edit
         </button>

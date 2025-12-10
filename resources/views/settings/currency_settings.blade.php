@@ -92,6 +92,7 @@
                 $('#thousand_separator').val($(this).data('thousand'));
                 $('#decimal_separator').val($(this).data('decimal'));
                 $('.modal-title').text("Edit Currency");
+                $('#exchange_rate').val($(this).data('exchange_rate'));
 
                 $('#currencyForm').attr('action', '/currency/update/' + $(this).data('id'));
             });
