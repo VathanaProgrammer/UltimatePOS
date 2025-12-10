@@ -1371,7 +1371,7 @@ $(document).ready(function () {
             console.warn('Riel total span not found');
             return;
         }
-        riel_span.textContent = price_total_riel.toLocaleString('en-US');
+        riel_span.text(price_total_riel.toLocaleString('en-US'));
 
     });
 
