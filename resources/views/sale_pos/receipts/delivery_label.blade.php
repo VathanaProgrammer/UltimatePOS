@@ -7,12 +7,13 @@
 <style>
     @page {
         margin: 0;
-        size: 130px auto; /* match small label */
+        size: 50mm 50mm; /* match small label */
     }
 
     body {
         margin: 0;
         padding: 0;
+        width: 400px;
         font-family: Arial, sans-serif;
         font-size: 13px;
         display: flex;
@@ -20,8 +21,8 @@
     }
 
     .label {
-        width: 50mm;
-        padding: 4px;
+        width: 400px;
+        padding: 10px;
     }
 
     .top-row {
