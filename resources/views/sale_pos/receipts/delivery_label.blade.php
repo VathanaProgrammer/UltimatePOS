@@ -31,26 +31,25 @@
         }
 
         .sender-info {
-            width: 65%; 
-            font-size: 16px; /* slightly smaller for balance */
+            width: calc(100% - 200px - 4px); /* remaining space after QR */
+            font-size: 16px;
             line-height: 1.4;
         }
 
         .qr-box img {
-            width: 35%; /* smaller relative to sender-info */
-            height: auto;
-            max-width: 90px; /* prevent it from being too big */
+            width: 200px; /* your requested size */
+            height: 200px;
         }
 
         .receiver-info {
             margin-top: 8px;
-            font-size: 16px; /* slightly smaller */
+            font-size: 16px;
             line-height: 1.4;
             width: 100%;
         }
 
         strong {
-            font-size: 18px; /* balanced heading */
+            font-size: 18px;
         }
     </style>
 </head>
