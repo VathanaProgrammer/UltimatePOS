@@ -13,7 +13,7 @@
         }
 
         .label {
-            width: 130px; /* SLIGHTLY BIGGER */
+            width: 115px; /* SLIGHTLY BIGGER */
             padding: 3px;
         }
 
