@@ -1,56 +1,52 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>SOB - {{ $transaction->invoice_no }}</title>
     <meta charset="utf-8">
-<style>
-    @page {
-        margin: 0;
-        size: 130px auto; /* match small label */
-    }
+    <style>
+        @page {
+            margin: 0;
+            size: 58mm auto; /* exact thermal roll width */
+        }
 
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        font-size: 13px;
-        display: flex;
-        justify-content: center;
-    }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+        }
 
-    .label {
-        width: 400px;
-        padding: 4px;
-    }
+        .label {
+            width: 464px; /* 58mm at 203 DPI */
+            padding: 8px;
+        }
 
-    .top-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
 
-    .sender-info {
-        width: 90px;
-        line-height: 1.3;
-    }
+        .sender-info {
+            width: 280px;
+            line-height: 1.35;
+        }
 
-    .qr-box img {
-        width: 60px;
-        height: 60px;
-    }
+        .qr-box img {
+            width: 80px;
+            height: 80px;
+        }
 
-    .receiver-info {
-        margin-top: 6px;
-        line-height: 1.3;
-    }
-</style>
-
+        .receiver-info {
+            margin-top: 8px;
+            line-height: 1.35;
+        }
+    </style>
 </head>
-
 <body>
     <div class="label">
-
         <div class="top-row">
             <div class="sender-info">
                 <strong>SOB</strong><br>
@@ -70,5 +66,4 @@
         </div>
     </div>
 </body>
-
 </html>
