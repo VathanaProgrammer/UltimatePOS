@@ -19,7 +19,7 @@
         }
 
         .label {
-            width: 130px;
+            width: 175px;
             padding: 3px;
         }
 
