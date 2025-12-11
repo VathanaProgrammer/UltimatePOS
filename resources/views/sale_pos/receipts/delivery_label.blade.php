@@ -7,7 +7,7 @@
 <style>
     @page {
         margin: 0;
-        size: 50mm auto; /* match small label */
+        size: 130px auto; /* match small label */
     }
 
     body {
@@ -20,7 +20,7 @@
     }
 
     .label {
-        width: 70mm;
+        width: 50mm;
         padding: 4px;
     }
 
