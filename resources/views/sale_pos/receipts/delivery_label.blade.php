@@ -6,7 +6,7 @@
     <style>
         @page {
             margin: 0;
-            size: 58mm auto; /* width of the thermal roll, height adjusts automatically */
+            size: 58mm auto; /* full roll width */
         }
 
         html, body {
@@ -20,8 +20,8 @@
         }
 
         .label {
-            width: 100%; /* fill full printable width */
-            padding: 5px;
+            width: 100%;
+            padding: 2px;
             box-sizing: border-box;
         }
 
@@ -32,22 +32,26 @@
         }
 
         .sender-info {
-            width: 65%; /* take most space for text */
-            font-size: 16px;
-            line-height: 1.4;
+            width: 60%; 
+            font-size: 20px; /* big text */
+            line-height: 1.5;
         }
 
         .qr-box img {
-            width: 30%; /* QR takes remaining space proportionally */
+            width: 35%; /* big QR code */
             height: auto;
-            max-height: 100px; /* limit height */
+            max-height: 150px;
         }
 
         .receiver-info {
-            margin-top: 10px;
-            font-size: 16px;
-            line-height: 1.4;
+            margin-top: 12px;
+            font-size: 20px; /* big text */
+            line-height: 1.5;
             width: 100%;
+        }
+
+        strong {
+            font-size: 22px; /* even bolder headings */
         }
     </style>
 </head>
