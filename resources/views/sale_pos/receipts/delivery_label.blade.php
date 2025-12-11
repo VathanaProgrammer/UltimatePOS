@@ -4,46 +4,47 @@
 <head>
     <title>SOB - {{ $transaction->invoice_no }}</title>
     <meta charset="utf-8">
-    <style>
-        @page {
-            margin: 0;
-        }
+<style>
+    @page {
+        margin: 0;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            font-size: 8px;
-            display: flex;
-            justify-content: center;
-        }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        font-size: 9px; /* was 8px */
+        display: flex;
+        justify-content: center;
+    }
 
-        .label {
-            width: 175px;
-            padding: 3px;
-        }
+    .label {
+        width: 175px;
+        padding: 3px;
+    }
 
-        .top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
+    .top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
 
-        .sender-info {
-            width: 80px;
-            line-height: 1.2;
-        }
+    .sender-info {
+        width: 85px; /* tiny bump for text growth */
+        line-height: 1.25; /* slightly more breathing room */
+    }
 
-        .qr-box img {
-            width: 60px;
-            height: 60px;
-        }
+    .qr-box img {
+        width: 62px; /* scaled up just a bit */
+        height: 62px;
+    }
 
-        .receiver-info {
-            margin-top: 5px;
-            line-height: 1.2;
-        }
-    </style>
+    .receiver-info {
+        margin-top: 6px;
+        line-height: 1.25;
+    }
+</style>
+
 
 </head>
 
