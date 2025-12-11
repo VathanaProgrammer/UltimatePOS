@@ -13,7 +13,7 @@
         }
 
         .label {
-            width: 115px; /* SLIGHTLY BIGGER */
+            width: 130px; /* SLIGHTLY BIGGER */
             padding: 3px;
         }
 
@@ -29,8 +29,8 @@
         }
 
         .qr-box img {
-            width: 55px; /* bigger QR */
-            height: 55px;
+            width: 45px; /* bigger QR */
+            height: 45px;
         }
 
         .receiver-info {
