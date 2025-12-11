@@ -20,7 +20,7 @@
     }
 
     .label {
-        width: 50mm;
+        width: 70mm;
         padding: 4px;
     }
 
