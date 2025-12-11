@@ -7,14 +7,14 @@
 <style>
     @page {
         margin: 0;
-        size: 130px auto; /* match small label */
+        size: 50mm auto; /* match small label */
     }
 
     body {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
-        font-size: 9px;
+        font-size: 13px;
         display: flex;
         justify-content: center;
     }
@@ -36,8 +36,8 @@
     }
 
     .qr-box img {
-        width: 45px;
-        height: 45px;
+        width: 70px;
+        height: 70px;
     }
 
     .receiver-info {
