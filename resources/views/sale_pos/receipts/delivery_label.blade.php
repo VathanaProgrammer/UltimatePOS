@@ -1,27 +1,20 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>SOB - {{ $transaction->invoice_no }}</title>
     <meta charset="utf-8">
     <style>
-        @page {
-            margin: 0;
-            size: 58mm auto; /* full roll width */
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
+        body {
             font-family: Arial, sans-serif;
+            font-size: 8px;
             display: flex;
             justify-content: center;
         }
 
         .label {
-            width: 100%;
-            padding: 2px;
-            box-sizing: border-box;
+            width: 130px; /* SLIGHTLY BIGGER */
+            padding: 3px;
         }
 
         .top-row {
@@ -31,30 +24,25 @@
         }
 
         .sender-info {
-            width: calc(100% - 250px - 4px); /* bigger QR, adjust text width */
-            font-size: 35px; /* big text */
-            line-height: 1.4;
+            width: 80px; /* more space for text */
+            line-height: 1.2;
         }
 
         .qr-box img {
-            width: 250px; /* bigger QR as requested */
-            height: 250px;
+            width: 55px; /* bigger QR */
+            height: 55px;
         }
 
         .receiver-info {
-            margin-top: 12px;
-            font-size: 35px; /* bigger text */
-            line-height: 1.5;
-            width: 100%;
-        }
-
-        strong {
-            font-size: 24px; /* bold headings */
+            margin-top: 5px;
+            line-height: 1.2;
         }
     </style>
 </head>
+
 <body>
     <div class="label">
+
         <div class="top-row">
             <div class="sender-info">
                 <strong>SOB</strong><br>
@@ -74,4 +62,5 @@
         </div>
     </div>
 </body>
+
 </html>
