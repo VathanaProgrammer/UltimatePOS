@@ -5,7 +5,13 @@
     <title>SOB - {{ $transaction->invoice_no }}</title>
     <meta charset="utf-8">
     <style>
+        @page {
+            margin: 0;
+        }
+
         body {
+            margin: 0;
+            padding: 0;
             font-family: Arial, sans-serif;
             font-size: 8px;
             display: flex;
@@ -13,7 +19,7 @@
         }
 
         .label {
-            width: 130px; /* SLIGHTLY BIGGER */
+            width: 130px;
             padding: 3px;
         }
 
@@ -24,12 +30,12 @@
         }
 
         .sender-info {
-            width: 80px; /* more space for text */
+            width: 80px;
             line-height: 1.2;
         }
 
         .qr-box img {
-            width: 45px; /* bigger QR */
+            width: 45px;
             height: 45px;
         }
 
@@ -38,6 +44,7 @@
             line-height: 1.2;
         }
     </style>
+
 </head>
 
 <body>
