@@ -13,7 +13,7 @@
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
-        font-size: 9px; /* was 8px */
+        font-size:12px; /* was 8px */
         display: flex;
         justify-content: center;
     }
