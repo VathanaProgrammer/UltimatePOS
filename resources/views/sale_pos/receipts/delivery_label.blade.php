@@ -38,7 +38,7 @@
         }
 
         .qr-box img {
-            width: 35%; /* big QR code */
+            width: 400px; /* big QR code */
             height: auto;
             max-height: 150px;
         }
