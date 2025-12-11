@@ -7,20 +7,21 @@
 <style>
     @page {
         margin: 0;
+        size: 50mm auto; /* match small label */
     }
 
     body {
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
-        font-size:12px; /* was 8px */
+        font-size: 13px;
         display: flex;
         justify-content: center;
     }
 
     .label {
-        width: 175px;
-        padding: 3px;
+        width: 50mm;
+        padding: 4px;
     }
 
     .top-row {
@@ -30,21 +31,20 @@
     }
 
     .sender-info {
-        width: 85px; /* tiny bump for text growth */
-        line-height: 1.25; /* slightly more breathing room */
+        width: 90px;
+        line-height: 1.3;
     }
 
     .qr-box img {
-        width: 62px; /* scaled up just a bit */
-        height: 62px;
+        width: 70px;
+        height: 70px;
     }
 
     .receiver-info {
         margin-top: 6px;
-        line-height: 1.25;
+        line-height: 1.3;
     }
 </style>
-
 
 </head>
 
