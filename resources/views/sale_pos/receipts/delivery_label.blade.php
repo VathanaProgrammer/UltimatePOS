@@ -58,7 +58,7 @@
         <div class="receiver-info">
             <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}<br>
             <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}<br>
-            <strong>Address:</strong> {{ $transaction->contact?->address ?? '-' }}
+            <strong>Address:</strong> {{ $transaction->contact?->address_line_1 ?? '-' }}
         </div>
     </div>
 </body>
