@@ -13,7 +13,6 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
@@ -32,26 +31,26 @@
         }
 
         .sender-info {
-            width: 60%; 
-            font-size: 20px; /* big text */
-            line-height: 1.5;
+            width: 65%; 
+            font-size: 16px; /* slightly smaller for balance */
+            line-height: 1.4;
         }
 
         .qr-box img {
-            width: 200px; /* big QR code */
+            width: 35%; /* smaller relative to sender-info */
             height: auto;
-            max-height: 150px;
+            max-width: 90px; /* prevent it from being too big */
         }
 
         .receiver-info {
-            margin-top: 12px;
-            font-size: 20px; /* big text */
-            line-height: 1.5;
+            margin-top: 8px;
+            font-size: 16px; /* slightly smaller */
+            line-height: 1.4;
             width: 100%;
         }
 
         strong {
-            font-size: 22px; /* even bolder headings */
+            font-size: 18px; /* balanced heading */
         }
     </style>
 </head>
