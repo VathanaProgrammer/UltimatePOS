@@ -32,7 +32,7 @@
 
         .sender-info {
             width: calc(100% - 250px - 4px); /* bigger QR, adjust text width */
-            font-size: 20px; /* big text */
+            font-size: 35px; /* big text */
             line-height: 1.4;
         }
 
@@ -43,7 +43,7 @@
 
         .receiver-info {
             margin-top: 12px;
-            font-size: 20px; /* bigger text */
+            font-size: 35px; /* bigger text */
             line-height: 1.5;
             width: 100%;
         }
