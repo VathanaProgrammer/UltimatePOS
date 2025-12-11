@@ -13,7 +13,8 @@
         }
 
         .label {
-            width: 130px; /* SLIGHTLY BIGGER */
+            width: 130px;
+            /* SLIGHTLY BIGGER */
             padding: 3px;
         }
 
@@ -24,12 +25,14 @@
         }
 
         .sender-info {
-            width: 80px; /* more space for text */
+            width: 80px;
+            /* more space for text */
             line-height: 1.2;
         }
 
         .qr-box img {
-            width: 55px; /* bigger QR */
+            width: 55px;
+            /* bigger QR */
             height: 55px;
         }
 
@@ -58,7 +61,13 @@
         <div class="receiver-info">
             <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}<br>
             <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}<br>
-            <strong>Address:</strong> {{ $transaction->contact?->address_line_1 ?? '-' }}
+            <strong>Address:</strong>
+            {{ $transaction->contact
+                ? ($transaction->contact->address_line_1 && $transaction->contact->address_line_2
+                    ? $transaction->contact->address_line_1 . ', ' . $transaction->contact->address_line_2
+                    : $transaction->contact->address_line_1 ?? ($transaction->contact->address_line_2 ?? '-'))
+                : '-' }}
+
         </div>
     </div>
 </body>
