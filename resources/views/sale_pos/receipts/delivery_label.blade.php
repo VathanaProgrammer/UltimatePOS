@@ -14,7 +14,7 @@
         margin: 0;
         padding: 0;
         font-family: Arial, sans-serif;
-        font-size: 13px;
+        font-size: 9px;
         display: flex;
         justify-content: center;
     }
