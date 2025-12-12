@@ -116,6 +116,9 @@ Route::middleware(['setData'])->group(function () {
 //Routes for authenticated users only
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     // web.php
+    // web.php
+    Route::get('/check-mobile', [ContactController::class, 'check_mobile_realtime']);
+
     Route::delete('/currency/delete/{id}', [CurrencyController::class, 'destroy']);
     Route::put('/currency/update/{id}', [CurrencyController::class, 'update']);
     Route::get('/currencies/data', [CurrencyController::class, 'data'])->name('currencies.data');

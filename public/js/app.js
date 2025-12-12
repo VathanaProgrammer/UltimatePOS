@@ -636,6 +636,31 @@ $(document).ready(function () {
         $('#contact_add_form').trigger('contactFormvalidationAdded');
     });
 
+    $('#input-mobile-error').hide();
+
+    $('#mobile').on('input', function () {
+        const mobile = $(this).val();
+
+        if(mobile.length > 7){
+            $.ajax({
+                url: "/check-mobile",
+                type: 'GET',
+                data: { mobile: mobile},
+                success: function(e){
+                    if(e.success == false){
+                        $('#input-mobile-error').text(e.msg || 'This is Contact is already exist!').show();
+                    }else{
+                         $('#input-mobile-error').hide();
+                    }
+                },
+                error: function(e){
+
+                }
+            })
+        }
+        // You can do whatever you want here
+    });
+
     function checkTaxNumberAndSubmit(form) {
         // Check if tax_number field exists and has a value
         if ($('#tax_number').length && $('#tax_number').val().trim() !== '') {

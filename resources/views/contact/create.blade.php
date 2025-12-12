@@ -122,6 +122,8 @@
                         </span>
                         {!! Form::text('mobile', null, ['class' => 'form-control', 'required', 'placeholder' => __('contact.mobile')]); !!}
                     </div>
+
+                    <p id="input-mobile-error" style="font-size: 15px; font-weight: bold;" class="text-danger mt-1 mb-0"></p>
                 </div>
             </div>
 
