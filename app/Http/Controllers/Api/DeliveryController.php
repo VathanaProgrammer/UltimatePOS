@@ -28,16 +28,28 @@ class DeliveryController extends Controller
                 ->select(
                     DB::raw("COALESCE(c.first_name, c.last_name, c.name) as customer_name"),
                     'c.mobile as phone',
-                    DB::raw("COALESCE(NULLIF(t.shipping_details, ''), t.shipping_address) as address"),
+
+                    DB::raw("
+            CASE
+                WHEN c.address_line_1 IS NOT NULL AND c.address_line_1 != '' 
+                     AND (c.address_line_2 IS NOT NULL AND c.address_line_2 != '')
+                    THEN CONCAT(c.address_line_1, ', ', c.address_line_2)
+                WHEN c.address_line_1 IS NOT NULL AND c.address_line_1 != ''
+                    THEN c.address_line_1
+                ELSE NULL
+            END AS address
+        "),
+
                     't.invoice_no as order_no',
                     't.final_total as cod_amount',
                     't.shipping_status',
-                    't.id as transaction_id' // we need this for comments join
+                    't.id as transaction_id'
                 )
                 ->where('t.delivery_person', $deliveryId)
                 ->whereNotIn('t.shipping_status', ['cancelled', 'delivered'])
                 ->orderBy('t.transaction_date', 'asc')
                 ->get();
+
 
             // Loop through orders and attach comments with user info
             $orders->transform(function ($order) {
