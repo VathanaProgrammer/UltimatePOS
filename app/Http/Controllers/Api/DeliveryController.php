@@ -110,7 +110,7 @@ class DeliveryController extends Controller
             // --- CHECK STATUS ---
             $status = strtolower($transaction->shipping_status ?? '');
 
-            if ($status === 'delivered') {
+            if ($status === 'delivered') {nt
                 \Log::info("error", ["error" => "This_order_is_already_delivered"]);
                 return response()->json([
                     'success' => 0,
