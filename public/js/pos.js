@@ -1044,19 +1044,21 @@ $(document).ready(function () {
             },
             success: function (result) {
                 if (result.is_mobile_exists == true) {
-                    swal({
-                        title: LANG.sure,
-                        text: result.msg,
-                        icon: 'warning',
-                        buttons: true,
-                        dangerMode: true,
-                    }).then(willContinue => {
-                        if (willContinue) {
-                            submitQuickContactForm(form);
-                        } else {
-                            $('#mobile').select();
-                        }
-                    });
+                    // swal({
+                    //     title: LANG.sure,
+                    //     text: result.msg,
+                    //     icon: 'warning',
+                    //     buttons: true,
+                    //     dangerMode: true,
+                    // }).then(willContinue => {
+                    //     if (willContinue) {
+                    //         submitQuickContactForm(form);
+                    //     } else {
+                    //         $('#mobile').select();
+                    //     }
+                    // });
+
+                     toastr.error('This is contact with this phone number is already exist!')
 
                 } else {
                     submitQuickContactForm(form);

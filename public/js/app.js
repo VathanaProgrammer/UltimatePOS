@@ -674,19 +674,21 @@ $(document).ready(function () {
                 },
                 success: function (result) {
                     if (result.is_tax_number_exists == true) {
-                        swal({
-                            title: LANG.sure,
-                            text: result.msg,
-                            icon: 'warning',
-                            buttons: true,
-                            dangerMode: true
-                        }).then(willContinue => {
-                            if (willContinue) {
-                                checkMobileAndSubmit(form);
-                            } else {
-                                $('#tax_number').select();
-                            }
-                        });
+                        // swal({
+                        //     title: LANG.sure,
+                        //     text: result.msg,
+                        //     icon: 'warning',
+                        //     buttons: true,
+                        //     dangerMode: true
+                        // }).then(willContinue => {
+                        //     if (willContinue) {
+                        //         checkMobileAndSubmit(form);
+                        //     } else {
+                        //         $('#tax_number').select();
+                        //     }
+                        // });
+
+                        toastr.error('This is contact with this phone number is already exist!')
                     } else {
                         checkMobileAndSubmit(form);
                     }
@@ -713,20 +715,22 @@ $(document).ready(function () {
             },
             success: function (result) {
                 if (result.is_mobile_exists == true) {
-                    swal({
-                        title: LANG.sure,
-                        text: result.msg,
-                        icon: 'warning',
-                        buttons: true,
-                        dangerMode: true
-                    }).then(willContinue => {
-                        if (willContinue) {
-                            submitContactForm(form);
-                        } else {
-                            $('#mobile').select();
-                        }
-                    });
+                    // swal({
+                    //     title: LANG.sure,
+                    //     text: result.msg,
+                    //     icon: 'warning',
+                    //     buttons: true,
+                    //     dangerMode: true
+                    // }).then(willContinue => {
+                    //     if (willContinue) {
+                    //         submitContactForm(form);
+                    //     } else {
+                    //         $('#mobile').select();
+                    //     }
+                    // });
 
+                
+                toastr.error(result.msg || "This contact with this phone number already exist!");
                 } else {
                     submitContactForm(form);
                 }
