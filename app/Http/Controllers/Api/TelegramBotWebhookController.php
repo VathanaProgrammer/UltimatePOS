@@ -9,6 +9,7 @@ use App\ApiModel\ApiUser;
 use App\ApiModel\TelegramStartToken;
 use App\ApiModel\OnlineOrder;
 use App\TelegramTemplate;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 
 class TelegramBotWebhookController extends Controller
