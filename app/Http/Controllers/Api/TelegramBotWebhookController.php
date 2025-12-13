@@ -246,7 +246,7 @@ class TelegramBotWebhookController extends Controller
 
             // 1️⃣ Try to get the business with email = 'admin@sob.com'
             $businessId = DB::table('business')
-                ->where('email', 'admin@sob.com')
+                ->where('name', 'SOB')
                 ->value('id');
 
             // 2️⃣ Fallback: get any existing business if the first is not found
