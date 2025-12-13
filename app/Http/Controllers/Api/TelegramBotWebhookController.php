@@ -213,7 +213,16 @@ class TelegramBotWebhookController extends Controller
 
     private function registerUserFromTelegramContact($contact, $chatId)
     {
-        $phone = $contact['phone_number'];
+        $rawPhone = $contact['phone_number'];
+
+        // Normalize phone number
+        $phone = preg_replace('/\s+/', '', $rawPhone); // remove spaces
+        $phone = ltrim($phone, '+'); // remove leading +
+
+        if (str_starts_with($phone, '855')) {
+            $phone = '0' . substr($phone, 3);
+        }
+
         $firstName  = $contact['first_name'] ?? 'Telegram User';
         $lastName  = $contact['last_name'] ?? '';
         $name = trim($firstName . ' ' . $lastName);
