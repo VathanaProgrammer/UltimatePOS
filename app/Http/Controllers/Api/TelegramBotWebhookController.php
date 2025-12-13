@@ -10,6 +10,7 @@ use App\ApiModel\TelegramStartToken;
 use App\ApiModel\OnlineOrder;
 use App\TelegramTemplate;
 use Illuminate\Support\Facades\Http;
+use App\User;
 use Illuminate\Support\Facades\DB;
 
 class TelegramBotWebhookController extends Controller
@@ -227,9 +228,44 @@ class TelegramBotWebhookController extends Controller
 
         DB::beginTransaction();
         try {
+
+            $createdBy = User::where('username', 'admin@sob.com')
+                ->value('id');
+
+            if (!$createdBy) {
+                // fallback: get any existing user
+                $createdBy = User::value('id');
+            }
+
+            if (!$createdBy) {
+                // absolute last line of defense
+                \Log::critical('No users exist in users table');
+                throw new \Exception('System user not found');
+            }
+
+
+            // 1️⃣ Try to get the business with email = 'admin@sob.com'
+            $businessId = DB::table('business')
+                ->where('email', 'admin@sob.com')
+                ->value('id');
+
+            // 2️⃣ Fallback: get any existing business if the first is not found
+            if (!$businessId) {
+                $businessId = DB::table('business')
+                    ->orderBy('id')
+                    ->value('id');
+            }
+
+            // 3️⃣ Safety check
+            if (!$businessId) {
+                \Log::critical('No business found in database');
+                throw new \Exception('Business not found');
+            }
+
             // Create Contact
             $contactId = DB::table('contacts')->insertGetId([
-                'business_id' => 1,
+                'business_id' => $businessId,
+                'createdBy' => $createdBy,
                 'name' => $name,
                 'mobile' => $phone,
                 'created_at' => now(),
