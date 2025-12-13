@@ -26,6 +26,7 @@
         "endroid/qr-code": "^5.0",
         "giggsey/libphonenumber-for-php": "^8.12",
         "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "^3.11",
         "knox/pesapal": "1.5",
         "laravel/framework": "^9.51",
         "laravel/legacy-factories": "^1.3",

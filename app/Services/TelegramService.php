@@ -219,4 +219,33 @@ class TelegramService
 
         return true;
     }
+
+    public static function sendPhotoToSecondGroup(string $imagePath, string $caption = '')
+    {
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $groupChatId = '-5047451233'; // SECOND GROUP
+
+        if (!file_exists($imagePath)) {
+            Log::error('TelegramService: Image not found', ['path' => $imagePath]);
+            return false;
+        }
+
+        $response = Http::withoutVerifying()
+            ->attach(
+                'photo',
+                fopen($imagePath, 'r'),
+                basename($imagePath) // Telegram NEEDS a filename
+            )
+            ->post("https://api.telegram.org/bot{$token}/sendPhoto", [
+                'chat_id' => $groupChatId,
+                'caption' => $caption,
+                'parse_mode' => 'Markdown'
+            ]);
+
+        Log::info('TelegramService sendPhotoToSecondGroup response', [
+            'telegram_response' => $response->json()
+        ]);
+
+        return true;
+    }
 }

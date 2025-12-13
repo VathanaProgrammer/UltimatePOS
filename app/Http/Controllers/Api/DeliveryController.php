@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Crypt;
 use App\Services\TelegramService;
 use SebastianBergmann\Type\TrueType;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DeliveryController extends Controller
 {
@@ -88,6 +91,8 @@ class DeliveryController extends Controller
     {
         $qrText = $request->input('qr_text');
 
+        $groupId = '-5047451233';
+
         try {
             $transaction_id = (int) $qrText;
 
@@ -148,15 +153,14 @@ class DeliveryController extends Controller
         }
     }
 
-
     public function assignDeliveryPerson(Request $request)
     {
-        \Log::info('error', ["error" => $request->all()]);
+        \Log::info('assignDeliveryPerson request', $request->all());
+
         $transactionId = $request->input('transaction_id');
         $deliveryPersonId = auth()->id();
 
         if (!$transactionId || !$deliveryPersonId) {
-            \Log::info('error', ["error" => 'Transaction ID and Delivery Person ID are required']);
             return response()->json([
                 'success' => 0,
                 'msg' => 'Transaction ID and Delivery Person ID are required'
@@ -166,29 +170,29 @@ class DeliveryController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Fetch transaction first
-            $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
+            // 1️⃣ Fetch transaction
+            $transaction = DB::table('transactions')
+                ->where('invoice_no', $transactionId)
+                ->first();
 
             if (!$transaction) {
                 DB::rollBack();
-                \Log::info('error', ["error" => 'Transaction_not_found']);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Transaction_not_found'
                 ], 404);
             }
 
-            // 2. Check if already assigned
-            if ($transaction->delivery_person !== null && $transaction->delivery_person != '') {
-                \Log::info('error', ["error" => 'Delivery_person_already_assigned']);
+            // 2️⃣ Already assigned check
+            if (!empty($transaction->delivery_person)) {
+                DB::rollBack();
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'Delivery_person_already_assigned',
-                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+                    'msg' => 'Delivery_person_already_assigned'
                 ]);
             }
 
-            // 3. Update
+            // 3️⃣ Update transaction
             DB::table('transactions')
                 ->where('invoice_no', $transactionId)
                 ->update([
@@ -199,21 +203,79 @@ class DeliveryController extends Controller
 
             DB::commit();
 
+            // ===============================
+            // CREATE IMAGE
+            // ===============================
+            $manager = new ImageManager(new Driver());
+
+            $img = $manager->create(800, 450)->fill('#ffffff');
+
+            $img->text('DELIVERY ASSIGNED', 400, 40, function ($font) {
+                $font->size(28);
+                $font->align('center');
+                $font->color('#000000');
+            });
+
+            $lines = [
+                "Order No: {$transaction->invoice_no}",
+                "Transaction ID: {$transaction->id}",
+                "Delivery Person ID: {$deliveryPersonId}",
+                "Status: PICK-UP",
+            ];
+
+            $y = 120;
+            foreach ($lines as $line) {
+                $img->text($line, 40, $y, function ($font) {
+                    $font->size(20);
+                    $font->color('#000000');
+                });
+                $y += 45;
+            }
+
+            // QR CODE
+            $qrPng = QrCode::format('png')
+                ->size(200)
+                ->generate($transaction->id);
+
+            $qrImage = $manager->read($qrPng);
+            $img->place($qrImage, 'top-right', 40, 100);
+
+            // Save image
+            $imagePath = public_path("scan_picked_up/assign_{$transaction->id}.png");
+            $img->save($imagePath);
+
+            // ===============================
+            // SEND TO TELEGRAM (ONE IMAGE)
+            // ===============================
+            $caption =
+                "📦 *Delivery Assigned*\n"
+                . "Order: {$transaction->invoice_no}\n"
+                . "Delivery Person ID: {$deliveryPersonId}";
+
+            TelegramService::sendPhotoToSecondGroup($imagePath, $caption);
+
+            // Optional cleanup
+            @unlink($imagePath);
+
             return response()->json([
                 'success' => 1,
                 'msg' => 'Delivery person assigned successfully',
-                'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+                'data' => [
+                    'transaction_id' => $transactionId,
+                    'delivery_person' => $deliveryPersonId
+                ]
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error($e);
+            \Log::error('assignDeliveryPerson error', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'success' => 0,
-                'msg' => 'Error while assigning delivery person',
-                'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+                'msg' => 'Error while assigning delivery person'
             ], 500);
         }
     }
+
 
     public function save(Request $request)
     {
