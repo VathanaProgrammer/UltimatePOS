@@ -214,8 +214,9 @@ class TelegramBotWebhookController extends Controller
     private function registerUserFromTelegramContact($contact, $chatId)
     {
         $phone = $contact['phone_number'];
-        $name  = $contact['first_name'] ?? 'Telegram User';
-
+        $firstName  = $contact['first_name'] ?? 'Telegram User';
+        $lastName  = $contact['last_name'] ?? '';
+        $name = trim($firstName . ' ' . $lastName);
         // Prevent duplicate phone numbers
         $exists = DB::table('contacts')
             ->where('mobile', $phone)
