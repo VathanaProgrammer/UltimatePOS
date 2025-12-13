@@ -676,7 +676,7 @@
 
         @if ($total_paid > 0 && !empty($receipt_details->total_riel_paid_label))
             <div class="flex-box">
-                <p class="width-50 text-right">Total Riel Paid</p>
+                <p class="width-50 text-right">{{ $receipt_details->total_riel_paid_label }}</p>
                 <p class="width-50 text-right">
                     {{ $currency_symbol }}
                     {{ number_format($total_paid * $exchange_rate, 0, $receipt_details->currency['decimal_separator'], $receipt_details->currency['thousand_separator']) }}
