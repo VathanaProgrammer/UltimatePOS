@@ -248,7 +248,8 @@ class DeliveryController extends Controller
                 ->margin(1)
                 ->generate((string) $transaction->id);
 
-            $img->insert($qrPng, 'top-right', 40, 100);
+            $qrImage = Image::make($qrPng);
+            $img->insert($qrImage, 'top-right', 40, 100);
 
             // Save image
             $imagePath = $dir . "/assign_{$transaction->id}.png";
