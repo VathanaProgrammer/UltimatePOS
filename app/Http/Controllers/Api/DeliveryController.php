@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
+use Intervention\Image\Facades\Image;
 use App\Services\TelegramService;
 use SebastianBergmann\Type\TrueType;
 use Illuminate\Support\Facades\Storage;
@@ -153,7 +155,7 @@ class DeliveryController extends Controller
 
     public function assignDeliveryPerson(Request $request)
     {
-        Log::info('assignDeliveryPerson request', $request->all());
+        \Log::info('assignDeliveryPerson request', $request->all());
 
         $transactionId = $request->input('transaction_id');
         $deliveryPersonId = auth()->id();
@@ -276,7 +278,7 @@ class DeliveryController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error('assignDeliveryPerson error', [
+            \Log::error('assignDeliveryPerson error', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
