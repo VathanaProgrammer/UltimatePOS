@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
-use Intervention\Image\Facades\Image;
 use App\Services\TelegramService;
 use SebastianBergmann\Type\TrueType;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DeliveryController extends Controller
@@ -153,14 +153,16 @@ class DeliveryController extends Controller
         }
     }
 
+
+
     public function assignDeliveryPerson(Request $request)
     {
-        \Log::info('assignDeliveryPerson request', $request->all());
-
+        \Log::info('error', ["error" => $request->all()]);
         $transactionId = $request->input('transaction_id');
         $deliveryPersonId = auth()->id();
 
-        if (empty($transactionId) || empty($deliveryPersonId)) {
+        if (!$transactionId || !$deliveryPersonId) {
+            \Log::info('error', ["error" => 'Transaction ID and Delivery Person ID are required']);
             return response()->json([
                 'success' => 0,
                 'msg' => 'Transaction ID and Delivery Person ID are required'
@@ -170,29 +172,29 @@ class DeliveryController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1️⃣ Fetch transaction
-            $transaction = DB::table('transactions')
-                ->where('invoice_no', $transactionId)
-                ->first();
+            // 1. Fetch transaction first
+            $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
 
             if (!$transaction) {
                 DB::rollBack();
+                \Log::info('error', ["error" => 'Transaction_not_found']);
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Transaction_not_found'
                 ], 404);
             }
 
-            // 2️⃣ Already assigned
-            if (!empty($transaction->delivery_person)) {
-                DB::rollBack();
+            // 2. Check if already assigned
+            if ($transaction->delivery_person !== null && $transaction->delivery_person != '') {
+                \Log::info('error', ["error" => 'Delivery_person_already_assigned']);
                 return response()->json([
                     'success' => 0,
-                    'msg' => 'Delivery_person_already_assigned'
-                ], 409);
+                    'msg' => 'Delivery_person_already_assigned',
+                    'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
+                ]);
             }
 
-            // 3️⃣ Update transaction
+            // 3. Update
             DB::table('transactions')
                 ->where('invoice_no', $transactionId)
                 ->update([
@@ -203,91 +205,18 @@ class DeliveryController extends Controller
 
             DB::commit();
 
-            // ===============================
-            // IMAGE GENERATION (Intervention v2)
-            // ===============================
-
-            // Make sure directory exists
-            $dir = public_path('scan_picked_up');
-            if (!is_dir($dir)) {
-                mkdir($dir, 0755, true);
-            }
-
-            // Create canvas
-            $img = Image::canvas(800, 450, '#ffffff');
-
-            // Title
-            $img->text('DELIVERY ASSIGNED', 400, 40, function ($font) {
-                $font->size(28);
-                $font->color('#000000');
-                $font->align('center');
-                $font->valign('top');
-            });
-
-            // Content
-            $lines = [
-                "Order No: {$transaction->invoice_no}",
-                "Transaction ID: {$transaction->id}",
-                "Delivery Person ID: {$deliveryPersonId}",
-                "Status: PICK-UP",
-            ];
-
-            $y = 120;
-            foreach ($lines as $line) {
-                $img->text($line, 40, $y, function ($font) {
-                    $font->size(20);
-                    $font->color('#000000');
-                    $font->align('left');
-                });
-                $y += 45;
-            }
-
-            // QR CODE
-            $qrPng = QrCode::format('png')
-                ->size(200)
-                ->margin(1)
-                ->generate((string) $transaction->id);
-
-            $qrImage = Image::make($qrPng);
-            $img->insert($qrImage, 'top-right', 40, 100);
-
-            // Save image
-            $imagePath = $dir . "/assign_{$transaction->id}.png";
-            $img->save($imagePath, 90, 'png');
-
-            // ===============================
-            // TELEGRAM SEND
-            // ===============================
-            $caption =
-                "📦 *Delivery Assigned*\n" .
-                "Order: {$transaction->invoice_no}\n" .
-                "Delivery Person ID: {$deliveryPersonId}";
-
-            TelegramService::sendPhotoToSecondGroup($imagePath, $caption);
-
-            // Cleanup
-            @unlink($imagePath);
-
             return response()->json([
                 'success' => 1,
                 'msg' => 'Delivery person assigned successfully',
-                'data' => [
-                    'transaction_id' => $transactionId,
-                    'delivery_person' => $deliveryPersonId
-                ]
+                'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
-
-            \Log::error('assignDeliveryPerson error', [
-                'message' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
-            ]);
-
+            \Log::error($e);
             return response()->json([
                 'success' => 0,
-                'msg' => 'Error while assigning delivery person'
+                'msg' => 'Error while assigning delivery person',
+                'data' => 'transaction id: ' . $transactionId . ' and delivery person: ' . $deliveryPersonId
             ], 500);
         }
     }
