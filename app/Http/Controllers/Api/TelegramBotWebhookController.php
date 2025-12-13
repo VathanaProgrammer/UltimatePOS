@@ -231,7 +231,6 @@ class TelegramBotWebhookController extends Controller
             $contactId = DB::table('contacts')->insertGetId([
                 'name' => $name,
                 'mobile' => $phone,
-                'telegram_chat_id' => $chatId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
