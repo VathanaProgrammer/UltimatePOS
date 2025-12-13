@@ -158,7 +158,7 @@ class TelegramService
     public static function sendImagesToGroup(array $files, string $caption = '')
     {
         $token = env('TELEGRAM_BOT_TOKEN');
-        $groupChatId = '-5083476540';
+        $groupChatId = '-4201761162';
 
         if (empty($files)) {
             Log::warning("TelegramService: No images to send");
