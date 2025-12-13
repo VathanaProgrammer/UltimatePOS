@@ -22,24 +22,23 @@ class DeliveryController extends Controller
         try {
             $deliveryId = auth()->id(); // current delivery user ID
 
-            // Fetch orders assigned to this delivery person
             $orders = DB::table('transactions as t')
                 ->leftJoin('contacts as c', 'c.id', '=', 't.contact_id')
                 ->select(
                     DB::raw("COALESCE(c.first_name, c.last_name, c.name) as customer_name"),
                     'c.mobile as phone',
-
                     DB::raw("
-            CASE
-                WHEN c.address_line_1 IS NOT NULL AND c.address_line_1 != '' 
-                     AND (c.address_line_2 IS NOT NULL AND c.address_line_2 != '')
-                    THEN CONCAT(c.address_line_1, ', ', c.address_line_2)
-                WHEN c.address_line_1 IS NOT NULL AND c.address_line_1 != ''
-                    THEN c.address_line_1
-                ELSE NULL
-            END AS address
-        "),
-
+                            CASE
+                                WHEN c.shipping_address IS NOT NULL AND c.shipping_address != '' 
+                                    THEN c.shipping_address
+                                WHEN c.address_line_1 IS NOT NULL AND c.address_line_1 != '' 
+                                    AND c.address_line_2 IS NOT NULL AND c.address_line_2 != ''
+                                    THEN CONCAT(c.address_line_1, ', ', c.address_line_2)
+                                WHEN c.address_line_1 IS NOT NULL AND c.address_line_1 != ''
+                                    THEN c.address_line_1
+                                ELSE NULL
+                            END AS address
+                        "),
                     't.invoice_no as order_no',
                     't.final_total as cod_amount',
                     't.shipping_status',
@@ -49,7 +48,6 @@ class DeliveryController extends Controller
                 ->whereNotIn('t.shipping_status', ['cancelled', 'delivered'])
                 ->orderBy('t.transaction_date', 'asc')
                 ->get();
-
 
             // Loop through orders and attach comments with user info
             $orders->transform(function ($order) {
@@ -85,8 +83,6 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
-
-
 
     public function decryptQr(Request $request)
     {
