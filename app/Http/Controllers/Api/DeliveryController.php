@@ -220,7 +220,7 @@ class DeliveryController extends Controller
         DB::beginTransaction();
         try {
             $groupId = '-5083476540'; // your Telegram group ID
-            $newId = "-4201761162";
+            $newId = "-1003265141698";
             $invoice = addcslashes($request->invoice_no, '_*[]()~`>#+-=|{}.!/');
 
             $text =
