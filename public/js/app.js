@@ -525,7 +525,25 @@ $(document).ready(function () {
 
     //On display of add contact modal
     $('.contact_modal').on('shown.bs.modal', function (e) {
-        $('input[type=radio][name="contact_type_radio"]').on('change', function () {
+        // Set default value if none selected
+        var defaultType = $('input[type=radio][name="contact_type_radio"]:checked').val();
+        if (!defaultType) {
+            // default to 'individual'
+            $('input[type=radio][name="contact_type_radio"][value="individual"]').prop('checked', true);
+            defaultType = 'individual';
+        }
+
+        // Show/hide sections based on default selection
+        if (defaultType == 'individual') {
+            $('div.individual').show();
+            $('div.business').hide();
+        } else if (defaultType == 'business') {
+            $('div.individual').hide();
+            $('div.business').show();
+        }
+
+        // Handle change events
+        $('input[type=radio][name="contact_type_radio"]').off('change').on('change', function () {
             if (this.value == 'individual') {
                 $('div.individual').show();
                 $('div.business').hide();
@@ -641,19 +659,19 @@ $(document).ready(function () {
     $('#mobile').on('input', function () {
         const mobile = $(this).val();
 
-        if(mobile.length > 7){
+        if (mobile.length > 7) {
             $.ajax({
                 url: "/check-mobile",
                 type: 'GET',
-                data: { mobile: mobile},
-                success: function(e){
-                    if(e.success == false){
+                data: { mobile: mobile },
+                success: function (e) {
+                    if (e.success == false) {
                         $('#input-mobile-error').text(e.msg || 'This is Contact is already exist!').show();
-                    }else{
-                         $('#input-mobile-error').hide();
+                    } else {
+                        $('#input-mobile-error').hide();
                     }
                 },
-                error: function(e){
+                error: function (e) {
 
                 }
             })
@@ -715,22 +733,22 @@ $(document).ready(function () {
             },
             success: function (result) {
                 if (result.is_mobile_exists == true) {
-                    // swal({
-                    //     title: LANG.sure,
-                    //     text: result.msg,
-                    //     icon: 'warning',
-                    //     buttons: true,
-                    //     dangerMode: true
-                    // }).then(willContinue => {
-                    //     if (willContinue) {
-                    //         submitContactForm(form);
-                    //     } else {
-                    //         $('#mobile').select();
-                    //     }
-                    // });
+                    swal({
+                        title: LANG.sure,
+                        text: result.msg,
+                        icon: 'warning',
+                        buttons: true,
+                        dangerMode: true
+                    }).then(willContinue => {
+                        if (willContinue) {
+                            submitContactForm(form);
+                        } else {
+                            $('#mobile').select();
+                        }
+                    });
 
-                
-                toastr.error(result.msg || "This contact with this phone number already exist!");
+
+                    // toastr.error(result.msg || "This contact with this phone number already exist!");
                 } else {
                     submitContactForm(form);
                 }
