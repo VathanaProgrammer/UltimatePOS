@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Crypt;
 use App\Services\TelegramService;
 use SebastianBergmann\Type\TrueType;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DeliveryController extends Controller
@@ -155,12 +153,12 @@ class DeliveryController extends Controller
 
     public function assignDeliveryPerson(Request $request)
     {
-        \Log::info('assignDeliveryPerson request', $request->all());
+        Log::info('assignDeliveryPerson request', $request->all());
 
         $transactionId = $request->input('transaction_id');
         $deliveryPersonId = auth()->id();
 
-        if (!$transactionId || !$deliveryPersonId) {
+        if (empty($transactionId) || empty($deliveryPersonId)) {
             return response()->json([
                 'success' => 0,
                 'msg' => 'Transaction ID and Delivery Person ID are required'
@@ -183,13 +181,13 @@ class DeliveryController extends Controller
                 ], 404);
             }
 
-            // 2️⃣ Already assigned check
+            // 2️⃣ Already assigned
             if (!empty($transaction->delivery_person)) {
                 DB::rollBack();
                 return response()->json([
                     'success' => 0,
                     'msg' => 'Delivery_person_already_assigned'
-                ]);
+                ], 409);
             }
 
             // 3️⃣ Update transaction
@@ -204,18 +202,27 @@ class DeliveryController extends Controller
             DB::commit();
 
             // ===============================
-            // CREATE IMAGE
+            // IMAGE GENERATION (Intervention v2)
             // ===============================
-            $manager = new ImageManager(new Driver());
 
-            $img = $manager->create(800, 450)->fill('#ffffff');
+            // Make sure directory exists
+            $dir = public_path('scan_picked_up');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
 
+            // Create canvas
+            $img = Image::canvas(800, 450, '#ffffff');
+
+            // Title
             $img->text('DELIVERY ASSIGNED', 400, 40, function ($font) {
                 $font->size(28);
-                $font->align('center');
                 $font->color('#000000');
+                $font->align('center');
+                $font->valign('top');
             });
 
+            // Content
             $lines = [
                 "Order No: {$transaction->invoice_no}",
                 "Transaction ID: {$transaction->id}",
@@ -228,6 +235,7 @@ class DeliveryController extends Controller
                 $img->text($line, 40, $y, function ($font) {
                     $font->size(20);
                     $font->color('#000000');
+                    $font->align('left');
                 });
                 $y += 45;
             }
@@ -235,26 +243,26 @@ class DeliveryController extends Controller
             // QR CODE
             $qrPng = QrCode::format('png')
                 ->size(200)
-                ->generate($transaction->id);
+                ->margin(1)
+                ->generate((string) $transaction->id);
 
-            $qrImage = $manager->read($qrPng);
-            $img->place($qrImage, 'top-right', 40, 100);
+            $img->insert($qrPng, 'top-right', 40, 100);
 
             // Save image
-            $imagePath = public_path("scan_picked_up/assign_{$transaction->id}.png");
-            $img->save($imagePath);
+            $imagePath = $dir . "/assign_{$transaction->id}.png";
+            $img->save($imagePath, 90, 'png');
 
             // ===============================
-            // SEND TO TELEGRAM (ONE IMAGE)
+            // TELEGRAM SEND
             // ===============================
             $caption =
-                "📦 *Delivery Assigned*\n"
-                . "Order: {$transaction->invoice_no}\n"
-                . "Delivery Person ID: {$deliveryPersonId}";
+                "📦 *Delivery Assigned*\n" .
+                "Order: {$transaction->invoice_no}\n" .
+                "Delivery Person ID: {$deliveryPersonId}";
 
             TelegramService::sendPhotoToSecondGroup($imagePath, $caption);
 
-            // Optional cleanup
+            // Cleanup
             @unlink($imagePath);
 
             return response()->json([
@@ -265,9 +273,14 @@ class DeliveryController extends Controller
                     'delivery_person' => $deliveryPersonId
                 ]
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            \Log::error('assignDeliveryPerson error', ['error' => $e->getMessage()]);
+
+            Log::error('assignDeliveryPerson error', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
 
             return response()->json([
                 'success' => 0,
@@ -275,7 +288,6 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
-
 
     public function save(Request $request)
     {
