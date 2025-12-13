@@ -268,6 +268,7 @@ class TelegramBotWebhookController extends Controller
                 'business_id' => $businessId,
                 'created_by' => $createdBy,
                 'name' => $name,
+                'type' => 'customer',
                 'mobile' => $phone,
                 'created_at' => now(),
                 'updated_at' => now(),
