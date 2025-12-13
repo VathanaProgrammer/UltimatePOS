@@ -293,8 +293,8 @@ class DeliveryController extends Controller
                 if (!empty($user->last_name)) {
                     $fullName .= ' ' . $user->last_name;
                 }
-                $email = $user->email ?? '';
-                $userInfoLine = "Delivered by: {$fullName}" . ($email ? " ({$email})" : "");
+                $username = $user->username ?? '';
+                $userInfoLine = "ដឹកជញ្ជូនដោយ: {$fullName}" . ($username ? " ({$username})" : "");
 
                 // Send all photos to Telegram
                 TelegramService::sendImagesToGroup($photoPaths, $userInfoLine);
