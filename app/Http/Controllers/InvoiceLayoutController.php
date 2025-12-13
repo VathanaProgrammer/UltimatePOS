@@ -182,6 +182,7 @@ class InvoiceLayoutController extends Controller
             ]);
 
             $input = $request->only(['name', 'header_text',
+                'total_riel_paid_label',
                 'invoice_no_prefix', 'invoice_heading', 'sub_total_label', 'discount_label', 'tax_label', 'total_label', 'highlight_color', 'footer_text', 'invoice_heading_not_paid', 'invoice_heading_paid', 'total_due_label', 'customer_label', 'paid_label', 'sub_heading_line1', 'sub_heading_line2',
                 'sub_heading_line3', 'sub_heading_line4', 'sub_heading_line5',
                 'table_product_label', 'table_qty_label', 'table_unit_price_label',

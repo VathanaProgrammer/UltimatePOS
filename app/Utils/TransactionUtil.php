@@ -978,6 +978,8 @@ class TransactionUtil extends Util
             'table_qty_label' => $il->table_qty_label,
             'table_unit_price_label' => $il->table_unit_price_label,
             'table_subtotal_label' => $il->table_subtotal_label,
+            "total_riel_paid_label" => $il->total_riel_paid_label,
+            'exchange_rate' => $transaction->exchange_rate ?? 1, // new
         ];
 
         //Display name
