@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Jobs\SendScanToTelegram;
 
 class DeliveryController extends Controller
 {
@@ -204,6 +205,12 @@ class DeliveryController extends Controller
                 ]);
 
             DB::commit();
+
+            // 🚀 async telegram
+            SendScanToTelegram::dispatch(
+                $transactionId,
+                $deliveryPersonId
+            );
 
             return response()->json([
                 'success' => 1,

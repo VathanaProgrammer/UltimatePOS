@@ -248,4 +248,66 @@ class TelegramService
 
         return true;
     }
+
+    public static function generateScanImage(string $invoiceNo, int $deliveryPersonId): array
+    {
+        $dir = storage_path('app/telegram_scans');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $fileName = "scan_{$invoiceNo}_" . time() . ".png";
+        $path = $dir . '/' . $fileName;
+
+        $img = imagecreatetruecolor(700, 350);
+        $white = imagecolorallocate($img, 255, 255, 255);
+        $black = imagecolorallocate($img, 0, 0, 0);
+
+        imagefill($img, 0, 0, $white);
+
+        imagestring($img, 5, 30, 40, "SCAN CONFIRMED", $black);
+        imagestring($img, 5, 30, 100, "Invoice: {$invoiceNo}", $black);
+        imagestring($img, 5, 30, 160, "Delivery Person ID: {$deliveryPersonId}", $black);
+        imagestring($img, 4, 30, 220, "Time: " . now(), $black);
+
+        imagepng($img, $path);
+        imagedestroy($img);
+
+        return [
+            'path' => $path,
+            'name' => $fileName
+        ];
+    }
+
+    public static function sendScanImageToGroup(
+        string $groupChatId,
+        string $imagePath,
+        string $caption = ''
+    ) {
+        $token = env('TELEGRAM_BOT_TOKEN');
+
+        if (!file_exists($imagePath)) {
+            Log::error('TelegramService: Image not found', ['path' => $imagePath]);
+            return false;
+        }
+
+        $response = Http::withoutVerifying()
+            ->attach(
+                'photo',
+                fopen($imagePath, 'r'),
+                basename($imagePath)
+            )
+            ->post("https://api.telegram.org/bot{$token}/sendPhoto", [
+                'chat_id' => $groupChatId,
+                'caption' => $caption,
+                'parse_mode' => 'Markdown'
+            ]);
+
+        Log::info('Telegram scan image sent', [
+            'chat_id' => $groupChatId,
+            'response' => $response->json()
+        ]);
+
+        return true;
+    }
 }
