@@ -327,6 +327,8 @@ class TelegramService
 
         // Convert HTML to Image
         Browsershot::html($html)
+            ->setNodeBinary('/usr/bin/node')
+            ->setNpmBinary('/usr/bin/npm')
             ->windowSize(700, 400)  // adjust width/height if needed
             ->save($path);
 
