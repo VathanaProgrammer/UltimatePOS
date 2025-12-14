@@ -329,14 +329,12 @@ class TelegramService
         Browsershot::html($html)
             ->setNodeBinary('/usr/bin/node')
             ->setNpmBinary('/usr/bin/npm')
-            ->setChromePath('/snap/bin/chromium')
+            ->setChromePath('/snap/bin/chromium')  // Snap Chromium
             ->addOption('--no-sandbox')
             ->addOption('--disable-setuid-sandbox')
-            ->userDataDir('/tmp/chrome-user-data')
+            ->userDataDir('/tmp/chrome-user-data') // must exist and writable
             ->windowSize(700, 400)
             ->save($path);
-
-
 
         return [
             'path' => $path,
