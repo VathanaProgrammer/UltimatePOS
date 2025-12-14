@@ -329,6 +329,7 @@ class TelegramService
         Browsershot::html($html)
             ->setNodeBinary('/usr/bin/node')
             ->setNpmBinary('/usr/bin/npm')
+            ->setChromePath('/usr/bin/chromium-browser')
             ->windowSize(700, 400)  // adjust width/height if needed
             ->save($path);
 
