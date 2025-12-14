@@ -332,6 +332,7 @@ class TelegramService
             ->setChromePath('/snap/bin/chromium')
             ->addOption('--no-sandbox')
             ->addOption('--disable-setuid-sandbox')
+            ->userDataDir('/tmp/chrome-user-data')
             ->windowSize(700, 400)
             ->save($path);
 
