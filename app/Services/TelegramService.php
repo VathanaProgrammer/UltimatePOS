@@ -331,9 +331,6 @@ class TelegramService
             ->setNpmBinary('/usr/bin/npm')
             ->setChromePath('/usr/bin/chromium-browser')
             ->addOption('--no-sandbox')
-            ->addOption('--disable-setuid-sandbox')
-            ->addOption('--disable-dev-shm-usage')
-            ->addOption('--user-data-dir=/var/www/.chromium')
             ->windowSize(700, 400)
             ->save($path);
 
