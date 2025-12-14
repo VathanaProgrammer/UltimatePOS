@@ -5,9 +5,9 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use App\ApiModel\ApiUser;
 use App\ApiModel\TelegramStartToken;
-use Spatie\Browsershot\Browsershot;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TelegramService
 {
@@ -250,9 +250,9 @@ class TelegramService
         return true;
     }
 
-    public static function generateScanImage(string $invoiceNo, int $deliveryPersonId): array
+    public static function generateScanImage(string $invoiceNo, int $deliveryPersonId, $contact = null, $mobile = '0123456789'): array
     {
-        $dir = public_path('scan_picked_up');
+        $dir = public_path('/scan_picked_up');
         if (!file_exists($dir)) {
             mkdir($dir, 0755, true);
         }
@@ -260,17 +260,51 @@ class TelegramService
         $fileName = "scan_{$invoiceNo}_" . time() . ".png";
         $path = $dir . '/' . $fileName;
 
-        $img = imagecreatetruecolor(700, 350);
+        $imgWidth = 350;
+        $imgHeight = 250;
+        $img = imagecreatetruecolor($imgWidth, $imgHeight);
+
         $white = imagecolorallocate($img, 255, 255, 255);
         $black = imagecolorallocate($img, 0, 0, 0);
 
         imagefill($img, 0, 0, $white);
 
-        imagestring($img, 5, 30, 40, "SCAN CONFIRMED", $black);
-        imagestring($img, 5, 30, 100, "Invoice: {$invoiceNo}", $black);
-        imagestring($img, 5, 30, 160, "Delivery Person ID: {$deliveryPersonId}", $black);
-        imagestring($img, 4, 30, 220, "Time: " . now(), $black);
+        // Top-left sender info
+        imagestring($img, 3, 10, 10, "SOB", $black);
+        imagestring($img, 2, 10, 30, "Mobile: {$mobile}", $black);
+        imagestring($img, 2, 10, 50, "Date: " . now()->format('d/m/Y H:iA'), $black);
 
+        // Invoice & delivery info
+        imagestring($img, 3, 10, 80, "SCAN CONFIRMED", $black);
+        imagestring($img, 2, 10, 100, "Invoice: {$invoiceNo}", $black);
+        imagestring($img, 2, 10, 120, "Delivery Person ID: {$deliveryPersonId}", $black);
+        imagestring($img, 2, 10, 140, "Time: " . now()->format('H:i:s'), $black);
+
+        // Receiver info
+        $receiverName = $contact?->name ?? '-';
+        $receiverMobile = $contact?->mobile ?? '-';
+        $receiverAddress = $contact
+            ? ($contact->address_line_1 && $contact->address_line_2
+                ? $contact->address_line_1 . ', ' . $contact->address_line_2
+                : $contact->address_line_1 ?? ($contact->address_line_2 ?? '-'))
+            : '-';
+
+        imagestring($img, 2, 10, 170, "Receiver: {$receiverName}", $black);
+        imagestring($img, 2, 10, 190, "Mobile: {$receiverMobile}", $black);
+        imagestring($img, 2, 10, 210, "Address: {$receiverAddress}", $black);
+
+        // QR code generation with SimpleSoftwareIO\QrCode
+        $qrData = "Invoice: {$invoiceNo}, DeliveryPerson: {$deliveryPersonId}";
+        $qrFile = $dir . '/qr_' . time() . '.png';
+        QrCode::format('png')->size(70)->generate($qrData, $qrFile);
+
+        // Paste QR onto main image
+        $qrImg = imagecreatefrompng($qrFile);
+        imagecopy($img, $qrImg, $imgWidth - 80, 10, 0, 0, imagesx($qrImg), imagesy($qrImg));
+        imagedestroy($qrImg);
+        //unlink($qrFile); // optional, clean temp QR
+
+        // Save final image
         imagepng($img, $path);
         imagedestroy($img);
 
@@ -310,35 +344,5 @@ class TelegramService
         ]);
 
         return true;
-    }
-
-    public static function generateDeliveryLabelImage($transaction, $qrcode, $localtion): array
-    {
-        $dir = public_path('scan_picked_up');
-        if (!file_exists($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        $fileName = "label_{$transaction->invoice_no}_" . time() . ".png";
-        $path = $dir . '/' . $fileName;
-
-        // Render Blade HTML
-        $html = view('sale_pos.receipts.delivery_label', compact('transaction', 'qrcode', 'localtion'))->render();
-
-        // Convert HTML to Image
-        Browsershot::html($html)
-            ->setNodeBinary('/usr/bin/node')
-            ->setNpmBinary('/usr/bin/npm')
-            ->setChromePath('/usr/bin/chromium-browser') // system Chromium
-            ->addOption('--no-sandbox')
-            ->addOption('--disable-setuid-sandbox')
-            ->userDataDir('/tmp/chrome-user-data') // writable temp folder
-            ->windowSize(700, 400)
-            ->save($path);
-
-        return [
-            'path' => $path,
-            'name' => $fileName
-        ];
     }
 }
