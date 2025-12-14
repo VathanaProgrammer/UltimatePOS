@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use App\ApiModel\ApiUser;
 use App\ApiModel\TelegramStartToken;
+use Spatie\Browsershot\Browsershot;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
@@ -310,4 +311,29 @@ class TelegramService
 
         return true;
     }
+
+    public static function generateDeliveryLabelImage($transaction, $qrcode, $localtion): array
+    {
+        $dir = public_path('scan_picked_up');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $fileName = "label_{$transaction->invoice_no}_" . time() . ".png";
+        $path = $dir . '/' . $fileName;
+
+        // Render Blade HTML
+        $html = view('sale_pos.receipts.delivery_label', compact('transaction', 'qrcode', 'localtion'))->render();
+
+        // Convert HTML to Image
+        Browsershot::html($html)
+            ->windowSize(700, 400)  // adjust width/height if needed
+            ->save($path);
+
+        return [
+            'path' => $path,
+            'name' => $fileName
+        ];
+    }
+
 }

@@ -46,6 +46,7 @@
         "pusher/pusher-php-server": "^5.0",
         "razorpay/razorpay": "2.*",
         "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/browsershot": "^5.1",
         "spatie/flysystem-dropbox": "^2.0",
         "spatie/laravel-activitylog": "^4.4",
         "spatie/laravel-backup": "^8.0",
