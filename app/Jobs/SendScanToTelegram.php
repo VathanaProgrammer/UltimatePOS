@@ -32,6 +32,6 @@ class SendScanToTelegram implements ShouldQueue
             "📦 *Scanned*\nInvoice: {$this->invoiceNo}"
         );
 
-        @unlink($image['path']);
+        // @unlink($image['path']);
     }
 }

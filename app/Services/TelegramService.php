@@ -251,7 +251,7 @@ class TelegramService
 
     public static function generateScanImage(string $invoiceNo, int $deliveryPersonId): array
     {
-        $dir = storage_path('app/telegram_scans');
+        $dir = public_path('scan_picked_up');
         if (!file_exists($dir)) {
             mkdir($dir, 0755, true);
         }
