@@ -1,26 +1,16 @@
 <?php
+$font = '/var/www/html/UltimatePOS/public/fonts/khmer/Battambang-Regular.ttf';
+$text = 'សួស្តី';
+
+// Create image
+$im = imagecreatetruecolor(400, 100);
+$white = imagecolorallocate($im, 255, 255, 255);
+$black = imagecolorallocate($im, 0, 0, 0);
+imagefill($im, 0, 0, $white);
+
+// Render text (requires PHP >=8.1 with HarfBuzz support)
+imagettftext($im, 24, 0, 10, 50, $black, $font, $text);
+
 header('Content-Type: image/png');
-
-$img = new Imagick();
-$img->newImage(400, 100, new ImagickPixel('white'));
-$img->setImageFormat('png');
-
-$draw = new ImagickDraw();
-
-// Khmer text
-$khmerText = 'សួស្តី';
-$khmerFont = '/var/www/html/UltimatePOS/public/fonts/khmer/Battambang-Regular.ttf';
-$draw->setFont($khmerFont);
-$draw->setFontSize(24);
-$draw->setFillColor(new ImagickPixel('black'));
-$img->annotateImage($draw, 10, 40, 0, $khmerText);
-
-// English text
-$englishText = 'Hello';
-$englishFont = '/var/www/html/UltimatePOS/public/fonts/latin/NotoSans-Regular.ttf';
-$draw->setFont($englishFont);
-$draw->setFontSize(24);
-$img->annotateImage($draw, 10, 80, 0, $englishText);
-
-echo $img->getImageBlob();
-$img->destroy();
+imagepng($im);
+imagedestroy($im);
