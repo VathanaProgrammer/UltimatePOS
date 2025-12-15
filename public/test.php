@@ -1,17 +1,16 @@
 <?php
 header('Content-Type: image/png');
 
-$img = imagecreatetruecolor(400, 100);
-$white = imagecolorallocate($img, 255, 255, 255);
-$black = imagecolorallocate($img, 0, 0, 0);
-imagefill($img, 0, 0, $white);
+$img = new Imagick();
+$img->newImage(400, 100, new ImagickPixel('white'));
+$img->setImageFormat('png');
 
-$font = __DIR__ . '/fonts/khmer/Battambang-Regular.ttf';
-$text = 'សួស្តី';
+$draw = new ImagickDraw();
+$draw->setFont('/var/www/html/UltimatePOS/public/fonts/khmer/Battambang-Regular.ttf');
+$draw->setFontSize(30);
+$draw->setFillColor('black');
 
-if (!file_exists($font)) die("Font not found: $font");
-
-imagettftext($img, 20, 0, 10, 50, $black, $font, $text);
-
-imagepng($img);
-imagedestroy($img);
+// Use pango markup
+$img->annotateImage($draw, 10, 50, 0, "សួស្តី"); // works better if Imagick compiled with Pango
+$img->writeImage('khmer_test.png');
+$img->destroy();
