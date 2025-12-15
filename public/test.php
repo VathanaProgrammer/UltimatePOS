@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: image/png');
+
 $khmerText = 'សួស្តី';
 $englishText = 'Hello';
 
@@ -19,5 +20,8 @@ SVG;
 $img = new Imagick();
 $img->readImageBlob($svg);
 $img->setImageFormat('png');
-$img->writeImage('test.png');
+
+// Output directly to browser
+echo $img->getImageBlob();
+
 $img->destroy();
