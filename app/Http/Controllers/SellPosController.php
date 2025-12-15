@@ -2077,10 +2077,10 @@ class SellPosController extends Controller
 
                 $qrText = (string) $transaction->id;
 
-                // Make a new Generator instance and force GD backend
+                // Force GD backend
                 $qr = new Generator();
-                $qr->setWriterByName('png');   // force PNG output
-                $qr->setBackend(new \BaconQrCode\Renderer\Image\SvgImageBackEnd()); // optional, GD usually works automatically
+                $qr->setWriterByName('png');   // PNG output forces GD usage
+                $qr->setWriterOptions(['image' => 'gd']); // tells Bacon to use GD
 
                 $qrcode = base64_encode(
                     $qr->size(400)
