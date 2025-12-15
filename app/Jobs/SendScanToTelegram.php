@@ -36,7 +36,7 @@ class SendScanToTelegram implements ShouldQueue
         $this->invoiceNo,
         $this->deliveryPersonId,
         $transaction->contact,                 // 👈 OBJECT
-        $transaction->contact?->mobile ?? '-'  // 👈 STRING
+        $transaction->location?->mobile ?? '-'  // 👈 STRING
     );
 
     TelegramService::sendScanImageToGroup(
