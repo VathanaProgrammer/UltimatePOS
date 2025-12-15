@@ -46,7 +46,7 @@ class SendScanToTelegram implements ShouldQueue
         TelegramService::sendScanImageToGroup(
             '-5047451233',
             $image['path'],
-            "📦 Scanned\nInvoice: {$this->invoiceNo}\n}"
+            "📦 Scanned\nInvoice: {$this->invoiceNo}\n"
         );
     }
 }
