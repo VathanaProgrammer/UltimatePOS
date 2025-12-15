@@ -27,8 +27,6 @@
 
 namespace App\Http\Controllers;
 
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use SimpleSoftwareIO\QrCode\Generator;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevel;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
@@ -142,7 +140,7 @@ class SellPosController extends Controller
         if (!auth()->user()->can('sell.view') && !auth()->user()->can('sell.create')) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         $business_id = request()->session()->get('user.business_id');
 
         $business_locations = BusinessLocation::forDropdown($business_id, false);
@@ -2075,20 +2073,16 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-                $qrText = (string) $transaction->id;
-
-                // Force GD backend
-                $qr = new Generator();
-                $qr->setWriterByName('png');   // PNG output forces GD usage
-                $qr->setWriterOptions(['image' => 'gd']); // tells Bacon to use GD
+                // Clean, simple QR using SimpleSoftwareIO\QrCode
+                $qrText = (string) $transaction->id;   // <-- no encryption, clean short QR
 
                 $qrcode = base64_encode(
-                    $qr->size(400)
+                    \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+                        ->size(400)
                         ->errorCorrection('L')
-                        ->margin(0)
+                        ->margin(0)    // <-- THIS IS THE CORRECT WAY
                         ->generate($qrText)
                 );
-
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
@@ -2209,7 +2203,7 @@ class SellPosController extends Controller
         }
     }
 
-
+    
 
     /**
      * Gives suggetion for product based on category
