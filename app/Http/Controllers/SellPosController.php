@@ -140,7 +140,7 @@ class SellPosController extends Controller
         if (!auth()->user()->can('sell.view') && !auth()->user()->can('sell.create')) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         $business_id = request()->session()->get('user.business_id');
 
         $business_locations = BusinessLocation::forDropdown($business_id, false);
@@ -2077,12 +2077,12 @@ class SellPosController extends Controller
                 $qrText = (string) $transaction->id;   // <-- no encryption, clean short QR
 
                 $qrcode = base64_encode(
-                    \SimpleSoftwareIO\QrCode\Facades\QrCode::size(400)
+                    \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+                        ->size(400)
                         ->errorCorrection('L')
-                        ->margin(0)
+                        ->margin(0)    // <-- THIS IS THE CORRECT WAY
                         ->generate($qrText)
                 );
-
                 // Render delivery label Blade
                 $delivery_label_html = view('sale_pos.receipts.delivery_label', compact(
                     'transaction',
@@ -2203,7 +2203,7 @@ class SellPosController extends Controller
         }
     }
 
-
+    
 
     /**
      * Gives suggetion for product based on category
