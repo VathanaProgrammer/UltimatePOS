@@ -1,17 +1,22 @@
 <?php
-header('Content-Type: image/png');
+$khmerText = 'សួស្តី';
+$englishText = 'Hello';
 
-$img = imagecreatetruecolor(400, 100);
-$white = imagecolorallocate($img, 255, 255, 255);
-$black = imagecolorallocate($img, 0, 0, 0);
-imagefill($img, 0, 0, $white);
+$svg = <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100">
+  <style>
+    @font-face { font-family: Battambang; src: url('fonts/khmer/Battambang-Regular.ttf'); }
+    @font-face { font-family: NotoSans; src: url('fonts/latin/NotoSans-Regular.ttf'); }
+    .kh { font-family: Battambang; font-size: 24px; }
+    .en { font-family: NotoSans; font-size: 24px; }
+  </style>
+  <text x="10" y="40" class="kh">$khmerText</text>
+  <text x="10" y="80" class="en">$englishText</text>
+</svg>
+SVG;
 
-$font = __DIR__ . '/fonts/khmer/Battambang-Regular.ttf';
-$text = 'សួស្តី';
-
-if (!file_exists($font)) die("Font not found: $font");
-
-imagettftext($img, 20, 0, 10, 50, $black, $font, $text);
-
-imagepng($img);
-imagedestroy($img);
+$img = new Imagick();
+$img->readImageBlob($svg);
+$img->setImageFormat('png');
+$img->writeImage('test.png');
+$img->destroy();
