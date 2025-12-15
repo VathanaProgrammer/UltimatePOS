@@ -250,6 +250,25 @@ class TelegramService
         return true;
     }
 
+    private static function drawText($img, $text, $x, $y, $size = 10)
+    {
+        $font = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
+        $black = imagecolorallocate($img, 0, 0, 0);
+
+        imagettftext(
+            $img,      // image
+            $size,     // font size
+            0,         // angle
+            $x,        // x
+            $y,        // y
+            $black,    // color
+            $font,     // font file
+            $text      // text
+        );
+    }
+
+
+
     public static function generateScanImage(
         string $invoiceNo,
         int $deliveryPersonId,
@@ -269,22 +288,20 @@ class TelegramService
         $img = imagecreatetruecolor($imgWidth, $imgHeight);
 
         $white = imagecolorallocate($img, 255, 255, 255);
-        $black = imagecolorallocate($img, 0, 0, 0);
         imagefill($img, 0, 0, $white);
 
-        // 🟢 SENDER (LOCATION)
+        // 🟢 SENDER
         $senderMobile = $location?->mobile ?? '0123456789';
-
-        imagestring($img, 3, 10, 10, "SOB", $black);
-        imagestring($img, 2, 10, 30, "Mobile: {$senderMobile}", $black);
-        imagestring($img, 2, 10, 50, now()->format('d/m/Y H:iA'), $black);
+        self::drawText($img, "SOB", 10, 20, 14);
+        self::drawText($img, "Mobile: {$senderMobile}", 10, 40, 12);
+        self::drawText($img, now()->format('d/m/Y H:iA'), 10, 60, 12);
 
         // 🟢 INVOICE
-        imagestring($img, 3, 10, 80, "SCAN CONFIRMED", $black);
-        imagestring($img, 2, 10, 100, "Invoice: {$invoiceNo}", $black);
-        imagestring($img, 2, 10, 120, "Delivery ID: {$deliveryPersonId}", $black);
+        self::drawText($img, "SCAN CONFIRMED", 10, 90, 14);
+        self::drawText($img, "Invoice: {$invoiceNo}", 10, 110, 12);
+        self::drawText($img, "Delivery ID: {$deliveryPersonId}", 10, 130, 12);
 
-        // 🟢 RECEIVER (CONTACT)
+        // 🟢 RECEIVER
         $receiverName = $contact?->name ?? '-';
         $receiverMobile = $contact?->mobile ?? '-';
         $receiverAddress = $contact
@@ -293,19 +310,15 @@ class TelegramService
                 : ($contact->address_line_1 ?? $contact->address_line_2 ?? '-'))
             : '-';
 
-        imagestring($img, 2, 10, 150, "Receiver: {$receiverName}", $black);
-        imagestring($img, 2, 10, 170, "Mobile: {$receiverMobile}", $black);
-        imagestring($img, 2, 10, 190, "Address: {$receiverAddress}", $black);
+        self::drawText($img, "Receiver: {$receiverName}", 10, 160, 12);
+        self::drawText($img, "Mobile: {$receiverMobile}", 10, 180, 12);
+        self::drawText($img, "Address: {$receiverAddress}", 10, 200, 12);
 
-        // 🟢 QR (SAME IDEA AS BLADE)
+        // 🟢 QR CODE
         $qrText = (string) $invoiceNo;
         $qrFile = $dir . '/qr_' . time() . '.png';
 
-        QrCode::format('png')
-            ->size(120)
-            ->margin(0)
-            ->generate($qrText, $qrFile);
-
+        QrCode::format('png')->size(120)->margin(0)->generate($qrText, $qrFile);
         $qrImg = imagecreatefrompng($qrFile);
         imagecopy($img, $qrImg, $imgWidth - 130, 10, 0, 0, imagesx($qrImg), imagesy($qrImg));
         imagedestroy($qrImg);
@@ -319,7 +332,6 @@ class TelegramService
             'name' => $fileName,
         ];
     }
-
     public static function sendScanImageToGroup(
         string $groupChatId,
         string $imagePath,
