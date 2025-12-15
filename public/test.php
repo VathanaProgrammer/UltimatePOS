@@ -10,4 +10,5 @@ $text = 'សួស្តី'; // Some Khmer text
 imagettftext($img, 20, 0, 10, 50, $black, $font, $text);
 imagepng($img, 'test.png');
 imagedestroy($img);
+echo $text;
 echo "Done";
