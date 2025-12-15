@@ -64,16 +64,22 @@ Route::post('/collector/save', [CustomerController::class, 'store']);
 Route::post('/delivery/login', [DeliveryAuthController::class, 'login']);
 Route::post('/delivery/register', [DeliveryAuthController::class, 'register']);
 
-Route::middleware(['jwt.delivery'])->group(function () {
-    Route::get('/delivery/profile', [DeliveryAuthController::class, 'profile']);
-    Route::post('/delivery/logout', [DeliveryAuthController::class, 'logout']);
-    Route::get('/delivery/orders', [DeliveryController::class, 'getOrders']);
-    Route::post('/delivery/decrypt-qr', [DeliveryController::class, 'decryptQr']);
-    Route::post('/delivery/confirm-delivery', [DeliveryController::class, 'assignDeliveryPerson']);
-    Route::post('/delivery/save-drop-off', [DeliveryController::class, 'save']);
-    Route::post('/delivery/save-comment', [DeliveryController::class, 'save_comment']);
-    Route::post('delivery/update-profile-pic', [DeliveryController::class, 'update_profile_pic']);
-});
+Route::middleware(['jwt.delivery'])
+    ->prefix('delivery')
+    ->group(function () {
+
+        Route::get('profile', [DeliveryAuthController::class, 'profile']);
+        Route::post('logout', [DeliveryAuthController::class, 'logout']);
+
+        Route::get('orders', [DeliveryController::class, 'getOrders']);
+        Route::post('decrypt-qr', [DeliveryController::class, 'decryptQr']);
+        Route::post('confirm-delivery', [DeliveryController::class, 'assignDeliveryPerson']);
+        Route::post('save-drop-off', [DeliveryController::class, 'save']);
+        Route::post('save-comment', [DeliveryController::class, 'save_comment']);
+        Route::post('update-profile-pic', [DeliveryController::class, 'update_profile_pic']);
+        Route::get('getMaps', [DeliveryController::class, 'getMapData']);
+    });
+
 
 Route::get('delivery/check-session', function () {
     return response()->json(['alive' => true]);

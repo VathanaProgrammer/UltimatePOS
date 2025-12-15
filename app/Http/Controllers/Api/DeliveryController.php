@@ -88,6 +88,33 @@ class DeliveryController extends Controller
         }
     }
 
+    public function getMapData()
+    {
+        try {
+            $maps = DB::table('c_customers')
+                ->select(
+                    'id',
+                    'name',
+                    'phone',
+                    'latitude',
+                    'longitude'
+                )
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $maps
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function decryptQr(Request $request)
     {
         $qrText = $request->input('qr_text');
@@ -174,7 +201,7 @@ class DeliveryController extends Controller
 
             // 1. Fetch transaction first
             $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
-            
+
             if (!$transaction) {
                 DB::rollBack();
                 \Log::info('error', ["error" => 'Transaction_not_found']);
