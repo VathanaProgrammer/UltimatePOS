@@ -193,10 +193,10 @@ class TelegramBotWebhookController extends Controller
     {
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
+        $response = Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
             'chat_id' => $chatId,
             'text' => "Please share your phone number to complete registration.",
-            'reply_markup' => [
+            'reply_markup' => json_encode([
                 "keyboard" => [
                     [
                         [
@@ -207,9 +207,12 @@ class TelegramBotWebhookController extends Controller
                 ],
                 "one_time_keyboard" => true,
                 "resize_keyboard" => true
-            ]
+            ])
         ]);
+
+        \Log::info('Telegram sendMessage response', ['body' => $response->body()]);
     }
+
 
     private function registerUserFromTelegramContact($contact, $chatId)
     {
