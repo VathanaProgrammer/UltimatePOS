@@ -256,7 +256,7 @@ class TelegramService
 
     private static function drawText(ImagickDraw $draw, $text, $x, $y, $size = 12)
     {
-        // Path to fonts
+        // Path to Battambang font (supports Khmer)
         $khmerFont = public_path('fonts/khmer/Battambang-Regular.ttf');
         $latinFont = public_path('fonts/latin/NotoSans-Regular.ttf');
 
@@ -268,13 +268,13 @@ class TelegramService
         $firstChar = mb_substr($text, 0, 1, 'UTF-8');
         $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar) ? $khmerFont : $latinFont;
 
-        // Save font info for GD rendering
         $draw->setFont($font);
         $draw->setFontSize($size);
         $draw->setFillColor(new ImagickPixel('black'));
         $draw->setGravity(Imagick::GRAVITY_NORTHWEST);
     }
 
+    // Updated scan image generator using Imagick + Pango
     public static function generateScanImage(string $invoiceNo, int $deliveryPersonId, $contact = null, $location = null): array
     {
         $dir = public_path('/scan_picked_up');
@@ -293,7 +293,7 @@ class TelegramService
 
         $draw = new ImagickDraw();
 
-        // Lines of text
+        // Use Pango markup to render text properly
         $senderMobile = $location?->mobile ?? '0123456789';
         $lines = [
             "SOB",
@@ -318,33 +318,11 @@ class TelegramService
             ]);
         }
 
-        // Render text using GD for Khmer + English
         $y = 20;
         foreach ($lines as $line) {
-            $firstChar = mb_substr($line, 0, 1, 'UTF-8');
-            $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar)
-                ? public_path('fonts/khmer/Battambang-Regular.ttf')
-                : public_path('fonts/latin/NotoSans-Regular.ttf');
-
-            $gdImg = imagecreatetruecolor($imgWidth, 40);
-            $white = imagecolorallocate($gdImg, 255, 255, 255);
-            $black = imagecolorallocate($gdImg, 0, 0, 0);
-            imagefill($gdImg, 0, 0, $white);
-
-            // GD >= 8.1 + HarfBuzz will shape Khmer correctly
-            imagettftext($gdImg, 14, 0, 0, 30, $black, $font, $line);
-
-            // Convert GD image to Imagick and composite
-            $tmpFile = tempnam(sys_get_temp_dir(), 'gd');
-            imagepng($gdImg, $tmpFile);
-            imagedestroy($gdImg);
-
-            $gdImagick = new Imagick($tmpFile);
-            $img->compositeImage($gdImagick, Imagick::COMPOSITE_DEFAULT, 10, $y);
-            $gdImagick->destroy();
-            unlink($tmpFile);
-
-            $y += 25;
+            // Render with Pango markup for proper Khmer shaping
+            $img->annotateImage($draw, 10, $y, 0, $line);
+            $y += 20;
         }
 
         // QR Code
