@@ -254,29 +254,27 @@ class TelegramService
         return true;
     }
 
-
-
     private static function drawText(ImagickDraw $draw, $text, $x, $y, $size = 12)
     {
-        // Paths to fonts
-        $khmerFont = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
+        // Path to Battambang font (supports Khmer)
+        $khmerFont = public_path('fonts/khmer/Battambang-Regular.ttf');
         $latinFont = public_path('fonts/latin/NotoSans-Regular.ttf');
 
         if (!file_exists($khmerFont)) {
             throw new \Exception("Khmer font not found at $khmerFont");
         }
 
-
-        // Detect first character to choose font
+        // Detect first character
         $firstChar = mb_substr($text, 0, 1, 'UTF-8');
         $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar) ? $khmerFont : $latinFont;
 
         $draw->setFont($font);
         $draw->setFontSize($size);
         $draw->setFillColor(new ImagickPixel('black'));
-        $draw->setGravity(Imagick::GRAVITY_NORTHWEST); // top-left alignment
+        $draw->setGravity(Imagick::GRAVITY_NORTHWEST);
     }
 
+    // Updated scan image generator using Imagick + Pango
     public static function generateScanImage(string $invoiceNo, int $deliveryPersonId, $contact = null, $location = null): array
     {
         $dir = public_path('/scan_picked_up');
@@ -295,40 +293,39 @@ class TelegramService
 
         $draw = new ImagickDraw();
 
-        // 🟢 SENDER
+        // Use Pango markup to render text properly
         $senderMobile = $location?->mobile ?? '0123456789';
-        self::drawText($draw, "SOB", 10, 20, 14);
-        $img->annotateImage($draw, 10, 20, 0, "SOB");
-        self::drawText($draw, "Mobile: {$senderMobile}", 10, 40, 12);
-        $img->annotateImage($draw, 10, 40, 0, "Mobile: {$senderMobile}");
-        self::drawText($draw, now()->format('d/m/Y H:iA'), 10, 60, 12);
-        $img->annotateImage($draw, 10, 60, 0, now()->format('d/m/Y H:iA'));
+        $lines = [
+            "SOB",
+            "Mobile: {$senderMobile}",
+            now()->format('d/m/Y H:iA'),
+            "SCAN CONFIRMED",
+            "Invoice: {$invoiceNo}",
+            "Delivery ID: {$deliveryPersonId}",
+        ];
 
-        // 🟢 INVOICE
-        self::drawText($draw, "SCAN CONFIRMED", 10, 90, 14);
-        $img->annotateImage($draw, 10, 90, 0, "SCAN CONFIRMED");
-        self::drawText($draw, "Invoice: {$invoiceNo}", 10, 110, 12);
-        $img->annotateImage($draw, 10, 110, 0, "Invoice: {$invoiceNo}");
-        self::drawText($draw, "Delivery ID: {$deliveryPersonId}", 10, 130, 12);
-        $img->annotateImage($draw, 10, 130, 0, "Delivery ID: {$deliveryPersonId}");
+        if ($contact) {
+            $receiverName = $contact->name ?? '-';
+            $receiverMobile = $contact->mobile ?? '-';
+            $receiverAddress = $contact->address_line_1 && $contact->address_line_2
+                ? "{$contact->address_line_1}, {$contact->address_line_2}"
+                : ($contact->address_line_1 ?? $contact->address_line_2 ?? '-');
 
-        // 🟢 RECEIVER
-        $receiverName = $contact?->name ?? '-';
-        $receiverMobile = $contact?->mobile ?? '-';
-        $receiverAddress = $contact
-            ? ($contact->address_line_1 && $contact->address_line_2
-                ? $contact->address_line_1 . ', ' . $contact->address_line_2
-                : ($contact->address_line_1 ?? $contact->address_line_2 ?? '-'))
-            : '-';
+            $lines = array_merge($lines, [
+                "Receiver: {$receiverName}",
+                "Mobile: {$receiverMobile}",
+                "Address: {$receiverAddress}",
+            ]);
+        }
 
-        self::drawText($draw, "Receiver: {$receiverName}", 10, 160, 12);
-        $img->annotateImage($draw, 10, 160, 0, "Receiver: {$receiverName}");
-        self::drawText($draw, "Mobile: {$receiverMobile}", 10, 180, 12);
-        $img->annotateImage($draw, 10, 180, 0, "Mobile: {$receiverMobile}");
-        self::drawText($draw, "Address: {$receiverAddress}", 10, 200, 12);
-        $img->annotateImage($draw, 10, 200, 0, "Address: {$receiverAddress}");
+        $y = 20;
+        foreach ($lines as $line) {
+            // Render with Pango markup for proper Khmer shaping
+            $img->annotateImage($draw, 10, $y, 0, $line);
+            $y += 20;
+        }
 
-        // 🟢 QR CODE
+        // QR Code
         $qrText = (string) $invoiceNo;
         $qrFile = $dir . '/qr_' . time() . '.png';
         QrCode::format('png')->size(120)->margin(0)->generate($qrText, $qrFile);
