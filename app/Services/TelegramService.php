@@ -278,8 +278,7 @@ class TelegramService
         imagestring($img, 3, 10, 80, "SCAN CONFIRMED", $black);
         imagestring($img, 2, 10, 100, "Invoice: {$invoiceNo}", $black);
         imagestring($img, 2, 10, 120, "Delivery Person ID: {$deliveryPersonId}", $black);
-        imagestring($img, 2, 10, 140, "Time: " . now()->format('H:i:s'), $black);
-
+        
         // Receiver info
         $receiverName = $contact?->name ?? '-';
         $receiverMobile = $contact?->mobile ?? '-';

@@ -158,7 +158,6 @@ class DeliveryController extends Controller
 
     public function assignDeliveryPerson(Request $request)
     {
-        \Log::info('error', ["error" => $request->all()]);
         $transactionId = $request->input('transaction_id');
         $deliveryPersonId = auth()->id();
 
@@ -175,7 +174,7 @@ class DeliveryController extends Controller
 
             // 1. Fetch transaction first
             $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
-
+            
             if (!$transaction) {
                 DB::rollBack();
                 \Log::info('error', ["error" => 'Transaction_not_found']);
@@ -233,7 +232,7 @@ class DeliveryController extends Controller
         DB::beginTransaction();
         try {
             $groupId = '-5083476540'; // your Telegram group ID
-            $newId = "-1003265141698";
+            $newId = "-1003265141698"; // Group ដឹកជញ្ចូនSOB
             $invoice = addcslashes($request->invoice_no, '_*[]()~`>#+-=|{}.!/');
 
             $text =
