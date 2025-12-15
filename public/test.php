@@ -1,14 +1,12 @@
 <?php
-$img = imagecreatetruecolor(200, 80);
-$white = imagecolorallocate($img, 255, 255, 255);
-$black = imagecolorallocate($img, 0, 0, 0);
-imagefill($img, 0, 0, $white);
+$khmerFont = realpath(public_path('fonts/khmer/NotoSansKhmer-Regular.ttf'));
+$text = "សួស្ដី"; // Khmer text
 
-$font = '/var/www/html/UltimatePOS/public/fonts/khmer/NotoSansKhmer-Regular.ttf';
-$text = 'សួស្តី'; // Some Khmer text
+$draw = new ImagickDraw();
+$draw->setFont($khmerFont);
+$draw->setFontSize(14);
+$draw->setFillColor(new ImagickPixel('black'));
+$draw->setGravity(Imagick::GRAVITY_NORTHWEST);
 
-imagettftext($img, 20, 0, 10, 50, $black, $font, $text);
-imagepng($img, 'test.png');
-imagedestroy($img);
-echo $text;
-echo "Done";
+$img->annotateImage($draw, 10, 20, 0, $text);
+$draw->destroy();

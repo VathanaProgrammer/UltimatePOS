@@ -262,6 +262,11 @@ class TelegramService
         $khmerFont = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
         $latinFont = public_path('fonts/latin/NotoSans-Regular.ttf');
 
+        if (!file_exists($khmerFont)) {
+            throw new \Exception("Khmer font not found at $khmerFont");
+        }
+
+
         // Detect first character to choose font
         $firstChar = mb_substr($text, 0, 1, 'UTF-8');
         $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar) ? $khmerFont : $latinFont;
