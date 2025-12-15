@@ -109,14 +109,22 @@ class TelegramBotWebhookController extends Controller
         $text = $message['text'] ?? '';
 
         // -----------------------------------------------------
-        //  HANDLE /start <token> (Your original logic)
+        // HANDLE /start <token>
         // -----------------------------------------------------
-        if (str_starts_with($text, '/start')) {
+        $isStart = false;
+        $entities = $message['entities'] ?? [];
+        foreach ($entities as $entity) {
+            if ($entity['type'] === 'bot_command' && substr($text, $entity['offset'], $entity['length']) === '/start') {
+                $isStart = true;
+                break;
+            }
+        }
+
+        if ($isStart) {
             $parts = explode(' ', $text, 2);
             $payload = $parts[1] ?? null;
 
             if (!$payload) {
-                // [NEW] Ask for phone
                 $this->askForPhoneNumber($chatId);
                 return response('ok', 200);
             }
@@ -140,17 +148,14 @@ class TelegramBotWebhookController extends Controller
                 TelegramService::saveChatIdIfNotExist($user, $chatId);
             }
 
-            // Send order confirmation using database template
             if ($token->order_online_id) {
                 $order = OnlineOrder::find($token->order_online_id);
 
                 $name = $order->api_user->contact->name ?? 'Customer';
 
                 $template = TelegramTemplate::where('name', 'new_order')->first();
-
                 if ($template) {
                     $bodyText = strip_tags($template->body);
-
                     $messageText = trim($template->greeting) . "\n\n" .
                         trim($bodyText) . "\n\n" .
                         trim($template->footer);
@@ -171,7 +176,6 @@ class TelegramBotWebhookController extends Controller
                 }
             }
 
-            // [NEW] After start link, still ask for phone if user is new
             if (!$user) {
                 $this->askForPhoneNumber($chatId);
             }
@@ -180,7 +184,7 @@ class TelegramBotWebhookController extends Controller
         }
 
         // -----------------------------------------------------
-        //  [NEW] HANDLE USER SENDING PHONE NUMBER
+        // HANDLE USER SENDING PHONE NUMBER
         // -----------------------------------------------------
         if (isset($message['contact'])) {
             return $this->registerUserFromTelegramContact($message['contact'], $chatId);
@@ -199,10 +203,7 @@ class TelegramBotWebhookController extends Controller
             'reply_markup' => json_encode([
                 "keyboard" => [
                     [
-                        [
-                            "text" => "Share Phone Number",
-                            "request_contact" => true
-                        ]
+                        ["text" => "Share Phone Number", "request_contact" => true]
                     ]
                 ],
                 "one_time_keyboard" => true,
@@ -212,7 +213,6 @@ class TelegramBotWebhookController extends Controller
 
         \Log::info('Telegram sendMessage response', ['body' => $response->body()]);
     }
-
 
     private function registerUserFromTelegramContact($contact, $chatId)
     {
