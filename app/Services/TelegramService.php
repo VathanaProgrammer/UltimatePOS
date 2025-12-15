@@ -252,22 +252,29 @@ class TelegramService
 
     private static function drawText($img, $text, $x, $y, $size = 10)
     {
-        $font = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
+        // Choose font based on first character
+        $firstChar = mb_substr($text, 0, 1, 'UTF-8');
+        if (preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar)) {
+            // Khmer range
+            $font = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
+        } else {
+            // English / Latin fallback
+            $font = public_path('fonts/latin/NotoSans-Regular.ttf');
+        }
+
         $black = imagecolorallocate($img, 0, 0, 0);
 
         imagettftext(
-            $img,      // image
-            $size,     // font size
-            0,         // angle
-            $x,        // x
-            $y,        // y
-            $black,    // color
-            $font,     // font file
-            $text      // text
+            $img,
+            $size,
+            0,
+            $x,
+            $y,
+            $black,
+            $font,
+            $text
         );
     }
-
-
 
     public static function generateScanImage(
         string $invoiceNo,
