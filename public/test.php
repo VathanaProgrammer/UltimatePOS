@@ -1,18 +1,28 @@
 <?php
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Imagick;
-use ImagickDraw;
-use ImagickPixel;
+$img = imagecreatetruecolor(200, 80);
+$white = imagecolorallocate($img, 255, 255, 255);
+$black = imagecolorallocate($img, 0, 0, 0);
+imagefill($img, 0, 0, $white);
 
+$font = '/var/www/html/UltimatePOS/public/fonts/khmer/NotoSansKhmer-Regular.ttf';
+$text = 'សួស្តី'; // Khmer text
 
-$khmerFont = realpath(public_path('fonts/khmer/NotoSansKhmer-Regular.ttf'));
-$text = "សួស្ដី"; // Khmer text
+// Check if file exists and readable
+if (!file_exists($font)) {
+    die("Font file does NOT exist at $font");
+}
+if (!is_readable($font)) {
+    die("Font file is NOT readable by PHP at $font");
+}
 
-$draw = new ImagickDraw();
-$draw->setFont($khmerFont);
-$draw->setFontSize(14);
-$draw->setFillColor(new ImagickPixel('black'));
-$draw->setGravity(Imagick::GRAVITY_NORTHWEST);
+// Render text
+$result = imagettftext($img, 20, 0, 10, 50, $black, $font, $text);
+if ($result === false) {
+    die("Failed to render text. Check font or GD FreeType support.");
+}
 
-$img->annotateImage($draw, 10, 20, 0, $text);
-$draw->destroy();
+imagepng($img, 'test.png');
+imagedestroy($img);
+
+echo $text;
+echo "Done";
