@@ -251,25 +251,30 @@ class TelegramService
     }
 
 
-    private static function drawMixedText($filePath, $text, $x, $y, $size = 14)
+    private static function drawMixedText($img, $text, $x, $y, $size = 10)
     {
-        $image = new \Imagick($filePath); // Or create new image
-        $draw = new \ImagickDraw();
-
-        // Choose font based on Khmer or Latin
+        // Detect Khmer vs Latin
         $firstChar = mb_substr($text, 0, 1, 'UTF-8');
-        $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar)
-            ? public_path('fonts/khmer/NotoSansKhmer-Regular.ttf')
-            : public_path('fonts/latin/NotoSans-Regular.ttf');
+        $khmerFont = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
+        $latinFont = public_path('fonts/latin/NotoSans-Regular.ttf');
 
-        $draw->setFont($font);
-        $draw->setFontSize($size);
-        $draw->setFillColor(new \ImagickPixel('black'));
+        $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar) ? $khmerFont : $latinFont;
 
-        $image->annotateImage($draw, $x, $y, 0, $text);
-        $image->writeImage($filePath);
-        $image->destroy();
+        $black = imagecolorallocate($img, 0, 0, 0);
+
+        imagettftext(
+            $img,      // image
+            $size,     // font size
+            0,         // angle
+            $x,        // x
+            $y,        // y
+            $black,    // color
+            $font,     // font file
+            $text      // text
+        );
     }
+
+
 
     public static function generateScanImage(
         string $invoiceNo,
