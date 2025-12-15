@@ -1,4 +1,10 @@
 <?php
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Imagick;
+use ImagickDraw;
+use ImagickPixel;
+
+
 $khmerFont = realpath(public_path('fonts/khmer/NotoSansKhmer-Regular.ttf'));
 $text = "សួស្ដី"; // Khmer text
 
