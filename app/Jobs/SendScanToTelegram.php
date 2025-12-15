@@ -21,32 +21,28 @@ class SendScanToTelegram implements ShouldQueue
 
     public function handle()
     {
-        $transaction = Transaction::with(['contact', 'location'])
-            ->where('invoice_no', $this->invoiceNo)
-            ->first();
+           $transaction = Transaction::with(['contact', 'location'])
+        ->where('invoice_no', $this->invoiceNo)
+        ->first();
 
-        if (!$transaction) {
-            \Log::error('Transaction not found', [
-                'invoice' => $this->invoiceNo
-            ]);
-            return;
-        }
+    if (!$transaction) {
+        \Log::error('Transaction not found', [
+            'invoice' => $this->invoiceNo
+        ]);
+        return;
+    }
 
-        $contact   = $transaction->contact ?? '-';
-        $mobile = $transaction->localtion?->mobile ?? '-';
+    $image = TelegramService::generateScanImage(
+        $this->invoiceNo,
+        $this->deliveryPersonId,
+        $transaction->contact,                 // 👈 OBJECT
+        $transaction->contact?->mobile ?? '-'  // 👈 STRING
+    );
 
-        $image = TelegramService::generateScanImage(
-            invoiceNo: $this->invoiceNo,
-            deliveryPersonId: $this->deliveryPersonId,
-            contact: $contact,
-            mobile: $mobile
-        );
-
-        TelegramService::sendScanImageToGroup(
-            '-5047451233',
-            $image['path'],
-            "📦 *Scanned*\n"
-                . "Invoice: {$this->invoiceNo}\n"
-        );
+    TelegramService::sendScanImageToGroup(
+        '-5047451233',
+        $image['path'],
+        "📦 Scanned\nInvoice: {$this->invoiceNo}\n}"
+    );
     }
 }
