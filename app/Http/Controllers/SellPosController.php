@@ -27,6 +27,8 @@
 
 namespace App\Http\Controllers;
 
+use SimpleSoftwareIO\QrCode\Generator;
+
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevel;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
@@ -2076,11 +2078,15 @@ class SellPosController extends Controller
                 // Clean, simple QR using SimpleSoftwareIO\QrCode
                 $qrText = (string) $transaction->id;   // <-- no encryption, clean short QR
 
+
+
+                $qr = new Generator(); // GD backend
+
                 $qrcode = base64_encode(
-                    \SimpleSoftwareIO\QrCode\Facades\QrCode::size(400)
-                        ->errorCorrection('L')
-                        ->margin(0)
-                        ->generate($qrText)
+                    $qr->size(400)
+                    ->errorCorrection('L')
+                    ->margin(0)
+                    ->generate($qrText)
                 );
 
                 // Render delivery label Blade
