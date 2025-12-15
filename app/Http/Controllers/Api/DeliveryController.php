@@ -13,6 +13,7 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Jobs\SendScanToTelegram;
+use Intervention\Image\Facades\Image;
 
 class DeliveryController extends Controller
 {
@@ -182,7 +183,6 @@ class DeliveryController extends Controller
     }
 
 
-
     public function assignDeliveryPerson(Request $request)
     {
         $transactionId = $request->input('transaction_id');
@@ -253,27 +253,27 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
-
     public function save(Request $request)
     {
         DB::beginTransaction();
         try {
-            $groupId = '-5083476540'; // your Telegram group ID
-            $newId = "-1003265141698"; // Group ដឹកជញ្ចូនSOB
+            $maxFileSize = 10 * 1024 * 1024; // 10 MB
+
+            // Validate uploaded photos size only
+            if ($request->hasFile('photos')) {
+                foreach ($request->file('photos') as $photo) {
+                    if ($photo->getSize() > $maxFileSize) {
+                        return response()->json([
+                            'success' => 0,
+                            'msg' => "the_image_is_too_large_Max_10_MB_allowed" //the image is too large. Max 10 MB allowed
+                        ]);
+                    }
+                }
+            }
+
+            // Continue with normal saving...
             $invoice = addcslashes($request->invoice_no, '_*[]()~`>#+-=|{}.!/');
 
-            $text =
-                "📦 *Drop Off Completed*\n\n" .
-                "👤 *Customer:* {$request->name}\n" .
-                "📞 *Phone:* {$request->phone}\n" .
-                "📍 *Address:* {$request->address_detail}\n" .
-                "🧭 Lat: {$request->latitude}\n" .
-                "# invoice_no: {$invoice}\n" .
-                "🧭 Lon: {$request->longitude}\n" .
-                "User id from token: " . auth()->user()->id . "\n" .
-                "User id from token: " . auth()->id();
-
-            // Fetch transaction
             $transaction = DB::table("transactions")
                 ->where("invoice_no", $request->invoice_no)
                 ->first();
@@ -281,11 +281,10 @@ class DeliveryController extends Controller
             if (!$transaction) {
                 return [
                     'success' => 0,
-                    'msg' => 'Transaction not found!'
+                    'msg' => 'Transaction_not_found'
                 ];
             }
 
-            // Insert customer data into c_customers
             $customerId = DB::table('c_customers')->insertGetId([
                 'name' => $request->name,
                 'phone' => $request->phone,
@@ -297,7 +296,7 @@ class DeliveryController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // Insert each photo into c_photos
+            // Save photos
             if ($request->hasFile('photos')) {
                 $photoPaths = [];
                 foreach ($request->file('photos') as $photo) {
@@ -309,7 +308,6 @@ class DeliveryController extends Controller
                     $filename = time() . '_' . $photo->getClientOriginalName();
                     $photo->move($destinationPath, $filename);
 
-                    // Save to DB
                     DB::table('c_photos')->insert([
                         'customer_id' => $customerId,
                         'image_url' => 'dropoff_photos/' . $filename,
@@ -317,26 +315,20 @@ class DeliveryController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                    // Add path for Telegram
                     $photoPaths[] = [
                         'path' => $destinationPath . '/' . $filename,
                         'name' => $filename
                     ];
                 }
-                $user = auth()->user();
-                $fullName = $user->first_name;
-                if (!empty($user->last_name)) {
-                    $fullName .= ' ' . $user->last_name;
-                }
-                $username = $user->username ?? '';
-                // $userInfoLine = "(testing) ដឹកជញ្ជូនដោយ: usertesting";
 
+                $user = auth()->user();
+                $fullName = $user->first_name . (!empty($user->last_name) ? " " . $user->last_name : "");
+                $username = $user->username ?? '';
                 $userInfoLine = "ដឹកជញ្ជូនដោយ: {$fullName}" . ($username ? " ({$username})" : "");
 
-                // Send all photos to Telegram
                 TelegramService::sendImagesToGroup($photoPaths, $userInfoLine);
             }
-            // Update transaction as delivered
+
             DB::table('transactions')
                 ->where('invoice_no', $request->invoice_no)
                 ->update([
@@ -349,8 +341,7 @@ class DeliveryController extends Controller
 
             return [
                 'success' => 1,
-                'msg' => 'Saved, marked as delivered, inserted customer & photos, and sent to Telegram',
-                'data' => $text
+                'msg' => 'Saved successfully, delivered, customer & photos added, sent to Telegram.'
             ];
         } catch (\Exception $e) {
             DB::rollBack();
