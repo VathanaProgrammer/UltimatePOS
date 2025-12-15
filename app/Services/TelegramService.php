@@ -250,8 +250,12 @@ class TelegramService
         return true;
     }
 
-    public static function generateScanImage(string $invoiceNo, int $deliveryPersonId, $contact = null, $mobile = '0123456789'): array
-    {
+    public static function generateScanImage(
+        string $invoiceNo,
+        int $deliveryPersonId,
+        $contact = null,
+        $location = null
+    ): array {
         $dir = public_path('/scan_picked_up');
         if (!file_exists($dir)) {
             mkdir($dir, 0755, true);
@@ -266,50 +270,53 @@ class TelegramService
 
         $white = imagecolorallocate($img, 255, 255, 255);
         $black = imagecolorallocate($img, 0, 0, 0);
-
         imagefill($img, 0, 0, $white);
 
-        // Top-left sender info
-        imagestring($img, 3, 10, 10, "SOB", $black);
-        imagestring($img, 2, 10, 30, "Mobile: {$mobile}", $black);
-        imagestring($img, 2, 10, 50, "Date: " . now()->format('d/m/Y H:iA'), $black);
+        // 🟢 SENDER (LOCATION)
+        $senderMobile = $location?->mobile ?? '0123456789';
 
-        // Invoice & delivery info
+        imagestring($img, 3, 10, 10, "SOB", $black);
+        imagestring($img, 2, 10, 30, "Mobile: {$senderMobile}", $black);
+        imagestring($img, 2, 10, 50, now()->format('d/m/Y H:iA'), $black);
+
+        // 🟢 INVOICE
         imagestring($img, 3, 10, 80, "SCAN CONFIRMED", $black);
         imagestring($img, 2, 10, 100, "Invoice: {$invoiceNo}", $black);
-        imagestring($img, 2, 10, 120, "Delivery Person ID: {$deliveryPersonId}", $black);
-        
-        // Receiver info
+        imagestring($img, 2, 10, 120, "Delivery ID: {$deliveryPersonId}", $black);
+
+        // 🟢 RECEIVER (CONTACT)
         $receiverName = $contact?->name ?? '-';
         $receiverMobile = $contact?->mobile ?? '-';
         $receiverAddress = $contact
             ? ($contact->address_line_1 && $contact->address_line_2
                 ? $contact->address_line_1 . ', ' . $contact->address_line_2
-                : $contact->address_line_1 ?? ($contact->address_line_2 ?? '-'))
+                : ($contact->address_line_1 ?? $contact->address_line_2 ?? '-'))
             : '-';
 
-        imagestring($img, 2, 10, 170, "Receiver: {$receiverName}", $black);
-        imagestring($img, 2, 10, 190, "Mobile: {$receiverMobile}", $black);
-        imagestring($img, 2, 10, 210, "Address: {$receiverAddress}", $black);
+        imagestring($img, 2, 10, 150, "Receiver: {$receiverName}", $black);
+        imagestring($img, 2, 10, 170, "Mobile: {$receiverMobile}", $black);
+        imagestring($img, 2, 10, 190, "Address: {$receiverAddress}", $black);
 
-        // QR code generation with SimpleSoftwareIO\QrCode
-        $qrData = "Invoice: {$invoiceNo}, DeliveryPerson: {$deliveryPersonId}";
+        // 🟢 QR (SAME IDEA AS BLADE)
+        $qrText = (string) $invoiceNo;
         $qrFile = $dir . '/qr_' . time() . '.png';
-        QrCode::format('png')->size(70)->generate($qrData, $qrFile);
 
-        // Paste QR onto main image
+        QrCode::format('png')
+            ->size(120)
+            ->margin(0)
+            ->generate($qrText, $qrFile);
+
         $qrImg = imagecreatefrompng($qrFile);
-        imagecopy($img, $qrImg, $imgWidth - 80, 10, 0, 0, imagesx($qrImg), imagesy($qrImg));
+        imagecopy($img, $qrImg, $imgWidth - 130, 10, 0, 0, imagesx($qrImg), imagesy($qrImg));
         imagedestroy($qrImg);
-        //unlink($qrFile); // optional, clean temp QR
+        unlink($qrFile);
 
-        // Save final image
         imagepng($img, $path);
         imagedestroy($img);
 
         return [
             'path' => $path,
-            'name' => $fileName
+            'name' => $fileName,
         ];
     }
 
