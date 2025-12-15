@@ -1,16 +1,5 @@
 <?php
-$font = '/var/www/html/UltimatePOS/public/fonts/khmer/Battambang-Regular.ttf';
-$text = 'សួស្តី';
-
-// Create image
-$im = imagecreatetruecolor(400, 100);
-$white = imagecolorallocate($im, 255, 255, 255);
-$black = imagecolorallocate($im, 0, 0, 0);
-imagefill($im, 0, 0, $white);
-
-// Render text (requires PHP >=8.1 with HarfBuzz support)
-imagettftext($im, 24, 0, 10, 50, $black, $font, $text);
-
-header('Content-Type: image/png');
-imagepng($im);
-imagedestroy($im);
+echo 'upload_max_filesize: ' . ini_get('upload_max_filesize') . PHP_EOL;
+echo 'post_max_size: ' . ini_get('post_max_size') . PHP_EOL;
+echo 'memory_limit: ' . ini_get('memory_limit') . PHP_EOL;
+?>
