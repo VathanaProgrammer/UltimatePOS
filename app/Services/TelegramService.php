@@ -8,6 +8,10 @@ use App\ApiModel\TelegramStartToken;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Imagick;
+use ImagickDraw;
+use ImagickPixel;
+
 
 class TelegramService
 {
@@ -251,20 +255,21 @@ class TelegramService
     }
 
 
-    private static function drawText($img, $text, $x, $y, $size = 12)
+
+    private static function drawText(ImagickDraw $draw, $text, $x, $y, $size = 12)
     {
-        // Choose font based on first character
-        $firstChar = mb_substr($text, 0, 1, 'UTF-8');
+        // Paths to fonts
         $khmerFont = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
         $latinFont = public_path('fonts/latin/NotoSans-Regular.ttf');
 
-        // Use Khmer font if first char is Khmer, else Latin
+        // Detect first character to choose font
+        $firstChar = mb_substr($text, 0, 1, 'UTF-8');
         $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar) ? $khmerFont : $latinFont;
 
-        $black = imagecolorallocate($img, 0, 0, 0);
-
-        // Draw text
-        imagettftext($img, $size, 0, $x, $y, $black, $font, $text);
+        $draw->setFont($font);
+        $draw->setFontSize($size);
+        $draw->setFillColor(new ImagickPixel('black'));
+        $draw->setGravity(Imagick::GRAVITY_NORTHWEST); // top-left alignment
     }
 
     public static function generateScanImage(string $invoiceNo, int $deliveryPersonId, $contact = null, $location = null): array
@@ -277,21 +282,30 @@ class TelegramService
 
         $imgWidth = 350;
         $imgHeight = 250;
-        $img = imagecreatetruecolor($imgWidth, $imgHeight);
 
-        $white = imagecolorallocate($img, 255, 255, 255);
-        imagefill($img, 0, 0, $white);
+        // Create Imagick image
+        $img = new Imagick();
+        $img->newImage($imgWidth, $imgHeight, new ImagickPixel('white'));
+        $img->setImageFormat('png');
+
+        $draw = new ImagickDraw();
 
         // 🟢 SENDER
         $senderMobile = $location?->mobile ?? '0123456789';
-        self::drawText($img, "SOB", 10, 20, 14);
-        self::drawText($img, "Mobile: {$senderMobile}", 10, 40, 12);
-        self::drawText($img, now()->format('d/m/Y H:iA'), 10, 60, 12);
+        self::drawText($draw, "SOB", 10, 20, 14);
+        $img->annotateImage($draw, 10, 20, 0, "SOB");
+        self::drawText($draw, "Mobile: {$senderMobile}", 10, 40, 12);
+        $img->annotateImage($draw, 10, 40, 0, "Mobile: {$senderMobile}");
+        self::drawText($draw, now()->format('d/m/Y H:iA'), 10, 60, 12);
+        $img->annotateImage($draw, 10, 60, 0, now()->format('d/m/Y H:iA'));
 
         // 🟢 INVOICE
-        self::drawText($img, "SCAN CONFIRMED", 10, 90, 14);
-        self::drawText($img, "Invoice: {$invoiceNo}", 10, 110, 12);
-        self::drawText($img, "Delivery ID: {$deliveryPersonId}", 10, 130, 12);
+        self::drawText($draw, "SCAN CONFIRMED", 10, 90, 14);
+        $img->annotateImage($draw, 10, 90, 0, "SCAN CONFIRMED");
+        self::drawText($draw, "Invoice: {$invoiceNo}", 10, 110, 12);
+        $img->annotateImage($draw, 10, 110, 0, "Invoice: {$invoiceNo}");
+        self::drawText($draw, "Delivery ID: {$deliveryPersonId}", 10, 130, 12);
+        $img->annotateImage($draw, 10, 130, 0, "Delivery ID: {$deliveryPersonId}");
 
         // 🟢 RECEIVER
         $receiverName = $contact?->name ?? '-';
@@ -302,22 +316,23 @@ class TelegramService
                 : ($contact->address_line_1 ?? $contact->address_line_2 ?? '-'))
             : '-';
 
-        self::drawText($img, "Receiver: {$receiverName}", 10, 160, 12);
-        self::drawText($img, "Mobile: {$receiverMobile}", 10, 180, 12);
-        self::drawText($img, "Address: {$receiverAddress}", 10, 200, 12);
+        self::drawText($draw, "Receiver: {$receiverName}", 10, 160, 12);
+        $img->annotateImage($draw, 10, 160, 0, "Receiver: {$receiverName}");
+        self::drawText($draw, "Mobile: {$receiverMobile}", 10, 180, 12);
+        $img->annotateImage($draw, 10, 180, 0, "Mobile: {$receiverMobile}");
+        self::drawText($draw, "Address: {$receiverAddress}", 10, 200, 12);
+        $img->annotateImage($draw, 10, 200, 0, "Address: {$receiverAddress}");
 
         // 🟢 QR CODE
         $qrText = (string) $invoiceNo;
         $qrFile = $dir . '/qr_' . time() . '.png';
-
         QrCode::format('png')->size(120)->margin(0)->generate($qrText, $qrFile);
-        $qrImg = imagecreatefrompng($qrFile);
-        imagecopy($img, $qrImg, $imgWidth - 130, 10, 0, 0, imagesx($qrImg), imagesy($qrImg));
-        imagedestroy($qrImg);
+        $qrImg = new Imagick($qrFile);
+        $img->compositeImage($qrImg, Imagick::COMPOSITE_DEFAULT, $imgWidth - 130, 10);
         unlink($qrFile);
 
-        imagepng($img, $path);
-        imagedestroy($img);
+        $img->writeImage($path);
+        $img->destroy();
 
         return ['path' => $path, 'name' => $fileName];
     }
