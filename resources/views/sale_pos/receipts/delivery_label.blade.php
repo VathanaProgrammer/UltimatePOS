@@ -62,11 +62,21 @@
             <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}<br>
             <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}<br>
             <strong>Address:</strong>
-            {{ $transaction->contact
-                ? ($transaction->contact->address_line_1 && $transaction->contact->address_line_2
-                    ? $transaction->contact->address_line_1 . ', ' . $transaction->contact->address_line_2
-                    : $transaction->contact->address_line_1 ?? ($transaction->contact->address_line_2 ?? '-'))
-                : '-' }}
+            @php
+                $address = '-';
+                if (!empty($transaction->shipping_address)) {
+                    $address = $transaction->shipping_address;
+                } elseif ($transaction->contact) {
+                    $line1 = $transaction->contact->address_line_1 ?? '';
+                    $line2 = $transaction->contact->address_line_2 ?? '';
+                    if ($line1 && $line2) {
+                        $address = $line1 . ', ' . $line2;
+                    } else {
+                        $address = $line1 ?: ($line2 ?: '-');
+                    }
+                }
+            @endphp
+            {{ $address }}
 
         </div>
     </div>
