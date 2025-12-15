@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: image/png');
 $khmerText = 'សួស្តី';
 $englishText = 'Hello';
 
