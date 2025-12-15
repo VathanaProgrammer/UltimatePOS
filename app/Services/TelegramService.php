@@ -250,31 +250,31 @@ class TelegramService
         return true;
     }
 
-    private static function drawText($img, $text, $x, $y, $size = 10)
+
+    private static function drawMixedText($img, $text, $x, $y, $size = 10)
     {
-        // Choose font based on first character
+        // Detect Khmer vs Latin
         $firstChar = mb_substr($text, 0, 1, 'UTF-8');
-        if (preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar)) {
-            // Khmer range
-            $font = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
-        } else {
-            // English / Latin fallback
-            $font = public_path('fonts/latin/NotoSans-Regular.ttf');
-        }
+        $khmerFont = public_path('fonts/khmer/NotoSansKhmer-Regular.ttf');
+        $latinFont = public_path('fonts/latin/NotoSans-Regular.ttf');
+
+        $font = preg_match('/[\x{1780}-\x{17FF}]/u', $firstChar) ? $khmerFont : $latinFont;
 
         $black = imagecolorallocate($img, 0, 0, 0);
 
         imagettftext(
-            $img,
-            $size,
-            0,
-            $x,
-            $y,
-            $black,
-            $font,
-            $text
+            $img,      // image
+            $size,     // font size
+            0,         // angle
+            $x,        // x
+            $y,        // y
+            $black,    // color
+            $font,     // font file
+            $text      // text
         );
     }
+
+
 
     public static function generateScanImage(
         string $invoiceNo,
@@ -299,14 +299,14 @@ class TelegramService
 
         // 🟢 SENDER
         $senderMobile = $location?->mobile ?? '0123456789';
-        self::drawText($img, "SOB", 10, 20, 14);
-        self::drawText($img, "Mobile: {$senderMobile}", 10, 40, 12);
-        self::drawText($img, now()->format('d/m/Y H:iA'), 10, 60, 12);
+        self::drawMixedText($img, "SOB", 10, 20, 14);
+        self::drawMixedText($img, "Mobile: {$senderMobile}", 10, 40, 12);
+        self::drawMixedText($img, now()->format('d/m/Y H:iA'), 10, 60, 12);
 
         // 🟢 INVOICE
-        self::drawText($img, "SCAN CONFIRMED", 10, 90, 14);
-        self::drawText($img, "Invoice: {$invoiceNo}", 10, 110, 12);
-        self::drawText($img, "Delivery ID: {$deliveryPersonId}", 10, 130, 12);
+        self::drawMixedText($img, "SCAN CONFIRMED", 10, 90, 14);
+        self::drawMixedText($img, "Invoice: {$invoiceNo}", 10, 110, 12);
+        self::drawMixedText($img, "Delivery ID: {$deliveryPersonId}", 10, 130, 12);
 
         // 🟢 RECEIVER
         $receiverName = $contact?->name ?? '-';
@@ -317,9 +317,9 @@ class TelegramService
                 : ($contact->address_line_1 ?? $contact->address_line_2 ?? '-'))
             : '-';
 
-        self::drawText($img, "Receiver: {$receiverName}", 10, 160, 12);
-        self::drawText($img, "Mobile: {$receiverMobile}", 10, 180, 12);
-        self::drawText($img, "Address: {$receiverAddress}", 10, 200, 12);
+        self::drawMixedText($img, "Receiver: {$receiverName}", 10, 160, 12);
+        self::drawMixedText($img, "Mobile: {$receiverMobile}", 10, 180, 12);
+        self::drawMixedText($img, "Address: {$receiverAddress}", 10, 200, 12);
 
         // 🟢 QR CODE
         $qrText = (string) $invoiceNo;
@@ -339,6 +339,7 @@ class TelegramService
             'name' => $fileName,
         ];
     }
+
     public static function sendScanImageToGroup(
         string $groupChatId,
         string $imagePath,
