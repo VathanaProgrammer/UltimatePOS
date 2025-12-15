@@ -112,8 +112,14 @@ class TelegramBotWebhookController extends Controller
         // HANDLE /start <token>
         // -----------------------------------------------------
         $isStart = false;
-        $entities = $message['entities'] ?? [];
-        foreach ($entities as $entity) {
+
+        // 1. Check if text starts with /start
+        if (str_starts_with(trim($text), '/start')) {
+            $isStart = true;
+        }
+
+        // 2. Check entities in case Telegram sent a bot_command
+        foreach ($message['entities'] ?? [] as $entity) {
             if ($entity['type'] === 'bot_command' && substr($text, $entity['offset'], $entity['length']) === '/start') {
                 $isStart = true;
                 break;
