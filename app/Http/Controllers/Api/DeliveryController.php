@@ -232,11 +232,11 @@ class DeliveryController extends Controller
 
             DB::commit();
 
-            // 🚀 async telegram
-            SendScanToTelegram::dispatch(
-                $transactionId,
-                $deliveryPersonId
-            );
+            // // 🚀 async telegram
+            // SendScanToTelegram::dispatch(
+            //     $transactionId,
+            //     $deliveryPersonId
+            // );
 
             return response()->json([
                 'success' => 1,
