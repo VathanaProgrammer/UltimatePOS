@@ -51,7 +51,7 @@ class ProductController extends Controller
                     'id' => $product->id ?? null,
                     'name' => $product->name ?? '',
                     'price' => $price,
-                    'image_url' => isset($product->image) ? url('uploads/img/' . $product->image) : "/img/default.png",
+                    'image_url' => isset($product->image) ? url('uploads/img/' . $product->image) :  url('/img/default.png'),
                 ],
             ];
         });
