@@ -11,7 +11,7 @@ class ProductOnlineController extends Controller
     public function data(Request $request)
     {
         $path = '/uploads/img/';
-
+        $empty_path = "/img/default.png";
         $query = DB::table('products_E as pe')
             ->join('products as p', 'pe.product_id', '=', 'p.id')
             ->leftJoin('categories as c', 'p.category_id', '=', 'c.id')
@@ -27,7 +27,13 @@ class ProductOnlineController extends Controller
                 'pe.id',
                 'pe.is_active',
                 'p.name',
-                DB::raw("CONCAT('$path', p.image) as image"),
+                DB::raw("
+                        CASE 
+                            WHEN p.image IS NULL OR p.image = '' 
+                            THEN '$empty_path'
+                            ELSE CONCAT('$path', p.image)
+                        END as image
+                    "),
                 'p.sku',
                 'p.type',
                 'c.name as category_name',
