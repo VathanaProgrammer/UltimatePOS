@@ -99,7 +99,7 @@ class TelegramBotWebhookController extends Controller
     public function webhook(Request $request)
     {
         \Log::info('Telegram webhook received', ['payload' => $request->all()]);
-
+        
         $update = $request->all();
 
         if (!isset($update['message'])) return response('ok', 200);
