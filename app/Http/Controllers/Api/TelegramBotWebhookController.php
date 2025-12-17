@@ -115,7 +115,7 @@ class TelegramBotWebhookController extends Controller
 
         \Log::info('Telegram message parsed', [
             'chat_type' => $message['chat']['type'],
-            'text' => $text
+            'update' => $update
         ]);
 
         // -----------------------------------------------------
