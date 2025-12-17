@@ -218,15 +218,10 @@
         }
     </script>
     <style>
-    table.dataTable tbody tr {
-        height: 72px !important;
-    }
-
-    table.dataTable tbody td {
-        padding: 16px 20px !important;
-        line-height: 1.6 !important;
-        vertical-align: middle !important;
-    }
-</style>
+        #products_table img {
+            height: 48px;
+            margin: 6px 0;
+        }
+    </style>
 
 @endsection
