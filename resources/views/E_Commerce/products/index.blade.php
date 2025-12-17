@@ -53,7 +53,7 @@
             </header>
 
             <div class="relative overflow-x-auto mt-6">
-                <table id="products_table" class="table table-striped table-bordered w-full">
+                <table id="products_table" class="w-full border border-gray-200">
                     <thead>
                         <tr>
                             <th><input type="checkbox" id="checkAll"></th>
@@ -172,3 +172,12 @@ function editStatus(id) {
 }
 </script>
 @endsection
+<style>
+    #products_table tbody tr {
+        height: 72px;
+    }
+
+    #products_table td {
+        padding: 14px 16px;
+    }
+</style>
