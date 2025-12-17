@@ -245,7 +245,7 @@ class DeliveryController extends Controller
                 "Customer: $customer";
 
 
-            TelegramService::sendRawMessage('-5047451233', $raw);
+            TelegramService::sendRawMessage('-1003497827838', $raw);
 
             // // 🚀 async telegram
             // SendScanToTelegram::dispatch(
