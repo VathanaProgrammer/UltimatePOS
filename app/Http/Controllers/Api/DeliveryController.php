@@ -232,6 +232,21 @@ class DeliveryController extends Controller
 
             DB::commit();
 
+            $user = DB::table('users')
+                    ->where('id', '=', $deliveryPersonId)
+                    ->first();
+            
+            $name = $user->first_name ?? 'Delivery';
+            $invoice = $transactionId;
+            $customer = $transaction?->contact?->name ?? "Customer";
+
+            $raw = "$name just scanned\n" .
+                "Invoice NO: $invoice\n" .
+                "Customer: $customer";
+
+
+            TelegramService::sendRawMessage('-5047451233', $raw);
+
             // // 🚀 async telegram
             // SendScanToTelegram::dispatch(
             //     $transactionId,
