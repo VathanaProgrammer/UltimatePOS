@@ -134,4 +134,16 @@
             alert("Edit product ID: " + id);
         }
     </script>
+
+    <style>
+        table.dataTable tbody tr {
+            height: 72px !important;
+        }
+
+        table.dataTable tbody td {
+            padding: 16px 20px !important;
+            line-height: 1.6 !important;
+            vertical-align: middle !important;
+        }
+    </style>
 @endsection
