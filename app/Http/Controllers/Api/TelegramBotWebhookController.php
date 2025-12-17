@@ -100,24 +100,41 @@ class TelegramBotWebhookController extends Controller
     {
         $update = $request->all();
 
-        // Handle both private/group messages AND channel posts
+        // Determine if it is a message or a channel post
         if (isset($update['message'])) {
             $message = $update['message'];
         } elseif (isset($update['channel_post'])) {
             $message = $update['channel_post'];
         } else {
             \Log::info('Telegram update ignored', $update);
-            return response('ok', 200);
+            return response()->json(['ok' => true]);
         }
 
-        $chatId = $message['chat']['id'];
-        $text = $message['text'] ?? '';
+        // Extract chat info
+        $chat = $message['chat'] ?? null;
+        if (!$chat) {
+            \Log::info('No chat info in message', $update);
+            return response()->json(['ok' => true]);
+        }
 
+        $chatId   = $chat['id'];
+        $chatType = $chat['type'];
+
+        // Get text or caption if available
+        $text = $message['text'] ?? $message['caption'] ?? '';
+
+        // Normalize supergroup to "group" if desired
+        if ($chatType === 'supergroup') {
+            $chatType = 'group';
+        }
+
+        // Log full details
         \Log::info('Telegram message parsed', [
-            'chat_type' => $message['chat']['type'],
-            'update' => $update
+            'chat_id'   => $chatId,
+            'chat_type' => $chatType,
+            'text'      => $text,
+            'update'    => $update
         ]);
-
         // -----------------------------------------------------
         // HANDLE /start <token>
         // -----------------------------------------------------
