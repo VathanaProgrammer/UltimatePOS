@@ -220,7 +220,7 @@
     <style>
         #products_table img {
             height: 48px;
-            margin: 6px 0;
+            margin-top: 5px;
         }
     </style>
 
