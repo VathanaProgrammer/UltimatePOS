@@ -98,15 +98,25 @@ class TelegramBotWebhookController extends Controller
 
     public function webhook(Request $request)
     {
-        \Log::info('Telegram webhook received', ['payload' => $request->all()]);
-        
         $update = $request->all();
 
-        if (!isset($update['message'])) return response('ok', 200);
+        // Handle both private/group messages AND channel posts
+        if (isset($update['message'])) {
+            $message = $update['message'];
+        } elseif (isset($update['channel_post'])) {
+            $message = $update['channel_post'];
+        } else {
+            \Log::info('Telegram update ignored', $update);
+            return response('ok', 200);
+        }
 
-        $message = $update['message'];
         $chatId = $message['chat']['id'];
         $text = $message['text'] ?? '';
+
+        \Log::info('Telegram message parsed', [
+            'chat_type' => $message['chat']['type'],
+            'text' => $text
+        ]);
 
         // -----------------------------------------------------
         // HANDLE /start <token>
