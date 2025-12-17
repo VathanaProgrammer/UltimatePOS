@@ -2,7 +2,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
 
-      {!! Form::open(['route' => 'category_e.store', 'method' => 'post', 'id' => 'category_add_form']) !!}
+      {!! Form::open(['route' => 'category_e.store', 'method' => 'post', 'id' => 'categoryForm']) !!}
 
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
