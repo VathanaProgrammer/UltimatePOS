@@ -326,7 +326,15 @@ class DeliveryController extends Controller
                 $username = $user->username ?? '';
                 $userInfoLine = "ដឹកជញ្ជូនដោយ: {$fullName}" . ($username ? " ({$username})" : "");
 
-                TelegramService::sendImagesToGroup($photoPaths, $userInfoLine);
+                // Default
+                $caption = $userInfoLine;
+
+                // Only append if user provided caption
+                if (!empty($request->caption)) {
+                    $caption .= "\n" . $request->caption;
+                }
+
+                TelegramService::sendImagesToGroup($photoPaths, $caption);
             }
 
             DB::table('transactions')
