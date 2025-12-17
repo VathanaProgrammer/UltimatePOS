@@ -331,7 +331,7 @@ class DeliveryController extends Controller
 
                 // Only append if user provided caption
                 if (!empty($request->caption)) {
-                    $caption .= "\n" . $request->caption;
+                    $caption .= "\n\n" . $request->caption;
                 }
 
                 TelegramService::sendImagesToGroup($photoPaths, $caption);
