@@ -1,4 +1,4 @@
-<table align="center" style="border-spacing: {{$barcode_details->col_distance * 1}}in {{$barcode_details->row_distance * 1}}in; overflow: hidden !important; transform: translateX(50px);">
+<table align="center" style="border-spacing: {{$barcode_details->col_distance * 1}}in {{$barcode_details->row_distance * 1}}in; overflow: hidden !important; transform: translateX(70px);">
 @foreach($page_products as $page_product)
 
 	@if($loop->index % $barcode_details->stickers_in_one_row == 0)
