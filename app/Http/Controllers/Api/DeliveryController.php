@@ -238,7 +238,7 @@ class DeliveryController extends Controller
             
             $name = $user->first_name ?? 'Delivery';
             $invoice = $transactionId;
-            $customer = $transaction?->contact?->name ?? "Customer";
+            $customer = $transaction?->contact?->first_name ?? "Customer";
 
             $raw = "$name just scanned\n" .
                 "Invoice NO: $invoice\n" .
