@@ -32,7 +32,7 @@ Route::get('/product/all', [ProductController::class, "all"])->name('api.product
 Route::get("/category/all", [CategoryController::class, "all"])->name('api.category.all');
 Route::get('/product/reward/all', [ApiRewardController::class, 'getData']);
 
-Route::post("/telegram/webhook", [TelegramBotWebhookController::class, "webhook"])->name('webhook');
+// Route::post("/telegram/webhook", [TelegramBotWebhookController::class, "webhook"])->name('webhook');
 
 Route::post('/send-otp', [AuthController::class, 'sendOtp']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
