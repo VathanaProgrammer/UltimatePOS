@@ -146,19 +146,28 @@ class TelegramService
         $update = $request->all();
 
         if (isset($update['message'])) {
-            $chatId = $update['message']['chat']['id'];       // ← THIS IS THE CHAT ID
-            $chatType = $update['message']['chat']['type'];  // group, supergroup, private
+            $chat = $update['message']['chat'];
             $text = $update['message']['text'] ?? '';
-
-            Log::info("Telegram message received", [
-                'chat_id' => $chatId,
-                'chat_type' => $chatType,
-                'text' => $text
-            ]);
+            $source = 'message';
+        } elseif (isset($update['channel_post'])) {
+            $chat = $update['channel_post']['chat'];
+            $text = $update['channel_post']['text'] ?? '';
+            $source = 'channel_post';
+        } else {
+            Log::info('Telegram update ignored', $update);
+            return response()->json(['ok' => true]);
         }
+
+        Log::info("Telegram update received", [
+            'source'    => $source,
+            'chat_id'   => $chat['id'],
+            'chat_type' => $chat['type'], // channel, group, supergroup
+            'text'      => $text,
+        ]);
 
         return response()->json(['ok' => true]);
     }
+
 
     public static function sendImagesToGroup(array $files, string $caption = '')
     {
