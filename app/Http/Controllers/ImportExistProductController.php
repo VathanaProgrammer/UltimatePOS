@@ -18,6 +18,7 @@ class ImportExistProductController extends Controller
     {
         $appUrl = env('APP_URL');
         $imagePath = $appUrl . '/uploads/img/';
+        $empty_path = "/img/default.png";
 
         $products = DB::table('products as p')
             ->leftJoin('categories as c', 'c.id', '=', 'p.category_id')
@@ -31,7 +32,13 @@ class ImportExistProductController extends Controller
                 'p.id',
                 'p.name',
                 'p.sku',
-                DB::raw("IF(p.image IS NOT NULL, CONCAT('$imagePath', p.image), null) as image"),
+                DB::raw("
+                        CASE
+                            WHEN p.image IS NULL OR TRIM(p.image) = ''
+                            THEN '$empty_path'
+                            ELSE CONCAT('$imagePath', p.image)
+                        END AS image
+                    "),
                 DB::raw('c.name as category_name'),
                 DB::raw('b.name as brand_name'),
                 DB::raw("FORMAT(0, 2) as total_stock"), // stock from variations ignored
