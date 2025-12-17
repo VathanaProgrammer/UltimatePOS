@@ -262,6 +262,11 @@ class TelegramBotWebhookController extends Controller
         $firstName  = $contact['first_name'] ?? 'Telegram User';
         $lastName  = $contact['last_name'] ?? '';
         $name = trim($firstName . ' ' . $lastName);
+
+        \Log::info("Normalized phone: {$phone}");
+        $allPhones = DB::table('contacts')->pluck('mobile');
+        \Log::info("Phones in DB:", $allPhones->toArray());
+
         // Prevent duplicate phone numbers
         $exists = DB::table('contacts')
             ->where('mobile', $phone)
