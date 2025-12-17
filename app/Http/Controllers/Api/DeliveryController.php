@@ -14,6 +14,7 @@ use Intervention\Image\Drivers\Gd\Driver;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Jobs\SendScanToTelegram;
 use Intervention\Image\Facades\Image;
+use App\Transaction;
 
 class DeliveryController extends Controller
 {
@@ -200,8 +201,10 @@ class DeliveryController extends Controller
             DB::beginTransaction();
 
             // 1. Fetch transaction first
-            $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
-
+            // $transaction = DB::table('transactions')->where('invoice_no', $transactionId)->first();
+            
+            $transaction = Transaction::with('contact')
+                                        ->where('invoice_no', $transactionId)->first();
             if (!$transaction) {
                 DB::rollBack();
                 \Log::info('error', ["error" => 'Transaction_not_found']);
@@ -238,8 +241,8 @@ class DeliveryController extends Controller
             
             $name = $user->first_name ?? 'Delivery';
             $invoice = $transactionId;
-            $customer = $transaction?->contact?->first_name ?? "Customer";
-
+            $customer = $transaction?->contact?->name ?? "Customer";
+                
             $raw = "$name just scanned\n" .
                 "Invoice NO: $invoice\n" .
                 "Customer: $customer";
