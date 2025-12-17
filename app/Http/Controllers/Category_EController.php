@@ -57,7 +57,7 @@ class Category_EController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'catalog_id' => 'required|exists:catalogs,id',
+            'catalog_id' => 'required|exists:catologs,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:225'
         ]);

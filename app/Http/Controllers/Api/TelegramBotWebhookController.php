@@ -263,9 +263,9 @@ class TelegramBotWebhookController extends Controller
         $lastName  = $contact['last_name'] ?? '';
         $name = trim($firstName . ' ' . $lastName);
 
-        \Log::info("Normalized phone: {$phone}");
-        $allPhones = DB::table('contacts')->pluck('mobile');
-        \Log::info("Phones in DB:", $allPhones->toArray());
+        // \Log::info("Normalized phone: {$phone}");
+        // $allPhones = DB::table('contacts')->pluck('mobile');
+        // \Log::info("Phones in DB:", $allPhones->toArray());
 
         // Prevent duplicate phone numbers
         $exists = DB::table('contacts')
@@ -312,12 +312,13 @@ class TelegramBotWebhookController extends Controller
                 \Log::critical('No business found in database');
                 throw new \Exception('Business not found');
             }
-
+            
             // Create Contact
             $contactId = DB::table('contacts')->insertGetId([
                 'business_id' => $businessId,
                 'created_by' => $createdBy,
                 'name' => $name,
+                'first_name' => $firstName,
                 'type' => 'customer',
                 'mobile' => $phone,
                 'created_at' => now(),

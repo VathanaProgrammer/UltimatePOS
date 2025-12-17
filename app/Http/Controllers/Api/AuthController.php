@@ -91,7 +91,10 @@ class AuthController extends Controller
             'phone' => 'required|string',
         ]);
 
-        $contact = Contact::where('mobile', $credentials['phone'])->first();
+        $phone = preg_replace('/\D+/', '', $credentials['phone']); // remove all non-digits
+
+        $contact = Contact::whereRaw("REPLACE(REPLACE(REPLACE(mobile, ' ', ''), '+', ''), '-', '') = ?", [$phone])->first();
+
 
         if (!$contact) {
             Log::warning('Login failed: contact not found');
