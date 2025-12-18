@@ -19,7 +19,7 @@
 
 					{{-- Product Name --}}
 					@if(!empty($print['name']))
-						<span style="display: block !important; margin-left: 50px; font-size: {{$print['name_size']}}px">
+						<span style="display: block !important;  font-size: {{$print['name_size']}}px">
 							{{$page_product->product_actual_name}}
 
 							@if(!empty($print['lot_number']) && !empty($page_product->lot_number))
@@ -57,7 +57,7 @@
 
 					{{-- Price --}}
 					@if(!empty($print['price']))
-					<span style="font-size: {{$print['price_size']}}px; margin-left: 50px;">
+					<span style="font-size: {{$print['price_size']}}px; ">
 						@lang('lang_v1.price'):
 						<b>{{session('currency')['symbol'] ?? ''}}
 
@@ -87,9 +87,9 @@
 						</span>
 					@endif
 					{{-- Barcode --}}
-					<img style="max-width:90% !important; margin-left: 50px; height: {{$barcode_details->height*0.24}}in !important; display: block;" src="data:image/png;base64,{{DNS1D::getBarcodePNG($page_product->sub_sku, $page_product->barcode_type, 3,90, array(0, 0, 0), false)}}">
+					<img style="max-width:90% !important; height: {{$barcode_details->height*0.24}}in !important; display: block;" src="data:image/png;base64,{{DNS1D::getBarcodePNG($page_product->sub_sku, $page_product->barcode_type, 3,90, array(0, 0, 0), false)}}">
 					
-					<span style="font-size: 10px !important; margin-left: 50px;">
+					<span style="font-size: 10px !important;">
 						{{$page_product->sub_sku}}
 					</span>
 				</div>
