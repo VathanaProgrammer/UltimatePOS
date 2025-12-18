@@ -1730,7 +1730,6 @@ class SellController extends Controller
 
         $telegram_ok = $apiUser && $apiUser->telegram_chat_id ? true : false;
 
-
         return view('sell.partials.edit_shipping')
             ->with(compact('transaction', 'shipping_statuses', 'activities', 'users', 'telegram_ok'));
     }

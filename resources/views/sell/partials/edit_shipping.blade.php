@@ -268,7 +268,7 @@
                     </div>
                 </div>
                 <!-- Telegram subscription check -->
-                {{-- @if (!$telegram_ok)
+                @if (!$telegram_ok)
     <div class="col-md-12">
         <div class="alert alert-warning">
             This user does not subscribe to our Telegram bot yet.
@@ -291,7 +291,7 @@
 
         </div>
     </div>
-@endif --}}
+@endif
 
                 <div class="col-md-12">
                     <div class="form-group">
