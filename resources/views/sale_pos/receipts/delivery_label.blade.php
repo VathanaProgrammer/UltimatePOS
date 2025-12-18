@@ -70,7 +70,7 @@
         <div class="receiver-info">
             <span>
                 <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }} &nbsp;|&nbsp;
-                <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}
+                {{ $transaction->contact?->mobile ?? '-' }}
             </span>
             <span class="line">
                 <strong>Address:</strong>
