@@ -28,10 +28,10 @@ class SaleOnlineController extends Controller
     public function index()
     {
         // Optional: pass locations/customers for filters
-        
-        $customers = ApiUser::join("contacts", 'api_users.contact_id', '=' , 'contacts.id')
-                                ->pluck('contacts.name', 'contacts.id');
-        
+
+        $customers = ApiUser::join("contacts", 'api_users.contact_id', '=', 'contacts.id')
+            ->pluck('contacts.name', 'contacts.id');
+
         return view('E_Commerce.sale_online.index', compact('customers'));
     }
 
@@ -147,14 +147,19 @@ class SaleOnlineController extends Controller
                         '</span>'
                 )
                 ->addColumn('details', function ($order) {
-                    return $order->order_online_details->map(fn($d) => [
-                        'name' => $d->product->name ?? $d->product_name,
-                        'price' => $d->price_at_order,
-                        'qty' => $d->qty,
-                        'total_line' => $d->total_line,
-                        'image' => asset('uploads/img/' . $d->image_url)
-                    ])->toArray();
+                    return $order->order_online_details->map(function ($d) {
+                        return [
+                            'name'       => $d->product->name ?? $d->product_name,
+                            'price'      => $d->price_at_order,
+                            'qty'        => $d->qty,
+                            'total_line' => $d->total_line,
+                            'image'      => $d->image_url
+                                ? asset('uploads/img/' . $d->image_url)
+                                : asset('img/default.png'),
+                        ];
+                    })->toArray();
                 })
+
                 ->addColumn('total_qty', fn($order) => $order->total_qty)
                 ->addColumn('total', fn($order) => '$' . number_format($order->total, 2))
                 ->addColumn(
