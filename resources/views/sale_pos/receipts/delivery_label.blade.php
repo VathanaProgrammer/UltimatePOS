@@ -88,7 +88,7 @@
                         }
                     }
                 @endphp
-                <span style="font-weight: normal;">{{ $address }}</span>
+                <span style="font-weight: 700;">{{ $address }}</span>
             </span>
         </div>
     </div>
