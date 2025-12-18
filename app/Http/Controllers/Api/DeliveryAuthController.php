@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Log;
+use App\Services\TelegramService;
+use Carbon\Carbon;
 
 class DeliveryAuthController extends Controller
 {
@@ -93,7 +95,13 @@ class DeliveryAuthController extends Controller
                 ], 403);
             }
 
-            Log::info('Delivery login successful', ['user_id' => $user->id]);
+            $name = $user?->name ?? "Delivery";
+            $now = Carbon::now()->format('Y-m-d H:i:s A');
+
+            $raw = "$name just Logined\n" .
+                "Time: $now";
+
+            TelegramService::sendRawMessage('-1003497827838', $raw);
 
             return response()->json([
                 'success' => true,
