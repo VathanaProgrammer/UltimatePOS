@@ -91,7 +91,10 @@ class DeliveryAuthController extends Controller
                 ], 403);
             }
 
-            $name = $user?->fitst_name ?? "Delivery";
+            $name = $user?->first_name ?? "Delivery";
+            if(!empty($user->surname || $user->surname == '')){
+                $name = $user->surname . ' ' . $user->first_name ?? 'Delivery';
+            }
             $now = Carbon::now()->format('Y-m-d H:i:s A');
 
             $raw = "$name just Logined\n" .
