@@ -13,7 +13,7 @@
         }
 
         .label {
-            width: 145px;
+            width: 165px;
             padding: 3px;
         }
 
@@ -41,9 +41,13 @@
 
         .receiver-info span {
             font-weight: normal;
-            display: inline-block;
+            display: inline; /* inline so name & mobile stay on same line */
             word-wrap: break-word;
             max-width: 140px;
+        }
+
+        .receiver-info .line {
+            display: block; /* each line block except the first line */
         }
     </style>
 </head>
@@ -64,27 +68,28 @@
         </div>
 
         <div class="receiver-info">
-            <strong>Receiver:</strong> <span
-                style="font-weight: normal;">{{ $transaction->contact?->name ?? '-' }}</span><br>
-            <strong>Mobile:</strong> <span
-                style="font-weight: normal;">{{ $transaction->contact?->mobile ?? '-' }}</span><br>
-            <strong>Address:</strong>
-            @php
-                $address = '-';
-                if (!empty($transaction->shipping_address)) {
-                    $address = $transaction->shipping_address;
-                } elseif ($transaction->contact) {
-                    $line1 = $transaction->contact->address_line_1 ?? '';
-                    $line2 = $transaction->contact->address_line_2 ?? '';
-                    if ($line1 && $line2) {
-                        $address = $line1 . ', ' . $line2;
-                    } else {
-                        $address = $line1 ?: ($line2 ?: '-');
+            <span>
+                <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }} &nbsp;|&nbsp;
+                <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}
+            </span>
+            <span class="line">
+                <strong>Address:</strong>
+                @php
+                    $address = '-';
+                    if (!empty($transaction->shipping_address)) {
+                        $address = $transaction->shipping_address;
+                    } elseif ($transaction->contact) {
+                        $line1 = $transaction->contact->address_line_1 ?? '';
+                        $line2 = $transaction->contact->address_line_2 ?? '';
+                        if ($line1 && $line2) {
+                            $address = $line1 . ', ' . $line2;
+                        } else {
+                            $address = $line1 ?: ($line2 ?: '-');
+                        }
                     }
-                }
-            @endphp
-            <span style="font-weight: normal;">{{ $address }}</span>
-
+                @endphp
+                <span style="font-weight: normal;">{{ $address }}</span>
+            </span>
         </div>
     </div>
 </body>
