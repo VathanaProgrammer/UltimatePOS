@@ -30,8 +30,8 @@
         }
 
         .qr-box img {
-            width: 55px;
-            height: 55px;
+            width: 50px;
+            height: 50px;
         }
 
         .receiver-info {
