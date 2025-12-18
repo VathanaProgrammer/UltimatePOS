@@ -20,7 +20,10 @@
 
         .top-row {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
+            /* items stay close together */
+            gap: 5px;
+            /* add a small gap between sender & QR */
             align-items: flex-start;
         }
 
@@ -59,8 +62,10 @@
         </div>
 
         <div class="receiver-info">
-            <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }}<br>
-            <strong>Mobile:</strong> {{ $transaction->contact?->mobile ?? '-' }}<br>
+            <strong>Receiver:</strong> <span
+                style="font-weight: normal;">{{ $transaction->contact?->name ?? '-' }}</span><br>
+            <strong>Mobile:</strong> <span
+                style="font-weight: normal;">{{ $transaction->contact?->mobile ?? '-' }}</span><br>
             <strong>Address:</strong>
             @php
                 $address = '-';
@@ -76,7 +81,7 @@
                     }
                 }
             @endphp
-            {{ $address }}
+            <span style="font-weight: normal;">{{ $address }}</span>
 
         </div>
     </div>
