@@ -253,7 +253,7 @@
                     </div>
                 </div>
 
-                <!-- Invoice dropzone -->
+                {{-- <!-- Invoice dropzone -->
                 <div class="col-md-12">
                     <div class="form-group">
                         <div class="form-check mb-2">
@@ -266,32 +266,32 @@
                         <div class="dropzone" id="invoice_dropzone" style="display:none;"></div>
                         <small class="form-text text-muted" id="invoice_status">No document selected.</small>
                     </div>
-                </div>
+                </div> --}}
                 <!-- Telegram subscription check -->
                 @if (!$telegram_ok)
-    <div class="col-md-12">
-        <div class="alert alert-warning">
-            This user does not subscribe to our Telegram bot yet.
-        </div>
-    </div>
-@else
-    <!-- Invoice dropzone -->
-    <div class="col-md-12">
-        <div class="form-group">
+                    <div class="col-md-12">
+                        <div class="alert alert-warning">
+                            This user does not subscribe to our Telegram bot yet.
+                        </div>
+                    </div>
+                @else
+                    <!-- Invoice dropzone -->
+                    <div class="col-md-12">
+                        <div class="form-group">
 
-            <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" id="include_invoice_checkbox">
-                <label class="form-check-label" for="include_invoice_checkbox">
-                    Sending document?
-                </label>
-            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="include_invoice_checkbox">
+                                <label class="form-check-label" for="include_invoice_checkbox">
+                                    Sending document?
+                                </label>
+                            </div>
 
-            <div class="dropzone" id="invoice_dropzone" style="display:none;"></div>
-            <small class="form-text text-muted" id="invoice_status">No documents selected.</small>
+                            <div class="dropzone" id="invoice_dropzone" style="display:none;"></div>
+                            <small class="form-text text-muted" id="invoice_status">No documents selected.</small>
 
-        </div>
-    </div>
-@endif
+                        </div>
+                    </div>
+                @endif
 
                 <div class="col-md-12">
                     <div class="form-group">
