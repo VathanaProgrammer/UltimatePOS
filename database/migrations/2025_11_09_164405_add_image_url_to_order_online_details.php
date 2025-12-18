@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('order_online_details', function (Blueprint $table) {
             //
-            $table->string('image_url')->default(null)->after('total_line');
+            $table->string('image_url')->default(null)->after('total_line')->nullable();
         });
     }
 

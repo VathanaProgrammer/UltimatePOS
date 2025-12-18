@@ -114,8 +114,6 @@ class OrderController extends Controller
             Notification::send($admins, new NewOnlineOrderNotification($notificationData));
             DB::commit();
 
-
-
             // --- TELEGRAM INTEGRATION ---
             $user = ApiUser::find($data['api_user_id']);
             $telegramLink = null;

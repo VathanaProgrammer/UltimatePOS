@@ -64,7 +64,7 @@ return new class extends Migration
 
             if (!Schema::hasColumn('api_user_addresses', 'detail')) {
                 Schema::table('api_user_addresses', function (Blueprint $table) {
-                    $table->text('detail')->nullable();
+                    $table->text('details')->nullable();
                 });
             }
         });
