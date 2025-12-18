@@ -21,19 +21,21 @@ class ApiRewardController extends Controller
             'products_reward.points_required as reward_points',
             'products_reward.is_active'
         )
-        ->join('products_reward', 'products_reward.product_id', '=', 'products.id')
-        ->where('products_reward.is_active', 1)
-        ->orderBy('products.name')
-        ->get()
-        ->map(function ($item) use ($imagePath) {
-            return [
-                'id' => $item->id,
-                'name' => $item->name,
-                'image_url' => $item->image ? $imagePath . $item->image : null,
-                'reward_points' => $item->reward_points,
-                'is_active' => $item->is_active,
-            ];
-        });
+            ->join('products_reward', 'products_reward.product_id', '=', 'products.id')
+            ->where('products_reward.is_active', 1)
+            ->orderBy('products.name')
+            ->get()
+            ->map(function ($item) use ($imagePath) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'image_url' => $item->image
+                        ? asset('uploads/img/' . $item->image)
+                        : asset('img/default.png'),
+                    'reward_points' => $item->reward_points,
+                    'is_active' => $item->is_active,
+                ];
+            });
 
         return response()->json([
             "success" => true,
