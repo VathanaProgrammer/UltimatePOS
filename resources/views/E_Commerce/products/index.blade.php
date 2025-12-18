@@ -6,7 +6,7 @@
     <section class="content-header py-4">
         <h1 class="text-3xl font-semibold text-gray-800">Product</h1>
 
-        <div class="filter-class shadow-md rounded-[5px] bg-white p-4 mt-4">
+        {{-- <div class="filter-class shadow-md rounded-[5px] bg-white p-4 mt-4">
             <h2 class="text-xl font-medium text-gray-800 text-start mb-4">Filter</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <section class="shadow-md rounded-[5px] bg-white mt-4 p-4">
             <header class="flex justify-between">

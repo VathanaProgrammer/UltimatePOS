@@ -18,12 +18,16 @@ class ImportToRewardListController extends Controller
     {
         $appUrl = env('APP_URL');
         $imagePath = $appUrl . '/uploads/img/';
+        $empty_path = "/img/default.png";
 
         $products = Product::select(
             'products.id',
             'products.name',
             'products.sku',
-            DB::raw("CONCAT('$imagePath', products.image) as image"), // prepend APP_URL
+            DB::raw("CASE
+                        WHEN products.image IS NULL OR products.image =''
+                        THEN '$empty_path'
+                        ELSE CONCAT('$imagePath', products.image) END as image"), // prepend APP_URL
             DB::raw('categories.name as category'),
             DB::raw('business.name as business_name'),
             DB::raw('GROUP_CONCAT(DISTINCT business_locations.name SEPARATOR ", ") as locations')
