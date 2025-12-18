@@ -82,11 +82,7 @@ class DeliveryAuthController extends Controller
             }
 
             $user = auth('api_delivery')->user();
-
-            Log::info('User roles:', ['roles' => $user->getRoleNames()]);
-
-            Log::info('Delivery login successful', ['user' => $user]);
-
+            
             $expectedRole = 'Delivery#' . $user->business_id;
             if (!$user->hasRole($expectedRole)) {
                 return response()->json([
@@ -95,7 +91,7 @@ class DeliveryAuthController extends Controller
                 ], 403);
             }
 
-            $name = $user?->name ?? "Delivery";
+            $name = $user?->fitst_name ?? "Delivery";
             $now = Carbon::now()->format('Y-m-d H:i:s A');
 
             $raw = "$name just Logined\n" .
