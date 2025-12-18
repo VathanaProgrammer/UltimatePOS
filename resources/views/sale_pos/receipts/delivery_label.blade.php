@@ -7,13 +7,13 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-size: 9.5px;
             display: flex;
             justify-content: center;
         }
 
         .label {
-            width: 130px;
+            width: 145px;
             /* SLIGHTLY BIGGER */
             padding: 3px;
         }
