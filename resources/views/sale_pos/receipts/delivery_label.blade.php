@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 8px;
+            font-size: 10px;
             display: flex;
             justify-content: center;
         }

@@ -74,6 +74,6 @@ class ProductOnlineController extends Controller
 
     public function index()
     {
-        return view('E_Commerce.products.index'); // Only loads the page — NO DATA
+        return view('E_Commerce.products.index'); 
     }
 }
