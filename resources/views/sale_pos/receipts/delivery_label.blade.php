@@ -14,34 +14,36 @@
 
         .label {
             width: 145px;
-            /* SLIGHTLY BIGGER */
             padding: 3px;
         }
 
         .top-row {
             display: flex;
             justify-content: flex-start;
-            /* items stay close together */
             gap: 5px;
-            /* add a small gap between sender & QR */
             align-items: flex-start;
         }
 
         .sender-info {
-            width: 80px;
-            /* more space for text */
+            width: 70px;
             line-height: 1.2;
         }
 
         .qr-box img {
             width: 55px;
-            /* bigger QR */
             height: 55px;
         }
 
         .receiver-info {
             margin-top: 5px;
-            line-height: 1.2;
+            line-height: 1.1;
+        }
+
+        .receiver-info span {
+            font-weight: normal;
+            display: inline-block;
+            word-wrap: break-word;
+            max-width: 140px;
         }
     </style>
 </head>
