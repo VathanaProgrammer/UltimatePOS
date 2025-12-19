@@ -55,7 +55,7 @@
             </div>
 
             {{-- Shipping Status --}}
-            <div class="col-md-3">
+            <!-- <div class="col-md-3">
                 {!! Form::label('so_list_shipping_status', __('Shipping Status') . ':') !!}
                 {!! Form::select(
                     'so_list_shipping_status',
@@ -75,7 +75,7 @@
                         'id' => 'so_list_shipping_status',
                     ],
                 ) !!}
-            </div>
+            </div> -->
 
             {{-- Search --}}
             <div class="col-md-3 mt-4">
@@ -100,7 +100,7 @@
                             <th>Contact</th>
                             <th>Address</th>
                             <th>Status</th>
-                            <th>Shipping Status</th>
+                            <!-- <th>Shipping Status</th> -->
                             <th>Total Qty</th>
                             <th>Total</th>
                         </tr>
@@ -245,6 +245,10 @@
             }
 
             // Convert only
+            isConvertToSaleBtnClicked = false;
+            if (isConvertToSaleBtnClicked) {
+                $('#orderModal').modal('hide');
+            }
             $('#convertToSaleBtn').click(function() {
                 let order_id = $(this).data('order-id');
 
@@ -271,8 +275,14 @@
                         toastr.error("Conversion failed");
                     }
                 });
+                isConvertToSaleBtnClicked = true;
             });
 
+            // Convert and Open
+            isConvertAndOpenSaleBtnClicked = false;
+            if (isConvertAndOpenSaleBtnClicked) {
+                $('#orderModal').modal('hide');
+            }
 
             // Convert and open Sell List
             $('#convertAndOpenSaleBtn').click(function() {
@@ -300,8 +310,8 @@
                         toastr.error("Conversion failed");
                     }
                 });
+                isConvertAndOpenSaleBtnClicked = true;
             });
-
         });
     </script>
 @endsection
