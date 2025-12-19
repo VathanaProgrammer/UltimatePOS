@@ -146,8 +146,7 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: '{{ route('
-                sale_online.data ') }}',
+                url: '{{ route('sale_online.data') }}',
                 data: function(d) {
                     d.customer_id = $('#sell_list_filter_customer_id').val();
                     d.status = $('#so_list_filter_status').val();
