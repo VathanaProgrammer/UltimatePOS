@@ -110,7 +110,7 @@
     </section>
 
 </section>
-
+@stop
 
 @section('javascript')
 <script type="text/javascript">
