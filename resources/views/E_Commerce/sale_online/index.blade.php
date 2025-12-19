@@ -217,6 +217,17 @@
                 $('#orderModal .modal-title').text('Order #' + (data.id || 'N/A'));
                 $('#convertToSaleBtn, #convertAndOpenSaleBtn').attr('data-order-id', data.id);
 
+                 if (data.is_converted == 1 || data.is_converted === 1 || data.is_converted === true) {
+        $('#convertToSaleBtn').hide();
+        $('#convertAndOpenSaleBtn').hide();
+        // Optional: Show a message that it's already converted
+        $('#conversionStatus').html('<span class="text-success">✓ Already converted</span>').show();
+    } else {
+        $('#convertToSaleBtn').show();
+        $('#convertAndOpenSaleBtn').show();
+        $('#conversionStatus').hide();
+    }
+
                 $('#modalOrderNo').text('#' + (data.id || 'N/A'));
                 $('#modalCustomerName').text(data.customer_name || 'N/A');
                 $('#modalPhone').text(data.mobile || 'N/A');

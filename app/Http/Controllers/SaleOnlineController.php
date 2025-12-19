@@ -139,6 +139,7 @@ class SaleOnlineController extends Controller
                         . $order->stauts .
                         '</span>'
                 )
+                ->addColumn('is_converted', fn($order) => $order->is_converted ?? 0)
                 // ->addColumn(
                 //     'shipping_status',
                 //     fn($order) =>
