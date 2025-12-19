@@ -43,8 +43,9 @@
                 </table>
             </div>
 
-            <div class="modal-footer flex justify-between">
-                 <div id="conversionStatus" class="alert alert-success mb-3" style="display: none;"></div>r
+            <div class="modal-footer">
+                <div class="flex justify-between w-full">
+                 <div id="conversionStatus" class="text-green-500 mb-3" style="display: none;"></div>
                 <div>
                     <button type="button" class="btn bg-blue-500 text-white no-print" onclick="$(this).closest('div.modal').printThis();">
                         <i class="fa fa-print"></i> Print
@@ -56,6 +57,7 @@
                         Convert & Open Sell List
                     </button>
                     <button type="button" class="btn bg-gray-500 text-white no-print" data-dismiss="modal">Close</button>
+                </div>
                 </div>
             </div>
         </div>
