@@ -139,13 +139,13 @@ class SaleOnlineController extends Controller
                         . $order->stauts .
                         '</span>'
                 )
-                ->addColumn(
-                    'shipping_status',
-                    fn($order) =>
-                    '<span class="px-1 py-0 rounded" style="background-color:#2563eb;color:white;">'
-                        . ($order->shipping_status ?? 'pending') .
-                        '</span>'
-                )
+                // ->addColumn(
+                //     'shipping_status',
+                //     fn($order) =>
+                //     '<span class="px-1 py-0 rounded" style="background-color:#2563eb;color:white;">'
+                //         . ($order->shipping_status ?? 'pending') .
+                //         '</span>'
+                // )
                 ->addColumn('details', function ($order) {
                     return $order->order_online_details->map(function ($d) {
                         return [
@@ -504,6 +504,8 @@ class SaleOnlineController extends Controller
                 'updated_at' => $now,
             ]);
             \Log::info('Activity log inserted', ['subject_id' => $transaction_id, 'properties' => $activityProps]);
+
+            DB::table('online_orders')->where('id', $order->id)->update(['is_converted' => 1]);
 
             DB::commit();
             \Log::info('create_sale_order_from_online:success', ['transaction_id' => $transaction_id, 'invoice_no' => $invoice_no]);

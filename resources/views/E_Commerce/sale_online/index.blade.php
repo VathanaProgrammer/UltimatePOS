@@ -241,10 +241,6 @@
             }
 
             // Convert only
-            isConvertToSaleBtnClicked = false;
-            if (isConvertToSaleBtnClicked) {
-                $('#orderModal').modal('hide');
-            }
             $('#convertToSaleBtn').click(function() {
                 let order_id = $(this).data('order-id');
 
@@ -271,14 +267,7 @@
                         toastr.error("Conversion failed");
                     }
                 });
-                isConvertToSaleBtnClicked = true;
             });
-
-            // Convert and Open
-            isConvertAndOpenSaleBtnClicked = false;
-            if (isConvertAndOpenSaleBtnClicked) {
-                $('#orderModal').modal('hide');
-            }
 
             // Convert and open Sell List
             $('#convertAndOpenSaleBtn').click(function() {
@@ -306,7 +295,6 @@
                         toastr.error("Conversion failed");
                     }
                 });
-                isConvertAndOpenSaleBtnClicked = true;
             });
         });
     </script>
