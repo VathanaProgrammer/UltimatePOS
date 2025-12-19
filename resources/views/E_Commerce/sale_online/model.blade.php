@@ -43,18 +43,20 @@
                 </table>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn bg-blue-500 text-white no-print"
-                    onclick="$(this).closest('div.modal').printThis();">
-                    <i class="fa fa-print"></i> Print
-                </button>
-                <button id="convertToSaleBtn" class="btn bg-yellow-500 text-white no-print" data-order-id="">
-                    Convert to Sell
-                </button>
-                <button id="convertAndOpenSaleBtn" class="btn bg-green-500 text-white no-print" data-order-id="">
-                    Convert & Open Sell List
-                </button>
-                <button type="button" class="btn bg-gray-500 text-white no-print" data-dismiss="modal">Close</button>
+            <div class="modal-footer flex justify-between">
+                 <div id="conversionStatus" class="alert alert-success mb-3" style="display: none;">
+                <div>
+                    <button type="button" class="btn bg-blue-500 text-white no-print" onclick="$(this).closest('div.modal').printThis();">
+                        <i class="fa fa-print"></i> Print
+                    </button>
+                    <button id="convertToSaleBtn" class="btn bg-yellow-500 text-white no-print" data-order-id="">
+                        Convert to Sell
+                    </button>
+                    <button id="convertAndOpenSaleBtn" class="btn bg-green-500 text-white no-print" data-order-id="">
+                        Convert & Open Sell List
+                    </button>
+                    <button type="button" class="btn bg-gray-500 text-white no-print" data-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
