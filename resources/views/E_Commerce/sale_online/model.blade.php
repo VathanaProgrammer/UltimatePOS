@@ -44,7 +44,7 @@
             </div>
 
             <div class="modal-footer flex justify-between">
-                 <div id="conversionStatus" class="alert alert-success mb-3" style="display: none;">
+                 <div id="conversionStatus" class="alert alert-success mb-3" style="display: none;"></div>
                 <div>
                     <button type="button" class="btn bg-blue-500 text-white no-print" onclick="$(this).closest('div.modal').printThis();">
                         <i class="fa fa-print"></i> Print
