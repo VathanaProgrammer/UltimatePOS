@@ -109,6 +109,7 @@ class SaleOnlineController extends Controller
                             );
                     });
                 });
+            \Log::info('Data loaded', ['data' => $orders]);
 
             return DataTables::of($orders)
                 ->addColumn(
@@ -175,7 +176,7 @@ class SaleOnlineController extends Controller
                 )
                 ->rawColumns(['stauts', 'shipping_status', 'action'])
                 ->make(true);
-                \Log::info('Data loaded', ['data' => $orders]);
+                
         } catch (\Exception $e) {
             Log::error('Error in SaleOnlineController@getData: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
