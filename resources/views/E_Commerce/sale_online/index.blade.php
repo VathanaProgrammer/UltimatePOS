@@ -186,10 +186,6 @@
                         name: 'stauts'
                     },
                     {
-                        data: 'shipping_status',
-                        name: 'shipping_status'
-                    },
-                    {
                         data: 'total_qty',
                         name: 'total_qty'
                     },
