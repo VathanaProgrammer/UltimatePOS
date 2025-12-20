@@ -73,7 +73,7 @@
                 <strong>Receiver:</strong> {{ $transaction->contact?->name ?? '-' }} &nbsp;|&nbsp;
                 {{ $transaction->contact?->mobile ?? '-' }}
             </span>
-            <span class="line">
+            <span class="line" style="margin-top: 0.5px;">
                 <strong>Address:</strong>
                 @php
                     $address = '-';
