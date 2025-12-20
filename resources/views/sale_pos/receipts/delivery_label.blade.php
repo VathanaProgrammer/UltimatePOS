@@ -60,7 +60,7 @@
             <div class="sender-info">
                 <strong>SOB</strong><br>
                 Mobile: {{ $localtion->mobile ?? '0123456789' }}<br>
-                {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
+                Date: {{ \Carbon\Carbon::now()->format('d/m/Y H:iA') }}
             </div>
 
             <div class="qr-box">
