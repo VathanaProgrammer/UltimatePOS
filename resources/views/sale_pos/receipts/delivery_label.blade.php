@@ -14,7 +14,7 @@
 
         .label {
             width: 165px;
-            padding: 3px;
+            padding: 1.5px;
         }
 
         .top-row {
@@ -36,7 +36,7 @@
         }
 
         .receiver-info {
-            margin-top: 5px;
+            margin-top: 2px;
             line-height: 1.1;
         }
 
