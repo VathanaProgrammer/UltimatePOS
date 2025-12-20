@@ -20,6 +20,7 @@
         .top-row {
             display: flex;
             justify-content: flex-start;
+            font-size: 8px;
             gap: 5px;
             align-items: flex-start;
         }
