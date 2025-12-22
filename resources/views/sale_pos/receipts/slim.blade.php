@@ -675,6 +675,9 @@
             }
 
             $currency_symbol = '៛';
+
+            \Log::info('Data loaded', ['total_paid' => $total_paid]);
+            \Log::info('Data loaded', ['exchange_rate' => $exchange_rate]);
         @endphp
 
         @if ($total_paid > 0 && !empty($receipt_details->total_riel_paid_label))
