@@ -677,6 +677,7 @@
             $currency_symbol = '៛';
             \Log::info('Data loaded', ['receipt_details->total_paid' => $receipt_details->total_paid]);
 
+            
             \Log::info('Data loaded', ['total_paid' => $total_paid]);
 
             \Log::info('Data loaded', ['exchange_rate' => $exchange_rate]);
