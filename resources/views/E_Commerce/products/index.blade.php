@@ -1,11 +1,46 @@
 @extends('layouts.app')
 @section('title', __('E-Commerce Products'))
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 
 @section('content')
     <section class="content-header py-4">
         <h1 class="text-3xl font-semibold text-gray-800">Product</h1>
+
+        {{-- <div class="filter-class shadow-md rounded-[5px] bg-white p-4 mt-4">
+            <h2 class="text-xl font-medium text-gray-800 text-start mb-4">Filter</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="form-group">
+                    {!! Form::label('unit', 'Unit:') !!}
+                    {!! Form::select('unit', ['' => 'Select Unit', '1' => 'Piece', '2' => 'Kg', '3' => 'Liter'], null, ['class' => 'form-control']) !!}
+                </div>
+
+                <div class="form-group">
+                    {!! Form::label('is_active', 'Is Active:') !!}
+                    {!! Form::select('is_active', ['' => 'Select Status', '1' => 'Active', '0' => 'Inactive'], null, ['class' => 'form-control']) !!}
+                </div>
+
+                <div class="form-group">
+                    {!! Form::label('category', 'Category:') !!}
+                    <div class="flex items-center">
+                        {!! Form::select('category', ['' => 'Select Category', 'electronics' => 'Electronics', 'fashion' => 'Fashion', 'grocery' => 'Grocery'], null, ['class' => 'form-control flex-1']) !!}
+                        <button type="button" class="btn btn-default bg-white btn-flat btn-modal" data-href="#" title="@lang('category.add_category')" data-container=".view_modal">
+                            <i class="fa fa-plus-circle text-primary fa-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {!! Form::label('brand', 'Brand:') !!}
+                    <div class="flex items-center">
+                        {!! Form::select('brand', ['' => 'Select Brand', 'apple' => 'Apple', 'nike' => 'Nike', 'samsung' => 'Samsung'], null, ['class' => 'form-control flex-1']) !!}
+                        <button type="button" class="btn btn-default bg-white btn-flat btn-modal" data-href="#" title="@lang('brand.add_brand')" data-container=".view_modal">
+                            <i class="fa fa-plus-circle text-primary fa-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
 
         <section class="shadow-md rounded-[5px] bg-white mt-4 p-4">
             <header class="flex justify-between">
@@ -50,45 +85,18 @@ $(document).ready(function() {
         serverSide: true,
         ajax: "{{ route('product.online.data') }}",
         columns: [
-            { 
-                data: 'id', 
-                render: function(data) { 
-                    return `<input type="checkbox" class="row_checkbox" value="${data}">`; 
-                }, 
-                orderable: false, 
-                searchable: false 
-            },
-            { 
-                data: 'image', 
-                render: function(data) {
-                    if(data) {
-                        return `<img src="${data}" alt="Product Image" class="h-10 w-10 object-cover rounded">`;
-                    }
-                    return `<div class="h-10 w-10 bg-gray-200 flex items-center justify-center rounded">
-                                <i class="fas fa-image text-gray-400"></i>
-                            </div>`;
-                },
-                orderable: false, 
-                searchable: false 
-            },
+            { data: 'id', render: function(data) { return `<input type="checkbox" class="row_checkbox" value="${data}">`; }, orderable: false, searchable: false },
+            { data: 'image', orderable: false, searchable: false },
             { 
                 data: 'id',
                 render: function(data) {
                     return `<div class="btn-group">
-                        <button type="button" class="btn btn-info btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Actions
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="/products/${data}/view">
-                                <i class="fas fa-eye mr-2"></i>View
-                            </a>
-                            <a class="dropdown-item text-danger" href="#" onclick="removeProduct(${data})">
-                                <i class="fas fa-trash mr-2"></i>Remove
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="editProduct(${data})">
-                                <i class="fas fa-edit mr-2"></i>Edit
-                            </a>
-                        </div>
+                        <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info dropdown-toggle" data-toggle="dropdown">Actions</button>
+                        <ul class="dropdown-menu dropdown-menu-left">
+                            <li><a href="/products/${data}/view"><i class="fas fa-eye"></i> View</a></li>
+                            <li><a href="#" onclick="removeProduct(${data})"><i class="fas fa-trash"></i> Remove</a></li>
+                            <li><a href="#" onclick="editStatus(${data})"><i class="fas fa-toggle-on"></i> Update Status</a></li>
+                        </ul>
                     </div>`;
                 },
                 orderable: false,
@@ -96,18 +104,16 @@ $(document).ready(function() {
             },
             { data: 'name' },
             { data: 'business_location' },
-            { 
-                data: 'unit_purchase_price',
+            { data: 'unit_purchase_price',
                 render: function(data){
-                    return "$ " + parseFloat(data).toFixed(2);
+                    return "$ " + data;
                 }
-            },
-            { 
-                data: 'unit_selling_price',
+             },
+            { data: 'unit_selling_price',
                 render: function(data){
-                    return "$ " + parseFloat(data).toFixed(2);
+                    return "$ "+ data;
                 }
-            },
+             },
             { data: 'total_stock' },
             { data: 'type' },
             { data: 'category_name' },
@@ -117,21 +123,8 @@ $(document).ready(function() {
                 render: function(data, type, row) {
                     let isActive = parseInt(data) === 1;
                     let statusText = isActive ? 'Active' : 'Inactive';
-                    let cls = isActive ? 'bg-success' : 'bg-danger';
-                    
-                    return `<div class="dropdown">
-                        <button class="btn btn-sm ${cls} dropdown-toggle text-white" type="button" id="statusDropdown${row.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            ${statusText}
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="statusDropdown${row.id}">
-                            <a class="dropdown-item" href="#" onclick="updateStatus(${row.id}, 1)">
-                                <i class="fas fa-check-circle text-success mr-2"></i>Active
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="updateStatus(${row.id}, 0)">
-                                <i class="fas fa-times-circle text-danger mr-2"></i>Inactive
-                            </a>
-                        </div>
-                    </div>`;
+                    let cls = isActive ? 'bg-green-600' : 'bg-red-600';
+                    return `<span class="status-badge cursor-pointer text-white px-2 py-1 rounded-md text-sm font-medium ${cls}" data-id="${row.id}" data-status="${isActive ? 1 : 0}">${statusText}</span>`;
                 },
                 orderable: false,
                 searchable: false
@@ -145,58 +138,37 @@ $(document).ready(function() {
     });
 });
 
-// Remove Product Function
+// Remove Product
 function removeProduct(id) {
     if (!confirm('Are you sure to remove this product?')) return;
-    
     $.ajax({
         url: '/products/' + id + '/remove',
         type: 'POST',
-        data: { 
-            _token: '{{ csrf_token() }}',
-            _method: 'DELETE'  // Add this if your route expects DELETE method
-        },
+        data: { _token: '{{ csrf_token() }}' },
         success: function(res) {
-            if(res.success) {
-                $('#products_table').DataTable().ajax.reload();
-                toastr.success(res.msg || 'Product removed successfully');
-            } else {
-                toastr.error(res.msg || 'Error removing product');
-            }
-        },
-        error: function(xhr) {
-            toastr.error('Error removing product: ' + (xhr.responseJSON?.msg || 'Unknown error'));
+            $('#products_table').DataTable().ajax.reload();
+            toastr.success(res.msg || 'Removed successfully');
         }
     });
 }
 
-// Update Status Function
-function updateStatus(id, status) {
-    $.ajax({
-        url: '/products/' + id + '/status',
-        type: 'POST',
-        data: { 
-            is_active: status,
-            _token: '{{ csrf_token() }}'
-        },
-        success: function(res) {
-            if(res.success) {
-                $('#products_table').DataTable().ajax.reload();
-                toastr.success(res.msg || 'Status updated successfully');
-            } else {
-                toastr.error(res.msg || 'Error updating status');
-            }
-        },
-        error: function(xhr) {
-            toastr.error('Error updating status: ' + (xhr.responseJSON?.msg || 'Unknown error'));
-        }
-    });
-}
+// Edit Status Modal
+function editStatus(id) {
+    let row = $('#products_table').DataTable().row($(`#products_table input[value="${id}"]`).parents('tr')).data();
+    let currentStatus = row.is_active;
 
-// Edit Product Function (if needed)
-function editProduct(id) {
-    // Redirect to edit page or show modal
-    window.location.href = '/products/' + id + '/edit';
+    let newStatus = prompt('Enter status: 1 for Active, 0 for Inactive', currentStatus);
+    if (newStatus !== null && (newStatus === '0' || newStatus === '1')) {
+        $.ajax({
+            url: '/products/' + id + '/status',
+            type: 'POST',
+            data: { is_active: newStatus, _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                $('#products_table').DataTable().ajax.reload();
+                toastr.success(res.msg || 'Status updated');
+            }
+        });
+    }
 }
 </script>
 @endsection
