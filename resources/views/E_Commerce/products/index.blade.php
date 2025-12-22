@@ -51,45 +51,18 @@ $(document).ready(function() {
         serverSide: true,
         ajax: "{{ route('product.online.data') }}",
         columns: [
-            { 
-                data: 'id', 
-                render: function(data) { 
-                    return `<input type="checkbox" class="row_checkbox" value="${data}">`; 
-                }, 
-                orderable: false, 
-                searchable: false 
-            },
-            { 
-                data: 'image', 
-                render: function(data) {
-                    if(data) {
-                        return `<img src="${data}" alt="Product Image" class="h-10 w-10 object-cover rounded">`;
-                    }
-                    return `<div class="h-10 w-10 bg-gray-200 flex items-center justify-center rounded">
-                                <i class="fas fa-image text-gray-400"></i>
-                            </div>`;
-                },
-                orderable: false, 
-                searchable: false 
-            },
+            { data: 'id', render: function(data) { return `<input type="checkbox" class="row_checkbox" value="${data}">`; }, orderable: false, searchable: false },
+            { data: 'image', orderable: false, searchable: false },
             { 
                 data: 'id',
                 render: function(data) {
                     return `<div class="btn-group">
-                        <button type="button" class="btn btn-info btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Actions
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="/products/${data}/view">
-                                <i class="fas fa-eye mr-2"></i>View
-                            </a>
-                            <a class="dropdown-item text-danger" href="#" onclick="removeProduct(${data})">
-                                <i class="fas fa-trash mr-2"></i>Remove
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="editProduct(${data})">
-                                <i class="fas fa-edit mr-2"></i>Edit
-                            </a>
-                        </div>
+                        <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info dropdown-toggle" data-toggle="dropdown">Actions</button>
+                        <ul class="dropdown-menu dropdown-menu-left">
+                            <li><a href="/products/${data}/view"><i class="fas fa-eye"></i> View</a></li>
+                            <li><a href="#" onclick="removeProduct(${data})"><i class="fas fa-trash"></i> Remove</a></li>
+                            <li><a href="#" onclick="editStatus(${data})"><i class="fas fa-toggle-on"></i> Update Status</a></li>
+                        </ul>
                     </div>`;
                 },
                 orderable: false,
@@ -97,18 +70,16 @@ $(document).ready(function() {
             },
             { data: 'name' },
             { data: 'business_location' },
-            { 
-                data: 'unit_purchase_price',
+            { data: 'unit_purchase_price',
                 render: function(data){
-                    return "$ " + parseFloat(data).toFixed(2);
+                    return "$ " + data;
                 }
-            },
-            { 
-                data: 'unit_selling_price',
+             },
+            { data: 'unit_selling_price',
                 render: function(data){
-                    return "$ " + parseFloat(data).toFixed(2);
+                    return "$ "+ data;
                 }
-            },
+             },
             { data: 'total_stock' },
             { data: 'type' },
             { data: 'category_name' },
@@ -118,19 +89,21 @@ $(document).ready(function() {
                 render: function(data, type, row) {
                     let isActive = parseInt(data) === 1;
                     let statusText = isActive ? 'Active' : 'Inactive';
-                    let cls = isActive ? 'bg-success' : 'bg-danger';
+                    let cls = isActive ? 'bg-green-600' : 'bg-red-600';
                     
+                    // Create Bootstrap dropdown for status
                     return `<div class="dropdown">
-                        <button class="btn btn-sm ${cls} dropdown-toggle text-white" type="button" id="statusDropdown${row.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button class="status-badge cursor-pointer text-white px-2 py-1 rounded-md text-sm font-medium ${cls} dropdown-toggle" 
+                                type="button" 
+                                id="statusDropdown${row.id}" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false">
                             ${statusText}
                         </button>
                         <div class="dropdown-menu" aria-labelledby="statusDropdown${row.id}">
-                            <a class="dropdown-item" href="#" onclick="updateStatus(${row.id}, 1)">
-                                <i class="fas fa-check-circle text-success mr-2"></i>Active
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="updateStatus(${row.id}, 0)">
-                                <i class="fas fa-times-circle text-danger mr-2"></i>Inactive
-                            </a>
+                            <a class="dropdown-item" href="#" onclick="updateStatus(${row.id}, 1)">Active</a>
+                            <a class="dropdown-item" href="#" onclick="updateStatus(${row.id}, 0)">Inactive</a>
                         </div>
                     </div>`;
                 },
@@ -146,58 +119,45 @@ $(document).ready(function() {
     });
 });
 
-// Remove Product Function
+// Remove Product
 function removeProduct(id) {
     if (!confirm('Are you sure to remove this product?')) return;
-    
     $.ajax({
         url: '/products/' + id + '/remove',
         type: 'POST',
-        data: { 
-            _token: '{{ csrf_token() }}',
-            _method: 'DELETE'  // Add this if your route expects DELETE method
-        },
+        data: { _token: '{{ csrf_token() }}' },
         success: function(res) {
-            if(res.success) {
-                $('#products_table').DataTable().ajax.reload();
-                toastr.success(res.msg || 'Product removed successfully');
-            } else {
-                toastr.error(res.msg || 'Error removing product');
-            }
-        },
-        error: function(xhr) {
-            toastr.error('Error removing product: ' + (xhr.responseJSON?.msg || 'Unknown error'));
+            $('#products_table').DataTable().ajax.reload();
+            toastr.success(res.msg || 'Removed successfully');
         }
     });
 }
 
-// Update Status Function
+// Update Status via Dropdown
 function updateStatus(id, status) {
     $.ajax({
         url: '/products/' + id + '/status',
         type: 'POST',
         data: { 
-            is_active: status,
-            _token: '{{ csrf_token() }}'
+            is_active: status, 
+            _token: '{{ csrf_token() }}' 
         },
         success: function(res) {
-            if(res.success) {
-                $('#products_table').DataTable().ajax.reload();
-                toastr.success(res.msg || 'Status updated successfully');
-            } else {
-                toastr.error(res.msg || 'Error updating status');
-            }
-        },
-        error: function(xhr) {
-            toastr.error('Error updating status: ' + (xhr.responseJSON?.msg || 'Unknown error'));
+            $('#products_table').DataTable().ajax.reload();
+            toastr.success(res.msg || 'Status updated');
         }
     });
 }
 
-// Edit Product Function (if needed)
-function editProduct(id) {
-    // Redirect to edit page or show modal
-    window.location.href = '/products/' + id + '/edit';
+// Keep the old editStatus function for backward compatibility (if needed elsewhere)
+function editStatus(id) {
+    let row = $('#products_table').DataTable().row($(`#products_table input[value="${id}"]`).parents('tr')).data();
+    let currentStatus = row.is_active;
+
+    let newStatus = prompt('Enter status: 1 for Active, 0 for Inactive', currentStatus);
+    if (newStatus !== null && (newStatus === '0' || newStatus === '1')) {
+        updateStatus(id, newStatus);
+    }
 }
 </script>
 @endsection
