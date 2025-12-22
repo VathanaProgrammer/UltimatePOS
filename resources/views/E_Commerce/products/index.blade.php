@@ -61,37 +61,35 @@ $(document).ready(function() {
             { data: 'image', orderable: false, searchable: false },
             { 
                 data: 'id',
-                name: 'action',
                 render: function(data, type, row) {
                     let isActive = parseInt(row.is_active) === 1;
-                    let currentText = isActive ? 'Active' : 'Inactive';
-
                     return `
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-info dropdown-toggle" 
+                                type="button" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false">
                             Actions
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item text-danger" href="#" onclick="removeProduct(${data}); return false;">
+                                <a class="dropdown-item text-danger" href="#" 
+                                   onclick="removeProduct(${data}); return false;">
                                     <i class="fas fa-trash mr-1"></i> Remove
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li class="dropdown-submenu">
-                                <a class="dropdown-item dropdown-toggle" href="#">Update Status</a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item ${isActive ? 'active' : ''}" href="#" onclick="updateStatus(${data}, 1); return false;">
-                                            <i class="fas fa-check mr-1"></i> Active
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item ${!isActive ? 'active' : ''}" href="#" onclick="updateStatus(${data}, 0); return false;">
-                                            <i class="fas fa-times mr-1"></i> Inactive
-                                        </a>
-                                    </li>
-                                </ul>
+                            <li>
+                                <a class="dropdown-item ${isActive ? 'active' : ''}" href="#" 
+                                   onclick="updateStatus(${data}, 1); return false;">
+                                    <i class="fas fa-check mr-1"></i> Active
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item ${!isActive ? 'active' : ''}" href="#" 
+                                   onclick="updateStatus(${data}, 0); return false;">
+                                    <i class="fas fa-times mr-1"></i> Inactive
+                                </a>
                             </li>
                         </ul>
                     </div>`;
@@ -121,78 +119,51 @@ $(document).ready(function() {
         ]
     });
 
-    // Check/Uncheck all checkboxes
+    // Check/Uncheck all
     $('#checkAll').on('click', function() {
         $('.row_checkbox').prop('checked', this.checked);
-    });
-
-    // Enable dropdown submenu hover/open (Bootstrap 5)
-    $('.dropdown-submenu .dropdown-toggle').on('click', function(e) {
-        $(this).next('.dropdown-menu').toggle();
-        e.stopPropagation();
-        e.preventDefault();
     });
 });
 
 // Remove Product
 function removeProduct(id) {
-    if (!confirm('Are you sure you want to remove this product?')) {
-        return;
-    }
+    if (!confirm('Are you sure you want to remove this product?')) return;
 
     $.ajax({
         url: '/products/' + id + '/remove',
         type: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}',
-            _method: 'DELETE'  // if your route expects DELETE
-        },
+        data: { _token: '{{ csrf_token() }}', _method: 'DELETE' },
         success: function(res) {
             $('#products_table').DataTable().ajax.reload(null, false);
-            toastr.success(res.msg || 'Product removed successfully');
+            toastr.success(res.msg || 'Product removed');
         },
-        error: function(xhr) {
-            toastr.error(xhr.responseJSON?.msg || 'Failed to remove product');
+        error: function() {
+            toastr.error('Failed to remove product');
         }
     });
 }
 
 // Update Status
 function updateStatus(id, status) {
-    let statusText = status === 1 ? 'Active' : 'Inactive';
-
-    if (!confirm(`Change status to "${statusText}"?`)) {
-        return;
-    }
+    let text = status === 1 ? 'Active' : 'Inactive';
+    if (!confirm(`Change status to "${text}"?`)) return;
 
     $.ajax({
         url: '/products/' + id + '/status',
         type: 'POST',
-        data: {
-            is_active: status,
-            _token: '{{ csrf_token() }}'
-        },
+        data: { is_active: status, _token: '{{ csrf_token() }}' },
         success: function(res) {
             $('#products_table').DataTable().ajax.reload(null, false);
-            toastr.success(res.msg || 'Status updated successfully');
+            toastr.success(res.msg || 'Status updated');
         },
-        error: function(xhr) {
-            toastr.error(xhr.responseJSON?.msg || 'Failed to update status');
+        error: function() {
+            toastr.error('Failed to update status');
         }
     });
 }
 </script>
 
 <style>
-/* Submenu positioning */
-.dropdown-submenu {
-    position: relative;
-}
-.dropdown-submenu .dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -6px;
-    border-radius: 0 6px 6px 6px;
-}
+.dropdown-menu { min-width: 140px; }
 </style>
 @endsection
