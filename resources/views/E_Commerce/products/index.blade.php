@@ -73,10 +73,14 @@ $(document).ready(function() {
                 data: 'id',
                 render: function(data, type, row) {
                     let isActive = parseInt(row.is_active) === 1;
-                    return 
-                    `
+                    return `
                     <div class="dropdown">
-                    <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info dropdown-toggle" data-toggle="dropdown">Actions</button>
+                        <button class="btn btn-sm btn-info dropdown-toggle" 
+                                type="button" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false">
+                            Actions
+                        </button>
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item text-danger" href="#" 
