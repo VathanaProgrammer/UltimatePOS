@@ -7,10 +7,11 @@
         <h1 class="text-3xl font-semibold text-gray-800">Product</h1>
 
         <section class="shadow-md rounded-[5px] bg-white mt-4 p-4">
-            <header class="flex justify-between">
-                <h1 class="text-xl text-gray-700 font-semibold text-start">All Products</h1>
+            <header class="flex justify-between items-center">
+                <h1 class="text-xl text-gray-700 font-semibold">All Products</h1>
                 <div class="flex gap-2">
-                    <a href="{{ route('importExistingProduct.show') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-md font-medium">
+                    <a href="{{ route('importExistingProduct.show') }}" 
+                       class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-md font-medium">
                         <i class="fa fa-download mr-2"></i> Use Existing Products
                     </a>
                 </div>
@@ -49,23 +50,47 @@ $(document).ready(function() {
         serverSide: true,
         ajax: "{{ route('product.online.data') }}",
         columns: [
-            { data: 'id', render: function(data) { return `<input type="checkbox" class="row_checkbox" value="${data}">`; }, orderable: false, searchable: false },
+            { 
+                data: 'id', 
+                render: function(data) { 
+                    return `<input type="checkbox" class="row_checkbox" value="${data}">`; 
+                }, 
+                orderable: false, 
+                searchable: false 
+            },
             { data: 'image', orderable: false, searchable: false },
             { 
                 data: 'id',
+                name: 'action',
                 render: function(data, type, row) {
-                    let currentStatus = parseInt(row.is_active) === 1 ? 'Active' : 'Inactive';
-                    return `<div class="btn-group">
-                        <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Actions <span class="caret"></span>
+                    let isActive = parseInt(row.is_active) === 1;
+                    let currentText = isActive ? 'Active' : 'Inactive';
+
+                    return `
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Actions
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-left">
-                            <li><a href="#" onclick="removeProduct(${data}); return false;"><i class="fas fa-trash"></i> Remove</a></li>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" onclick="removeProduct(${data}); return false;">
+                                    <i class="fas fa-trash mr-1"></i> Remove
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
                             <li class="dropdown-submenu">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-toggle-on"></i> Update Status <span class="caret"></span></a>
+                                <a class="dropdown-item dropdown-toggle" href="#">Update Status</a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="#" onclick="updateStatus(${data}, 1); return false;">Active</a></li>
-                                    <li><a href="#" onclick="updateStatus(${data}, 0); return false;">Inactive</a></li>
+                                    <li>
+                                        <a class="dropdown-item ${isActive ? 'active' : ''}" href="#" onclick="updateStatus(${data}, 1); return false;">
+                                            <i class="fas fa-check mr-1"></i> Active
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item ${!isActive ? 'active' : ''}" href="#" onclick="updateStatus(${data}, 0); return false;">
+                                            <i class="fas fa-times mr-1"></i> Inactive
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         </ul>
@@ -76,27 +101,19 @@ $(document).ready(function() {
             },
             { data: 'name' },
             { data: 'business_location' },
-            { data: 'unit_purchase_price',
-                render: function(data){
-                    return "$ " + data;
-                }
-             },
-            { data: 'unit_selling_price',
-                render: function(data){
-                    return "$ "+ data;
-                }
-             },
+            { data: 'unit_purchase_price', render: data => '$ ' + data },
+            { data: 'unit_selling_price', render: data => '$ ' + data },
             { data: 'total_stock' },
             { data: 'type' },
             { data: 'category_name' },
             { data: 'sku' },
             { 
                 data: 'is_active',
-                render: function(data, type, row) {
+                render: function(data) {
                     let isActive = parseInt(data) === 1;
-                    let statusText = isActive ? 'Active' : 'Inactive';
-                    let cls = isActive ? 'bg-green-600' : 'bg-red-600';
-                    return `<span class="status-badge text-white px-2 py-1 rounded-md text-sm font-medium ${cls}">${statusText}</span>`;
+                    let text = isActive ? 'Active' : 'Inactive';
+                    let bg = isActive ? 'bg-green-600' : 'bg-red-600';
+                    return `<span class="px-3 py-1 text-white text-sm font-medium rounded-full ${bg}">${text}</span>`;
                 },
                 orderable: false,
                 searchable: false
@@ -104,61 +121,78 @@ $(document).ready(function() {
         ]
     });
 
-    // Check/Uncheck all
+    // Check/Uncheck all checkboxes
     $('#checkAll').on('click', function() {
         $('.row_checkbox').prop('checked', this.checked);
+    });
+
+    // Enable dropdown submenu hover/open (Bootstrap 5)
+    $('.dropdown-submenu .dropdown-toggle').on('click', function(e) {
+        $(this).next('.dropdown-menu').toggle();
+        e.stopPropagation();
+        e.preventDefault();
     });
 });
 
 // Remove Product
 function removeProduct(id) {
-    if (!confirm('Are you sure to remove this product?')) return;
+    if (!confirm('Are you sure you want to remove this product?')) {
+        return;
+    }
+
     $.ajax({
         url: '/products/' + id + '/remove',
         type: 'POST',
-        data: { _token: '{{ csrf_token() }}', _method: 'DELETE' },
-        success: function(res) {
-            $('#products_table').DataTable().ajax.reload();
-            toastr.success(res.msg || 'Removed successfully');
+        data: {
+            _token: '{{ csrf_token() }}',
+            _method: 'DELETE'  // if your route expects DELETE
         },
-        error: function() {
-            toastr.error('Something went wrong');
+        success: function(res) {
+            $('#products_table').DataTable().ajax.reload(null, false);
+            toastr.success(res.msg || 'Product removed successfully');
+        },
+        error: function(xhr) {
+            toastr.error(xhr.responseJSON?.msg || 'Failed to remove product');
         }
     });
 }
 
-// Update Status via Dropdown
+// Update Status
 function updateStatus(id, status) {
     let statusText = status === 1 ? 'Active' : 'Inactive';
-    if (!confirm(`Are you sure you want to change the status to "${statusText}"?`)) return;
+
+    if (!confirm(`Change status to "${statusText}"?`)) {
+        return;
+    }
 
     $.ajax({
         url: '/products/' + id + '/status',
         type: 'POST',
-        data: { 
-            is_active: status, 
-            _token: '{{ csrf_token() }}' 
+        data: {
+            is_active: status,
+            _token: '{{ csrf_token() }}'
         },
         success: function(res) {
-            $('#products_table').DataTable().ajax.reload();
+            $('#products_table').DataTable().ajax.reload(null, false);
             toastr.success(res.msg || 'Status updated successfully');
         },
-        error: function() {
-            toastr.error('Failed to update status');
+        error: function(xhr) {
+            toastr.error(xhr.responseJSON?.msg || 'Failed to update status');
         }
     });
 }
 </script>
 
 <style>
-/* Optional: Better styling for submenu */
+/* Submenu positioning */
 .dropdown-submenu {
     position: relative;
 }
 .dropdown-submenu .dropdown-menu {
     top: 0;
     left: 100%;
-    margin-top: -1px;
+    margin-top: -6px;
+    border-radius: 0 6px 6px 6px;
 }
 </style>
 @endsection
