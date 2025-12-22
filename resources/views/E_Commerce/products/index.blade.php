@@ -49,6 +49,11 @@
   integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
   crossorigin="anonymous"
 />
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-ENjdO4Dr2bkBIFxQpeoYz1ChPW1jAEI0Pf6bZxZF6Yk1yYh/+/+3UyJekA1Q1QF5"
+  crossorigin="anonymous"
+></script>
 <script>
 $(document).ready(function() {
     var table = $('#products_table').DataTable({
