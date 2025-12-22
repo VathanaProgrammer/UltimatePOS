@@ -664,22 +664,32 @@
             @endforeach
         @endif
         @php
-            $total_paid = isset($receipt_details->total_paid)
-                ? floatval(str_replace(['$', ' '], '', $receipt_details->total_paid))
+            $total_paid = !empty($receipt_details->total_paid)
+                ? floatval(str_replace(['$', ',', ' '], '', $receipt_details->total_paid))
                 : 0;
 
-            $exchange_rate = isset($receipt_details->exchange_rate)
-                ? floatval(str_replace(',', '', $receipt_details->exchange_rate))
-                : 1;
-			$currency_symbol = '៛';
+            $exchange_rate = !empty($receipt_details->exchange_rate) ? floatval($receipt_details->exchange_rate) : 1;
+
+            if (empty($receipt_details->total_riel_paid_label)) {
+                $receipt_details->total_riel_paid_label = 'Total Paid (៛)';
+            }
+
+            $currency_symbol = '៛';
         @endphp
 
         @if ($total_paid > 0 && !empty($receipt_details->total_riel_paid_label))
             <div class="flex-box">
-                <p class="width-50 text-right">{{ $receipt_details->total_riel_paid_label }}</p>
+                <p class="width-50 text-right">
+                    {{ $receipt_details->total_riel_paid_label }}
+                </p>
                 <p class="width-50 text-right">
                     {{ $currency_symbol }}
-                    {{ number_format($total_paid * $exchange_rate, 0, $receipt_details->currency['decimal_separator'], $receipt_details->currency['thousand_separator']) }}
+                    {{ number_format(
+                        $total_paid * $exchange_rate,
+                        0,
+                        $receipt_details->currency['decimal_separator'],
+                        $receipt_details->currency['thousand_separator'],
+                    ) }}
                 </p>
             </div>
         @endif
