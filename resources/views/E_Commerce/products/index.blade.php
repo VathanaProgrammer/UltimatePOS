@@ -171,20 +171,5 @@ function updateStatus(id, status) {
 
 <style>
 .dropdown-menu { min-width: 140px; }
-.toast-success {
-    background-color: #51a351 !important;
-}
-
-.toast-error {
-    background-color: #bd362f !important;
-}
-
-.toast-info {
-    background-color: #2f96b4 !important;
-}
-
-.toast-warning {
-    background-color: #f89406 !important;
-}
 </style>
 @endsection
