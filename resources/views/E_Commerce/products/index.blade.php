@@ -7,11 +7,10 @@
         <h1 class="text-3xl font-semibold text-gray-800">Product</h1>
 
         <section class="shadow-md rounded-[5px] bg-white mt-4 p-4">
-            <header class="flex justify-between items-center">
-                <h1 class="text-xl text-gray-700 font-semibold">All Products</h1>
+        <header class="flex justify-between">
+                <h1 class="text-xl text-gray-700 font-semibold text-start">All Products</h1>
                 <div class="flex gap-2">
-                    <a href="{{ route('importExistingProduct.show') }}" 
-                       class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-md font-medium">
+                    <a href="{{ route('importExistingProduct.show') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-md font-medium">
                         <i class="fa fa-download mr-2"></i> Use Existing Products
                     </a>
                 </div>
