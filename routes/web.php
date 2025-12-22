@@ -163,6 +163,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
         ->name('s');
 
     Route::get("/e-commerce/product", [ProductOnlineController::class, 'index'])->name('product.online.index');
+    // Remove product
+    Route::delete('/products/{id}/remove', [ProductOnlineController::class, 'remove'])->name('products.remove');
+// Update status
+    Route::post('/products/{id}/status', [ProductOnlineController::class, 'updateStatus'])->name('products.status');
     Route::get('/e-commerce/catolog/{id}', [CatologController::class, 'showByCategory'])->name("catolog.show");
     Route::post('/e-commerce/catolog', [CatologController::class, 'store'])->name("catolog.store");
     Route::post('/e-commerce/catolog/category/create', [Category_EController::class, 'store'])->name("category_e.store");
