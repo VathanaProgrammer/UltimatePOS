@@ -73,7 +73,8 @@ $(document).ready(function() {
                 data: 'id',
                 render: function(data, type, row) {
                     let isActive = parseInt(row.is_active) === 1;
-                    return `
+                    return 
+                    `
                     <div class="dropdown">
                     <button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline tw-dw-btn-info dropdown-toggle" data-toggle="dropdown">Actions</button>
                         <ul class="dropdown-menu">
@@ -170,5 +171,20 @@ function updateStatus(id, status) {
 
 <style>
 .dropdown-menu { min-width: 140px; }
+.toast-success {
+    background-color: #51a351 !important;
+}
+
+.toast-error {
+    background-color: #bd362f !important;
+}
+
+.toast-info {
+    background-color: #2f96b4 !important;
+}
+
+.toast-warning {
+    background-color: #f89406 !important;
+}
 </style>
 @endsection
