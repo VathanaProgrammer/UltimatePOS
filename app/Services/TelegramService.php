@@ -132,12 +132,23 @@ class TelegramService
 
     public static function sendRawMessage($chatId, $text)
     {
-        $token = env('TELEGRAM_BOT_TOKEN');
+        $token = config('services.telegram.bot_token');
 
-        Http::withoutVerifying()->post("https://api.telegram.org/bot{$token}/sendMessage", [
-            'chat_id' => $chatId,
-            'text' => $text
-        ]);
+        $response = Http::post(
+            "https://api.telegram.org/bot{$token}/sendMessage",
+            [
+                'chat_id' => $chatId,
+                'text' => $text,
+                'parse_mode' => 'HTML'
+            ]
+        );
+
+        if (!$response->successful()) {
+            Log::error('Telegram send failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+        }
     }
 
 
