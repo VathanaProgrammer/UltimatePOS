@@ -136,10 +136,11 @@ class TelegramService
 
         // Ensure chatId is string and trimmed
         $chatId = trim((string) $chatId);
+        $url = "https://api.telegram.org/bot{$token}/sendMessage";
 
         try {
             $response = Http::withoutVerifying()->post(
-                "https://api.telegram.org/bot{$token}/sendMessage",
+                $url,
                 [
                     'chat_id' => $chatId,
                     'text' => $text,
@@ -150,6 +151,7 @@ class TelegramService
             if ($response->failed()) {
                 Log::error('Telegram send failed test', [
                     'status' => $response->status(),
+                    'url' => $url,
                     'body' => $response->body(),
                     'chatId' => $chatId
                 ]);
