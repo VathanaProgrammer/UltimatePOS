@@ -100,7 +100,7 @@ class DeliveryAuthController extends Controller
             $raw = "$name just Logined\n" .
                 "Time: $now";
 
-            TelegramService::sendRawMessage('-1003497827838', $raw);
+            TelegramService::sendRawMessage(-1003497827838, $raw);
 
             return response()->json([
                 'success' => true,
