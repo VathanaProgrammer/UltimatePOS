@@ -20,10 +20,10 @@ class Category_EController extends Controller
         $can_delete = true; // set permission logic here
         $category_type = 'E'; // example type
 
-        $categories = Categories_E::with('catolog')->select('categories_E.*');
+        $categories = Categories_E::with('catologs')->select('categories_E.*');
 
         return Datatables::of($categories)
-            ->addColumn('catalog_name', fn($row) => $row->catolog->name ?? '--')
+            ->addColumn('catalog_name', fn($row) => $row->catologs->name ?? '--')
             ->addColumn('action', function ($row) use ($can_edit, $can_delete, $category_type) {
                 $html = '';
 
