@@ -148,7 +148,7 @@ class TelegramService
             );
 
             if ($response->failed()) {
-                Log::error('Telegram send failed', [
+                Log::error('Telegram send failed test', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                     'chatId' => $chatId
