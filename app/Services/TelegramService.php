@@ -137,6 +137,10 @@ class TelegramService
         // Make sure chatId is string
         $chatId = (string) $chatId;
 
+        Log::error('Error', [
+            'status' => $chatId
+        ]);
+
         $response = Http::withoutVerifying()->post(
             "https://api.telegram.org/bot{$token}/sendMessage",
             [
