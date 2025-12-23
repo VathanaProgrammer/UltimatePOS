@@ -134,7 +134,7 @@ class TelegramService
     {
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        $response = Http::post(
+        $response = Http::asForm()->post(
             "https://api.telegram.org/bot{$token}/sendMessage",
             [
                 'chat_id' => $chatId,
