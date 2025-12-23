@@ -134,26 +134,35 @@ class TelegramService
     {
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        // Make sure chatId is string
-        $chatId = (string) $chatId;
+        // Ensure chatId is string and trimmed
+        $chatId = trim((string) $chatId);
 
-        Log::error('Error', [
-            'status' => $chatId
-        ]);
+        try {
+            $response = Http::withoutVerifying()->post(
+                "https://api.telegram.org/bot{$token}/sendMessage",
+                [
+                    'chat_id' => $chatId,
+                    'text' => $text,
+                    'parse_mode' => 'HTML'
+                ]
+            );
 
-        $response = Http::withoutVerifying()->post(
-            "https://api.telegram.org/bot{$token}/sendMessage",
-            [
-                'chat_id' => $chatId,
-                'text' => $text,
-                'parse_mode' => 'HTML'
-            ]
-        );
-
-        if (!$response->successful()) {
-            Log::error('Telegram send failed', [
-                'status' => $response->status(),
-                'body' => $response->body(),
+            if ($response->failed()) {
+                Log::error('Telegram send failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'chatId' => $chatId
+                ]);
+            } else {
+                Log::info('Telegram message sent', [
+                    'chatId' => $chatId,
+                    'response' => $response->json()
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Telegram exception', [
+                'chatId' => $chatId,
+                'message' => $e->getMessage()
             ]);
         }
     }
