@@ -103,6 +103,12 @@
 @endsection
 
 @section('javascript')
+<script src="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.26.17/dist/sweetalert2.all.min.js
+"></script>
+<link href="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css
+" rel="stylesheet">
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     @foreach ($catalog->categories as $category)
@@ -146,19 +152,43 @@ function editProduct(id) {
     alert('Edit product ' + id); // Replace with modal or redirect
 }
 
-function deleteProduct(id) {
-    if(!confirm('Are you sure to delete this product?')) return;
-    $.ajax({
-        url: '/products/' + id + '/delete',
-        type: 'POST',
-        data: { _token: '{{ csrf_token() }}' },
-        success: function(res) {
-            @foreach ($catalog->categories as $category)
-                $('#category_table_{{ $category->id }}').DataTable().ajax.reload();
-            @endforeach
-            toastr.success(res.msg || 'Deleted successfully');
-        }
+async function deleteProduct(id) {
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this! All categories under this catalog will be deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
     });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const response = await $.ajax({
+            url: '/products/' + id + '/delete',
+            type: 'POST',
+            data: { _token: '{{ csrf_token() }}' }
+        });
+
+        @foreach ($catalog->categories as $category)
+            $('#category_table_{{ $category->id }}').DataTable().ajax.reload();
+        @endforeach
+
+        await Swal.fire(
+            'Deleted!',
+            response.msg || 'Product has been deleted.',
+            'success'
+        );
+    } catch (error) {
+        await Swal.fire(
+            'Error!',
+            error.responseJSON?.msg || 'Something went wrong.',
+            'error'
+        );
+    }
 }
 </script>
 @endsection
