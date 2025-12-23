@@ -95,7 +95,7 @@ function editCatalog(id) {
 
 // Delete Catalog with confirmation
 function deleteCatalog(id) {
-    if (!confirm("Are you sure you want to delete this catalog?")) return;
+    if (!confirm("Are you sure you want to delete this catalog? All categories under this catalog will also be deleted.")) return;
 
     $.ajax({
         url: `/catalogs/${id}/delete`,
