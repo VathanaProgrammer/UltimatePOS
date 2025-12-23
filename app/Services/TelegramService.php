@@ -134,7 +134,10 @@ class TelegramService
     {
         $token = env('TELEGRAM_BOT_TOKEN');
 
-        $response = Http::asForm()->post(
+        // Make sure chatId is string
+        $chatId = (string) $chatId;
+
+        $response = Http::withoutVerifying()->post(
             "https://api.telegram.org/bot{$token}/sendMessage",
             [
                 'chat_id' => $chatId,
@@ -144,7 +147,7 @@ class TelegramService
         );
 
         if (!$response->successful()) {
-            Log::error('Telegram send failed test', [
+            Log::error('Telegram send failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
