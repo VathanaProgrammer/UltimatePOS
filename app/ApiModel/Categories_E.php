@@ -19,7 +19,7 @@ class Categories_E extends Model
 
     public function catolog()
     {
-        return $this->belongsTo(Catalog::class, 'catolog_id', 'id');
+        return $this->belongsTo(Catalog::class, 'catalog_id', 'id');
     }
 
 
