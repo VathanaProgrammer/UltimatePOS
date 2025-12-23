@@ -132,7 +132,7 @@ class TelegramService
 
     public static function sendRawMessage($chatId, $text)
     {
-        $token = config('services.telegram.bot_token');
+        $token = env('TELEGRAM_BOT_TOKEN');
 
         $response = Http::post(
             "https://api.telegram.org/bot{$token}/sendMessage",
