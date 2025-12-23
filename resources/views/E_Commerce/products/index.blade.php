@@ -7,11 +7,10 @@
         <h1 class="text-3xl font-semibold text-gray-800">Product</h1>
 
         <section class="shadow-md rounded-[5px] bg-white mt-4 p-4">
-            <header class="flex justify-between items-center">
-                <h1 class="text-xl text-gray-700 font-semibold">All Products</h1>
+        <header class="flex justify-between">
+                <h1 class="text-xl text-gray-700 font-semibold text-start">All Products</h1>
                 <div class="flex gap-2">
-                    <a href="{{ route('importExistingProduct.show') }}" 
-                       class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-md font-medium">
+                    <a href="{{ route('importExistingProduct.show') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-md font-medium">
                         <i class="fa fa-download mr-2"></i> Use Existing Products
                     </a>
                 </div>
@@ -43,12 +42,16 @@
 @endsection
 
 @section('javascript')
-<link
-  href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-  rel="stylesheet"
-  integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-  crossorigin="anonymous"
-/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
+
 <script>
 $(document).ready(function() {
     var table = $('#products_table').DataTable({
@@ -171,5 +174,20 @@ function updateStatus(id, status) {
 
 <style>
 .dropdown-menu { min-width: 140px; }
+.toast-success {
+    background-color: #51a351 !important;
+}
+
+.toast-error {
+    background-color: #bd362f !important;
+}
+
+.toast-info {
+    background-color: #2f96b4 !important;
+}
+
+.toast-warning {
+    background-color: #f89406 !important;
+}
 </style>
 @endsection

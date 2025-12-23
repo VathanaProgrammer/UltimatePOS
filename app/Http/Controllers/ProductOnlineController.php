@@ -70,7 +70,37 @@ class ProductOnlineController extends Controller
             ->rawColumns(['image', 'action', 'status'])
             ->make(true);
     }
+    public function remove($id)
+    {
+        $deleted = DB::table('products_E')->where('id', $id)->delete();
 
+        if ($deleted) {
+            return response()->json(['msg' => 'Product removed'], 200);
+        }
+
+        return response()->json(['msg' => 'Product not found or not removed'], 404);
+    }
+
+    /**
+     * Update is_active status (called via AJAX).
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        // Validate input
+        $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+
+        $updated = DB::table('products_E')
+            ->where('id', $id)
+            ->update(['is_active' => $request->is_active]);
+
+        if ($updated) {
+            return response()->json(['msg' => 'Status updated'], 200);
+        }
+
+        return response()->json(['msg' => 'Product not found or status not changed'], 404);
+    }
 
     public function index()
     {

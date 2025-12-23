@@ -16,10 +16,11 @@ class Categories_E extends Model
         "catalog_id",
         "description",
     ];
+    
 
     public function catolog()
     {
-        return $this->belongsTo(Catalog::class, 'catolog_id', 'id');
+        return $this->belongsTo(Catalog::class, 'catalog_id', 'id');
     }
 
 
