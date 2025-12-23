@@ -95,7 +95,18 @@ function editCatalog(id) {
 
 // Delete Catalog with confirmation
 function deleteCatalog(id) {
-    if (!confirm("Are you sure you want to delete this catalog?")) return;
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this! All products under this catalog will be deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (!result.isConfirmed) return;
 
     $.ajax({
         url: `/catalogs/${id}/delete`,
