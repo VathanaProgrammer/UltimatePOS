@@ -16,6 +16,7 @@ class Categories_E extends Model
         "catalog_id",
         "description",
     ];
+    
 
     public function catolog()
     {
