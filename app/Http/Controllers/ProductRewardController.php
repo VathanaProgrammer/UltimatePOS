@@ -17,12 +17,19 @@ class ProductRewardController extends Controller
     {
         $appUrl = env('APP_URL');
         $imagePath = $appUrl . '/uploads/img/';
+        $empty_path = "/img/default.png";
 
         $products = Product::select(
             'products.id',
             'products.name',
             'products.sku',
-            DB::raw("CONCAT('$imagePath', products.image) as image"),
+            DB::raw("
+                        CASE 
+                            WHEN products.image IS NULL OR products.image = '' 
+                            THEN '$empty_path'
+                            ELSE CONCAT('$imgPath', products.image)
+                        END as image
+                    "),
             DB::raw('categories.name as category'),
             DB::raw('business.name as business_name'),
             'products_reward.is_active',
