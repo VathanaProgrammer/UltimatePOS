@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Log;
+use App\Business;
+use App\User;
 use App\Contact;
 
 class AuthController extends Controller
@@ -25,8 +27,11 @@ class AuthController extends Controller
         $otp = rand(100000, 999999);
         Log::info('Generated OTP', ['otp' => $otp]);
 
+        $businessId = Business::inRandomOrder()->value('id');
+        $userId = User::inRandomOrder()->value('id');
+
         // Find the last contact_id
-        $lastContact = Contact::where('business_id', 6)
+        $lastContact = Contact::where('business_id', $businessId)
             ->orderBy('contact_id', 'desc')
             ->first();
 
@@ -43,9 +48,9 @@ class AuthController extends Controller
         // Create new contact
         $contact = Contact::create([
             'name' => $validatedData['name'],
-            'business_id' => 6,
+            'business_id' => $businessId,
             'type' => 'customer',
-            'created_by' => 6,
+            'created_by' => $userId,
             'contact_id' => $newContactId,
             'mobile' => $validatedData['phone'],
         ]);
