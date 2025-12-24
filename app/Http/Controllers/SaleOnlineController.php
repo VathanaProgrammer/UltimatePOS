@@ -27,10 +27,18 @@ class SaleOnlineController extends Controller
 
     public function index()
     {
-        // Optional: pass locations/customers for filters
-
-        $customers = ApiUser::join("contacts", 'api_users.contact_id', '=', 'contacts.id')
-            ->pluck('contacts.name', 'contacts.id');
+        // Get contacts who have api_users (customers from online orders)
+        $customers = Contact::where('type', 'customer')
+            ->whereHas('api_user') // Only contacts that have an api_user record
+            ->select('id', 'name', 'mobile')
+            ->get()
+            ->mapWithKeys(function ($contact) {
+                // Use contact ID as value, name as label
+                return [
+                    $contact->id => $contact->name . ' (' . ($contact->mobile ?? 'N/A') . ')'
+                ];
+            })
+            ->prepend(__('All'), ''); // Add "All" option at beginning
 
         return view('E_Commerce.sale_online.index', compact('customers'));
     }
@@ -48,11 +56,11 @@ class SaleOnlineController extends Controller
             ])
 
                 // CUSTOMER FILTER
-                ->when(
-                    $request->customer_id,
-                    fn($q) =>
-                    $q->where('api_user_id', $request->customer_id)
-                )
+                ->when($request->customer_id, function ($q) use ($request) {
+                    $q->whereHas('api_user', function ($query) use ($request) {
+                        $query->where('contact_id', $request->customer_id);
+                    });
+                })
 
                 // ORDER STATUS FILTER
                 ->when(
