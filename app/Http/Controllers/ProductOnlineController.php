@@ -16,12 +16,12 @@ class ProductOnlineController extends Controller
             ->join('products as p', 'pe.product_id', '=', 'p.id')
             ->leftJoin('categories as c', 'p.category_id', '=', 'c.id')
             ->leftJoin('brands as b', 'p.brand_id', '=', 'b.id')
-            ->leftJoin('product_locations as pl', 'pl.product_id', '=', 'p.id') // product-level location
+            ->leftJoin('product_locations as pl', 'pl.product_id', '=', 'p.id')
             ->leftJoin('business_locations as bl', 'pl.location_id', '=', 'bl.id')
             ->leftJoin('variations as v', 'v.product_id', '=', 'p.id')
             ->leftJoin('variation_location_details as vld', function ($join) {
                 $join->on('vld.variation_id', '=', 'v.id')
-                    ->on('vld.location_id', '=', 'pl.location_id'); // match variation stock to product location
+                    ->on('vld.location_id', '=', 'pl.location_id');
             })
             ->select(
                 'pe.id',
@@ -54,6 +54,35 @@ class ProductOnlineController extends Controller
             );
 
         return DataTables::of($query)
+            // ADD CUSTOM FILTERS FOR EACH SEARCHABLE COLUMN
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->where('p.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('sku', function ($query, $keyword) {
+                $query->where('p.sku', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('category_name', function ($query, $keyword) {
+                $query->where('c.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('business_location', function ($query, $keyword) {
+                // Use HAVING for GROUP_CONCAT columns
+                $query->having('business_location', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('type', function ($query, $keyword) {
+                $query->where('p.type', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('total_stock', function ($query, $keyword) {
+                // Since total_stock is an aggregate, search is tricky
+                // You might want to disable search on this column
+            })
+            ->filterColumn('unit_purchase_price', function ($query, $keyword) {
+                // Since this is an aggregate, search is tricky
+                // You might want to disable search on this column
+            })
+            ->filterColumn('unit_selling_price', function ($query, $keyword) {
+                // Since this is an aggregate, search is tricky
+                // You might want to disable search on this column
+            })
             ->addColumn('image', function ($row) {
                 $src = $row->image ? asset($row->image) : asset('img/default.png');
                 return '<img src="' . $src . '" class="w-14 h-14 object-cover rounded">';
@@ -70,6 +99,7 @@ class ProductOnlineController extends Controller
             ->rawColumns(['image', 'action', 'status'])
             ->make(true);
     }
+    
     public function remove($id)
     {
         $deleted = DB::table('products_E')->where('id', $id)->delete();
