@@ -42,16 +42,6 @@
 @endsection
 
 @section('javascript')
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-      crossorigin="anonymous">
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous"></script>
-
-
 <script>
 $(document).ready(function() {
     var table = $('#products_table').DataTable({
@@ -68,39 +58,44 @@ $(document).ready(function() {
                 searchable: false 
             },
             { data: 'image', orderable: false, searchable: false },
-            { 
+            {
                 data: 'id',
-                render: function(data, type, row) {
+                render: function (data, type, row) {
                     let isActive = parseInt(row.is_active) === 1;
+
                     return `
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-info dropdown-toggle" 
-                                type="button" 
-                                data-bs-toggle="dropdown" 
-                                aria-expanded="false">
+                    <div class="relative inline-block text-left">
+                        <button 
+                            onclick="toggleDropdown(event)"
+                            class="inline-flex justify-center items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none">
                             Actions
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
                         </button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item text-danger" href="#" 
-                                   onclick="removeProduct(${data}); return false;">
-                                    <i class="fas fa-trash mr-1"></i> Remove
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item ${isActive ? 'active' : ''}" href="#" 
-                                   onclick="updateStatus(${data}, 1); return false;">
-                                    <i class="fas fa-check mr-1"></i> Active
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item ${!isActive ? 'active' : ''}" href="#" 
-                                   onclick="updateStatus(${data}, 0); return false;">
-                                    <i class="fas fa-times mr-1"></i> Inactive
-                                </a>
-                            </li>
-                        </ul>
+
+                        <div class="dropdown-menu hidden absolute right-0 z-50 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+                            <a href="#" 
+                            onclick="removeProduct(${data}); closeDropdowns(); return false;"
+                            class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                🗑 Remove
+                            </a>
+
+                            <div class="border-t my-1"></div>
+
+                            <a href="#"
+                            onclick="updateStatus(${data}, 1); closeDropdowns(); return false;"
+                            class="block px-4 py-2 text-sm hover:bg-gray-100 ${isActive ? 'font-semibold text-green-600' : ''}">
+                                ✔ Active
+                            </a>
+
+                            <a href="#"
+                            onclick="updateStatus(${data}, 0); closeDropdowns(); return false;"
+                            class="block px-4 py-2 text-sm hover:bg-gray-100 ${!isActive ? 'font-semibold text-red-600' : ''}">
+                                ✖ Inactive
+                            </a>
+                        </div>
                     </div>`;
                 },
                 orderable: false,
@@ -133,6 +128,27 @@ $(document).ready(function() {
         $('.row_checkbox').prop('checked', this.checked);
     });
 });
+
+function toggleDropdown(e) {
+    e.stopPropagation();
+
+    // Close other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.classList.add('hidden');
+    });
+
+    const menu = e.currentTarget.nextElementSibling;
+    menu.classList.toggle('hidden');
+}
+
+function closeDropdowns() {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        menu.classList.add('hidden');
+    });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', closeDropdowns);
 
 // Remove Product
 function removeProduct(id) {
