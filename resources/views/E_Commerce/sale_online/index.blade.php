@@ -39,7 +39,7 @@
         'so_list_filter_status',
         [
         'pending' => 'Pending',
-        'confirmed' => 'Confirmed',
+        'pick up' => 'Pick-Up',
         'packed' => 'Packed',
         'shipped' => 'Shipped',
         'delivered' => 'Delivered',
@@ -78,14 +78,14 @@
             </div> -->
 
     {{-- Search --}}
-    <div class="col-md-3 mt-4">
+    <!-- <div class="col-md-3 mt-4">
         {!! Form::label('search_text', __('Search') . ':') !!}
         {!! Form::text('search_text', null, [
         'class' => 'form-control',
         'id' => 'search_text',
         'placeholder' => 'Order ID, customer name, phone...',
         ]) !!}
-    </div>
+    </div> -->
     @endcomponent
 
     <!-- Table -->
