@@ -31,8 +31,7 @@
                     <thead class="bg-gray-100 sticky top-0">
                         <tr>
                             <th class="px-2 py-2"><input type="checkbox" id="select_all"></th>
-                            <th class="px-2 py-2">Product image</th>
-                            <th class="px-2 py-2">Action</th>
+                            <th class="px-2 py-2">Product image</th>                
                             <th class="px-2 py-2">Product</th>
                             <th class="px-2 py-2">Business Location</th>
                             <th class="px-2 py-2">Unit Purchase Price</th>
@@ -64,11 +63,6 @@
                     },
                     {
                         data: 'image',
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        data: 'action',
                         orderable: false,
                         searchable: false
                     },
@@ -128,11 +122,6 @@
                 });
             });
         });
-
-        // Edit placeholder
-        function editProduct(id) {
-            alert("Edit product ID: " + id);
-        }
     </script>
 
     <style>
