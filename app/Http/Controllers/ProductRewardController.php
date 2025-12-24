@@ -16,20 +16,20 @@ class ProductRewardController extends Controller
     public function getData(Request $request)
     {
         $appUrl = env('APP_URL');
-        $imagePath = $appUrl . '/uploads/img/';
-        $empty_path = "/img/default.png";
+        $imagePath = asset('uploads/img/');
+    $defaultImage = asset('img/default.png');
 
         $products = Product::select(
             'products.id',
             'products.name',
             'products.sku',
             DB::raw("
-                        CASE 
-                            WHEN products.image IS NULL OR products.image = '' 
-                            THEN '$empty_path'
-                            ELSE CONCAT('$imgPath', products.image)
-                        END as image
-                    "),
+                CASE 
+                    WHEN products.image IS NULL OR products.image = '' 
+                    THEN '$defaultImage'
+                    ELSE CONCAT('$imagePath/', products.image)
+                END as image
+            "),
             DB::raw('categories.name as category'),
             DB::raw('business.name as business_name'),
             'products_reward.is_active',
