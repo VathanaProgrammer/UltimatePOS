@@ -15,7 +15,7 @@
 
     <section class="content">
         <!-- Filters -->
-        @component('components.filters_custom', ['title' => __('Filters')])
+        <!-- @component('components.filters_custom', ['title' => __('Filters')])
             <div class="col-md-3">
                 {!! Form::label('search_text', __('Search') . ':') !!}
                 {!! Form::text('search_text', null, [
@@ -24,7 +24,7 @@
                     'placeholder' => 'Product name, SKU, category...',
                 ]) !!}
             </div>
-        @endcomponent
+        @endcomponent -->
 
         <div class="box">
             <div class="box-header with-border">
