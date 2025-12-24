@@ -49,6 +49,28 @@ class ImportExistProductController extends Controller
             ->groupBy('p.id', 'p.name', 'p.sku', 'p.image', 'c.name', 'b.name');
 
         return DataTables::of($products)
+        ->filterColumn('name', function ($query, $keyword) {
+            $query->where('p.name', 'like', "%{$keyword}%");
+        })
+    
+        ->filterColumn('sku', function ($query, $keyword) {
+            $query->where('p.sku', 'like', "%{$keyword}%");
+        })
+    
+        ->filterColumn('category_name', function ($query, $keyword) {
+            $query->where('c.name', 'like', "%{$keyword}%");
+        })
+    
+        ->filterColumn('brand_name', function ($query, $keyword) {
+            $query->where('b.name', 'like', "%{$keyword}%");
+        })
+    
+        ->filterColumn('business_location', function ($query, $keyword) {
+            $query->whereRaw(
+                "bl.name LIKE ?",
+                ["%{$keyword}%"]
+            );
+        })
             ->addColumn('checkbox', function ($row) {
                 return '<input type="checkbox" name="selected_products[]" class="product_checkbox" value="' . $row->id . '">';
             })
