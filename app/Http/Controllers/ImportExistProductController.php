@@ -19,11 +19,11 @@ class ImportExistProductController extends Controller
         $appUrl = env('APP_URL');
         $imagePath = $appUrl . '/uploads/img/';
         $empty_path = "/img/default.png";
-
+    
         $products = DB::table('products as p')
             ->leftJoin('categories as c', 'c.id', '=', 'p.category_id')
             ->leftJoin('brands as b', 'b.id', '=', 'p.brand_id')
-            ->leftJoin('product_locations as pl', 'pl.product_id', '=', 'p.id') // ONLY product_locations
+            ->leftJoin('product_locations as pl', 'pl.product_id', '=', 'p.id')
             ->leftJoin('business_locations as bl', 'bl.id', '=', 'pl.location_id')
             ->whereNotIn('p.id', function ($q) {
                 $q->select('product_id')->from('products_E');
@@ -33,44 +33,29 @@ class ImportExistProductController extends Controller
                 'p.name',
                 'p.sku',
                 DB::raw("
-                        CASE
-                            WHEN p.image IS NULL OR TRIM(p.image) = ''
-                            THEN '$empty_path'
-                            ELSE CONCAT('$imagePath', p.image)
-                        END AS image
-                    "),
+                    CASE
+                        WHEN p.image IS NULL OR TRIM(p.image) = ''
+                        THEN '$empty_path'
+                        ELSE CONCAT('$imagePath', p.image)
+                    END AS image
+                "),
                 DB::raw('c.name as category_name'),
                 DB::raw('b.name as brand_name'),
-                DB::raw("FORMAT(0, 2) as total_stock"), // stock from variations ignored
-                DB::raw("FORMAT(0, 2) as unit_purchase_price"), // purchase price ignored
-                DB::raw("FORMAT(0, 2) as unit_selling_price"), // selling price ignored
+                DB::raw("0.00 as total_stock"),  // Changed from FORMAT() to simple value
+                DB::raw("0.00 as unit_purchase_price"),
+                DB::raw("0.00 as unit_selling_price"),
                 DB::raw("IFNULL(GROUP_CONCAT(DISTINCT bl.name SEPARATOR ', '), '-') as business_location")
             )
-            ->groupBy('p.id', 'p.name', 'p.sku', 'p.image', 'c.name', 'b.name');
-
-        return DataTables::of($products)
-        ->filterColumn('name', function ($query, $keyword) {
-            $query->where('p.name', 'like', "%{$keyword}%");
-        })
-    
-        ->filterColumn('sku', function ($query, $keyword) {
-            $query->where('p.sku', 'like', "%{$keyword}%");
-        })
-    
-        ->filterColumn('category_name', function ($query, $keyword) {
-            $query->where('c.name', 'like', "%{$keyword}%");
-        })
-    
-        ->filterColumn('brand_name', function ($query, $keyword) {
-            $query->where('b.name', 'like', "%{$keyword}%");
-        })
-    
-        ->filterColumn('business_location', function ($query, $keyword) {
-            $query->whereRaw(
-                "bl.name LIKE ?",
-                ["%{$keyword}%"]
+            ->groupBy(
+                'p.id',
+                'p.name', 
+                'p.sku',
+                'p.image',  // Use the actual column, not the aliased one
+                'c.name', 
+                'b.name'
             );
-        })
+    
+        return DataTables::of($products)
             ->addColumn('checkbox', function ($row) {
                 return '<input type="checkbox" name="selected_products[]" class="product_checkbox" value="' . $row->id . '">';
             })
