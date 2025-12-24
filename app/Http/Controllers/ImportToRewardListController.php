@@ -19,7 +19,7 @@ class ImportToRewardListController extends Controller
         $appUrl = env('APP_URL');
         $imagePath = $appUrl . '/uploads/img/';
         $empty_path = "/img/default.png";
-
+    
         $products = Product::select(
             'products.id',
             'products.name',
@@ -27,7 +27,7 @@ class ImportToRewardListController extends Controller
             DB::raw("CASE
                         WHEN products.image IS NULL OR products.image =''
                         THEN '$empty_path'
-                        ELSE CONCAT('$imagePath', products.image) END as image"), // prepend APP_URL
+                        ELSE CONCAT('$imagePath', products.image) END as image"),
             DB::raw('categories.name as category'),
             DB::raw('business.name as business_name'),
             DB::raw('GROUP_CONCAT(DISTINCT business_locations.name SEPARATOR ", ") as locations')
@@ -43,8 +43,34 @@ class ImportToRewardListController extends Controller
             })
             ->groupBy('products.id', 'products.name', 'products.sku', 'products.image', 'categories.name', 'business.name')
             ->orderBy('products.name');
-
-        return datatables()->of($products)->make(true);
+    
+        return datatables()->of($products)
+            // ADD CUSTOM FILTERS FOR EACH SEARCHABLE COLUMN
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->where('products.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('sku', function ($query, $keyword) {
+                $query->where('products.sku', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('category', function ($query, $keyword) {
+                $query->where('categories.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('business_name', function ($query, $keyword) {
+                $query->where('business.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('locations', function ($query, $keyword) {
+                // For GROUP_CONCAT columns, use HAVING or WHERE EXISTS
+                $query->having('locations', 'LIKE', "%{$keyword}%");
+                // OR use WHERE EXISTS for better performance:
+                // $query->whereExists(function ($subQuery) use ($keyword) {
+                //     $subQuery->select(DB::raw(1))
+                //         ->from('product_locations as pl')
+                //         ->join('business_locations as bl', 'bl.id', '=', 'pl.location_id')
+                //         ->whereRaw('pl.product_id = products.id')
+                //         ->where('bl.name', 'LIKE', "%{$keyword}%");
+                // });
+            })
+            ->make(true);
     }
 
 
