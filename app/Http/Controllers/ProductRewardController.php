@@ -17,8 +17,8 @@ class ProductRewardController extends Controller
     {
         $appUrl = env('APP_URL');
         $imagePath = asset('uploads/img/');
-    $defaultImage = asset('img/default.png');
-
+        $defaultImage = asset('img/default.png');
+    
         $products = Product::select(
             'products.id',
             'products.name',
@@ -41,10 +41,40 @@ class ProductRewardController extends Controller
         )
             ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
             ->leftJoin('business', 'business.id', '=', 'products.business_id')
-            ->join('products_reward', 'products_reward.product_id', '=', 'products.id') // <--- this fixes the issue
+            ->join('products_reward', 'products_reward.product_id', '=', 'products.id')
             ->orderBy('products.name');
-
+    
         return datatables()->of($products)
+            // ADD CUSTOM FILTERS FOR SEARCHABLE COLUMNS
+            ->filterColumn('name', function ($query, $keyword) {
+                $query->where('products.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('sku', function ($query, $keyword) {
+                $query->where('products.sku', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('category', function ($query, $keyword) {
+                $query->where('categories.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('business_name', function ($query, $keyword) {
+                $query->where('business.name', 'LIKE', "%{$keyword}%");
+            })
+            ->filterColumn('locations', function ($query, $keyword) {
+                // For subquery GROUP_CONCAT, we need a different approach
+                // Option 1: Use a HAVING clause (works with some DBs)
+                // $query->having('locations', 'LIKE', "%{$keyword}%");
+                
+                // Option 2: Use a WHERE EXISTS subquery (more reliable)
+                $query->whereExists(function ($subQuery) use ($keyword) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('product_locations as pl')
+                        ->join('business_locations as bl', 'bl.id', '=', 'pl.location_id')
+                        ->whereRaw('pl.product_id = products.id')
+                        ->where('bl.name', 'LIKE', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('points_required', function ($query, $keyword) {
+                $query->where('products_reward.points_required', 'LIKE', "%{$keyword}%");
+            })
             ->editColumn('image', fn($row) => '<img src="' . $row->image . '" style="height:45px;width:45px;object-fit:cover;border-radius:6px;">')
             ->editColumn('locations', fn($row) => $row->locations ?: '--')
             ->rawColumns(['image', 'is_active'])
