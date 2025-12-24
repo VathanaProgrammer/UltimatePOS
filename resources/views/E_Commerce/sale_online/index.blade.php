@@ -38,8 +38,8 @@
         {!! Form::select(
         'so_list_filter_status',
         [
-        'pending' => 'Pending',
-        'pick up' => 'Pick-Up',
+        'ordered' => 'Ordered',
+        'pick-up' => 'Pick-Up',
         'packed' => 'Packed',
         'shipped' => 'Shipped',
         'delivered' => 'Delivered',
