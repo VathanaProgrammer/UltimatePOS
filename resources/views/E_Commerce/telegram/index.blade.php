@@ -9,7 +9,7 @@
 </section>
 
 <section class="content">
-    {!! Form::open(['route' => 'telegram_template.telegramLinkUpdate', 'method' => 'post']) !!}
+    {!! Form::open(['route' => 'telegramLinkUpdate', 'method' => 'post']) !!}
 
     <div class="form-group">
         {!! Form::label('telegram_link', __('Telegram Link')) !!}

@@ -118,7 +118,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     // web.php
     // web.php
     Route::get('/telegram', [TelegramTemplateController::class, 'telegramLink'])->name('telegram.index');
-    Route::post('/telegram/update', [TelegramTemplateController::class, 'telegramLinkUpdate'])->name('telegram.index');
+    Route::post('/telegram/update', [TelegramTemplateController::class, 'telegramLinkUpdate'])->name('telegramLinkUpdate');
     Route::get('/check-mobile', [ContactController::class, 'check_mobile_realtime']);
 
     Route::delete('/currency/delete/{id}', [CurrencyController::class, 'destroy']);
