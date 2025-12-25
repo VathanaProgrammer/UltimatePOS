@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Models\BusinessLocation;
+use App\BusinessLocation;
 
 class TelegramController extends Controller
 {
