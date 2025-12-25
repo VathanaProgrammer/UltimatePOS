@@ -138,17 +138,51 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         try {
-            $token = $request->cookie('token'); // get token from HttpOnly cookie
-            $user = JWTAuth::setToken($token)->toUser();
-            $user->load('contact');
+            $token = $request->cookie('token');
+            
+            if (!$token) {
+                Log::warning('No token in user endpoint');
+                return response()->json(['message' => 'Unauthenticated'], 401);
+            }
+            
+            // Get user ID from token
+            $payload = JWTAuth::getPayload($token);
+            $userId = $payload->get('sub');
+            
+            Log::info('User endpoint - Token decoded', ['user_id' => $userId]);
+            
+            // Find API user directly
+            $apiUser = ApiUser::find($userId);
+            
+            if (!$apiUser) {
+                Log::warning('ApiUser not found', ['user_id' => $userId]);
+                return response()->json(['message' => 'User not found'], 401);
+            }
+            
+            Log::info('ApiUser found in user endpoint', [
+                'id' => $apiUser->id,
+                'contact_id' => $apiUser->contact_id
+            ]);
 
-            $contact = $user->contact;
+            // Get contact directly
+            $contact = Contact::find($apiUser->contact_id);
+            
+            if (!$contact) {
+                Log::error('Contact not found for API user', [
+                    'api_user_id' => $apiUser->id,
+                    'contact_id' => $apiUser->contact_id
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contact record not found'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
                 'user' => [
-                    'id' => $user->id,
-                    'profile_url' => $user->profile_url ?? null,
+                    'id' => $apiUser->id,
+                    'profile_url' => $apiUser->profile_url ?? null,
                     'name' => $contact->name ?? null,
                     'mobile' => $contact->mobile ?? null,
                     'reward_points' => [
@@ -160,7 +194,11 @@ class AuthController extends Controller
                 ]
             ]);
         } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
+            Log::error('JWT Exception in user endpoint', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Unauthenticated: ' . $e->getMessage()], 401);
+        } catch (\Exception $e) {
+            Log::error('User endpoint exception', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Server error'], 500);
         }
     }
 
@@ -169,57 +207,38 @@ class AuthController extends Controller
         Log::info('Update profile request received', ['data' => $request->all()]);
         
         try {
-            // Get token from cookie
             $token = $request->cookie('token');
             
             if (!$token) {
-                Log::warning('No token found in cookies', [
-                    'cookies' => $request->cookies->all(),
-                    'headers' => $request->headers->all()
-                ]);
+                Log::warning('No token in updateProfile');
                 return response()->json([
                     'success' => false,
                     'message' => 'Authentication token missing'
                 ], 401);
             }
     
-            Log::info('Token found in cookie', ['token_length' => strlen($token), 'token_preview' => substr($token, 0, 20) . '...']);
+            // Get the user ID from token
+            $payload = JWTAuth::getPayload($token);
+            $userId = $payload->get('sub');
+            
+            Log::info('Token decoded', ['user_id' => $userId]);
     
-            // Try to authenticate with the token
-            try {
-                $apiUser = JWTAuth::setToken($token)->authenticate();
-            } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-                Log::error('Token expired', ['error' => $e->getMessage()]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Session expired. Please log in again.'
-                ], 401);
-            } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-                Log::error('Token invalid', ['error' => $e->getMessage()]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid session. Please log in again.'
-                ], 401);
-            } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-                Log::error('JWT Exception', ['error' => $e->getMessage()]);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Authentication failed: ' . $e->getMessage()
-                ], 401);
-            }
-    
+            // Find the API user
+            $apiUser = ApiUser::find($userId);
+            
             if (!$apiUser) {
-                Log::warning('User not found for valid token', [
-                    'token' => $token,
-                    'decoded' => JWTAuth::getPayload($token)->toArray()
-                ]);
+                Log::error('ApiUser not found', ['user_id' => $userId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'User account not found'
-                ], 401);
+                ], 404);
             }
     
-            Log::info('User authenticated', ['api_user_id' => $apiUser->id]);
+            Log::info('ApiUser found', [
+                'id' => $apiUser->id,
+                'contact_id' => $apiUser->contact_id,
+                'profile_url' => $apiUser->profile_url
+            ]);
     
             // Validate input
             $validated = $request->validate([
@@ -227,24 +246,28 @@ class AuthController extends Controller
                 'phone' => 'required|string|max:20',
             ]);
             
-            // Get contact
+            // Get the contact using the contact_id
             $contact = Contact::find($apiUser->contact_id);
             
             if (!$contact) {
-                Log::error('Contact not found for API user', [
-                    'api_user_id' => $apiUser->id, 
-                    'contact_id' => $apiUser->contact_id
-                ]);
+                Log::error('Contact not found', ['contact_id' => $apiUser->contact_id]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Contact record not found'
+                    'message' => 'Contact record not found for this user'
                 ], 404);
             }
+    
+            Log::info('Contact found', [
+                'contact_id' => $contact->id,
+                'current_name' => $contact->name,
+                'current_mobile' => $contact->mobile,
+                'business_id' => $contact->business_id
+            ]);
     
             // Normalize phone number for duplicate check
             $normalizedPhone = preg_replace('/\D+/', '', $validated['phone']);
             
-            // Check if phone is already taken by another contact
+            // Check if phone is already taken by another contact (excluding current contact)
             $existingContact = Contact::where('id', '!=', $contact->id)
                 ->where(function($query) use ($normalizedPhone) {
                     $query->where('mobile', 'LIKE', '%' . $normalizedPhone . '%')
@@ -255,23 +278,38 @@ class AuthController extends Controller
             if ($existingContact) {
                 Log::warning('Phone number already taken', [
                     'phone' => $normalizedPhone,
-                    'existing_contact_id' => $existingContact->id
+                    'existing_contact_id' => $existingContact->id,
+                    'existing_contact_name' => $existingContact->name
                 ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Phone number already registered with another account'
+                    'message' => 'This phone number is already registered with another account'
                 ], 409);
             }
+    
+            // Store old values for logging
+            $oldName = $contact->name;
+            $oldMobile = $contact->mobile;
     
             // Update contact
             $contact->name = $validated['name'];
             $contact->mobile = $validated['phone'];
-            $contact->save();
+            $saved = $contact->save();
+    
+            if (!$saved) {
+                Log::error('Failed to save contact', ['contact_id' => $contact->id]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to save changes'
+                ], 500);
+            }
     
             Log::info('Profile updated successfully', [
                 'contact_id' => $contact->id,
-                'name' => $contact->name,
-                'mobile' => $contact->mobile
+                'old_name' => $oldName,
+                'new_name' => $contact->name,
+                'old_mobile' => $oldMobile,
+                'new_mobile' => $contact->mobile
             ]);
     
             return response()->json([
@@ -279,6 +317,7 @@ class AuthController extends Controller
                 'message' => 'Profile updated successfully',
                 'user' => [
                     'id' => $apiUser->id,
+                    'profile_url' => $apiUser->profile_url ?? null,
                     'name' => $contact->name,
                     'mobile' => $contact->mobile,
                     'reward_points' => [
@@ -297,12 +336,29 @@ class AuthController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            Log::error('Token expired', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please log in again.'
+            ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            Log::error('Token invalid', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid session. Please log in again.'
+            ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            Log::error('JWT Exception', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication failed: ' . $e->getMessage()
+            ], 401);
         } catch (\Exception $e) {
             Log::error('Update profile exception', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'line' => $e->getLine()
             ]);
             return response()->json([
                 'success' => false,
