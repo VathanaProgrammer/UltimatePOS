@@ -117,6 +117,7 @@ Route::middleware(['setData'])->group(function () {
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     // web.php
     // web.php
+    Route::get('/telegram', [TelegramTemplateController::class, 'telegramLinkUpdate'])->name('telegram.link');
     Route::get('/check-mobile', [ContactController::class, 'check_mobile_realtime']);
 
     Route::delete('/currency/delete/{id}', [CurrencyController::class, 'destroy']);

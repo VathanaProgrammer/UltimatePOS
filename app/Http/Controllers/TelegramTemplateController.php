@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\TelegramTemplate;
+use App\Setting;
 
 class TelegramTemplateController extends Controller
 {
@@ -38,6 +39,23 @@ class TelegramTemplateController extends Controller
 
         return redirect()->back()->with('status', $output);
     }
+
+    public function telegramLinkUpdate(Request $request)
+    {
+        $request->validate([
+            'telegram_link' => 'required|url'
+        ]);
+    
+        Setting::updateOrCreate(
+            ['key' => 'telegram_link'],
+            ['value' => $request->telegram_link]
+        );
+    
+        return redirect()->back()->with('status', [
+            'success' => true,
+            'msg' => __('Telegram Link updated successfully!')
+        ]);
+    }    
 
     public function test(){
         $user = auth()->user();

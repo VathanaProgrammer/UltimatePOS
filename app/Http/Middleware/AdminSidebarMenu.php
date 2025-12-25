@@ -169,6 +169,11 @@ class AdminSidebarMenu
                             ['icon' => '', 'active' => request()->is('e-commerce/categoies')]
                         );
                         $sub->url(
+                            route('telegram.index'),
+                            'Telegram Link',
+                            ['icon' => '', 'active' => request()->is('e-commerce/telegram')]
+                        );
+                        $sub->url(
                             route('telegram_template.index'),
                             'Telegram Templates',
                             ['icon' => '', 'active' => request()->is('e-commerce/telegram-template')]
