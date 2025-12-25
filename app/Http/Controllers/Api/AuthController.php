@@ -87,51 +87,52 @@ class AuthController extends Controller
 
         //->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
     }
-
     public function login(Request $request)
     {
         Log::info('Login request received', ['data' => $request->all()]);
-
+    
         $credentials = $request->validate([
             'phone' => 'required|string',
         ]);
-
-        $phone = preg_replace('/\D+/', '', $credentials['phone']); // remove all non-digits
-
+    
+        $phone = preg_replace('/\D+/', '', $credentials['phone']);
+    
         $contact = Contact::whereRaw("REPLACE(REPLACE(REPLACE(mobile, ' ', ''), '+', ''), '-', '') = ?", [$phone])->first();
-
-
+    
         if (!$contact) {
             Log::warning('Login failed: contact not found');
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
-
+    
         $user = ApiUser::where('contact_id', $contact->id)->first();
-
+    
         if (!$user) {
             Log::info('API user not found, creating new one', ['contact_id' => $contact->id]);
             $user = ApiUser::create(['contact_id' => $contact->id]);
         }
-
+    
         $token = JWTAuth::fromUser($user);
         Log::info('JWT token created for login', ['user_id' => $user->id]);
-
+    
+        // Set multiple cookie options for compatibility
+        $cookie = cookie(
+            'token',
+            $token,
+            60 * 24 * 30, // 30 days
+            '/',
+            '.syspro.asia',
+            true,  // Secure
+            true,  // HttpOnly
+            false, // Raw
+            'None' // SameSite
+        );
+    
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'user' => $user,
-        ])->cookie(
-            'token',
-            $token,
-            60,
-            '/',
-            '.syspro.asia',
-            true,
-            true,
-            false,
-            'None'
-        );
-        //->cookie('token', $token, 60, '/', null, false, true); // old local test cookie
+            'token' => $token // Also return token in response for debugging
+        ])->withCookie($cookie);
     }
 
     // 🔹 Get user from JWT token
@@ -204,30 +205,52 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
-        Log::info('Update profile request received', ['data' => $request->all()]);
+        Log::info('Update profile request received', [
+            'data' => $request->all(),
+            'headers' => $request->headers->all(),
+            'cookies' => $request->cookies->all()
+        ]);
         
         try {
+            // Try multiple ways to get the token
             $token = $request->cookie('token');
             
             if (!$token) {
-                Log::warning('No token in updateProfile');
+                Log::warning('Token not found in cookies, checking Authorization header');
+                
+                // Check Authorization header as fallback
+                $authHeader = $request->header('Authorization');
+                if ($authHeader && preg_match('/Bearer\s+(.+)/', $authHeader, $matches)) {
+                    $token = $matches[1];
+                    Log::info('Token found in Authorization header');
+                }
+            }
+            
+            if (!$token) {
+                Log::error('No token found anywhere');
                 return response()->json([
                     'success' => false,
-                    'message' => 'Authentication token missing'
+                    'message' => 'Authentication required'
                 ], 401);
             }
     
-            // Get the user ID from token
-            $payload = JWTAuth::getPayload($token);
+            Log::info('Token obtained', [
+                'token_length' => strlen($token),
+                'token_preview' => substr($token, 0, 20) . '...',
+                'source' => $request->hasCookie('token') ? 'cookie' : 'header'
+            ]);
+    
+            // Decode token to get user ID
+            $payload = JWTAuth::setToken($token)->getPayload();
             $userId = $payload->get('sub');
             
-            Log::info('Token decoded', ['user_id' => $userId]);
+            Log::info('Token decoded successfully', ['user_id' => $userId]);
     
             // Find the API user
             $apiUser = ApiUser::find($userId);
             
             if (!$apiUser) {
-                Log::error('ApiUser not found', ['user_id' => $userId]);
+                Log::error('ApiUser not found in database', ['user_id' => $userId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'User account not found'
@@ -236,8 +259,7 @@ class AuthController extends Controller
     
             Log::info('ApiUser found', [
                 'id' => $apiUser->id,
-                'contact_id' => $apiUser->contact_id,
-                'profile_url' => $apiUser->profile_url
+                'contact_id' => $apiUser->contact_id
             ]);
     
             // Validate input
@@ -246,28 +268,27 @@ class AuthController extends Controller
                 'phone' => 'required|string|max:20',
             ]);
             
-            // Get the contact using the contact_id
+            // Get the contact
             $contact = Contact::find($apiUser->contact_id);
             
             if (!$contact) {
                 Log::error('Contact not found', ['contact_id' => $apiUser->contact_id]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Contact record not found for this user'
+                    'message' => 'Contact record not found'
                 ], 404);
             }
     
             Log::info('Contact found', [
                 'contact_id' => $contact->id,
                 'current_name' => $contact->name,
-                'current_mobile' => $contact->mobile,
-                'business_id' => $contact->business_id
+                'current_mobile' => $contact->mobile
             ]);
     
             // Normalize phone number for duplicate check
             $normalizedPhone = preg_replace('/\D+/', '', $validated['phone']);
             
-            // Check if phone is already taken by another contact (excluding current contact)
+            // Check if phone is already taken by another contact
             $existingContact = Contact::where('id', '!=', $contact->id)
                 ->where(function($query) use ($normalizedPhone) {
                     $query->where('mobile', 'LIKE', '%' . $normalizedPhone . '%')
@@ -278,8 +299,7 @@ class AuthController extends Controller
             if ($existingContact) {
                 Log::warning('Phone number already taken', [
                     'phone' => $normalizedPhone,
-                    'existing_contact_id' => $existingContact->id,
-                    'existing_contact_name' => $existingContact->name
+                    'existing_contact_id' => $existingContact->id
                 ]);
                 return response()->json([
                     'success' => false,
@@ -329,13 +349,6 @@ class AuthController extends Controller
                 ]
             ]);
     
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Validation failed', ['errors' => $e->errors()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
         } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
             Log::error('Token expired', ['error' => $e->getMessage()]);
             return response()->json([
@@ -354,6 +367,13 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'Authentication failed: ' . $e->getMessage()
             ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation failed', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Update profile exception', [
                 'error' => $e->getMessage(),
