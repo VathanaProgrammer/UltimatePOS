@@ -10,7 +10,7 @@
 
 <section class="content">
     {!! Form::open(['route' => 'telegramLinkUpdate', 'method' => 'post']) !!}
-
+    <div class="shadow-md bg-white p-6 mt-6">
     <div class="form-group">
         {!! Form::label('telegram_link', __('Telegram Link')) !!}
         {!! Form::text('telegram_link', $telegramLink ?? null, [
@@ -22,7 +22,7 @@
     <button type="submit" class="tw-dw-btn tw-dw-btn-error tw-text-white">
         {{ __('Save Changes') }}
     </button>
-
+    </div>
     {!! Form::close() !!}
 </section>
 @endsection
