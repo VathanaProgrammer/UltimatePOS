@@ -164,6 +164,45 @@ class AuthController extends Controller
         }
     }
 
+    public function updateProfile(Request $request)
+    {
+        try {
+            $token = $request->cookie('token');
+            $apiUser = JWTAuth::setToken($token)->toUser();
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'phone' => 'required|string|max:20',
+            ]);
+            
+            $contact = $apiUser->contact;
+            $contact->name = $validated['name'];
+            $contact->mobile = $validated['phone'];
+            $contact->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'user' => [
+                    'id' => $apiUser->id,
+                    'name' => $contact->name,
+                    'phone' => $contact->mobile,
+                    'reward_points' => [
+                        'total' => $contact->total_rp ?? 0,
+                        'used' => $contact->total_rp_used ?? 0,
+                        'expired' => $contact->total_rp_expired ?? 0,
+                        'available' => ($contact->total_rp ?? 0) - ($contact->total_rp_used ?? 0) - ($contact->total_rp_expired ?? 0),
+                    ],
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update profile'
+            ], 500);
+        }
+    }
+
 
     public function verifyOtp(Request $request)
     {

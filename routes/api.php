@@ -31,6 +31,7 @@ Route::get('/telegram-link', [TelegramController::class, 'getTelegramLink'])->na
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::put('/user/profile', [AuthController::class, 'updateProfile']);
 Route::get('/product/all', [ProductController::class, "all"])->name('api.product.all');
 Route::get("/category/all", [CategoryController::class, "all"])->name('api.category.all');
 Route::get('/product/reward/all', [ApiRewardController::class, 'getData']);
