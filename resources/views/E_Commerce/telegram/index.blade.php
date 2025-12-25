@@ -8,27 +8,19 @@
     </h1>
 </section>
 
-<section class="content">
+<section class="shadow-md rounded bg-white p-4 mt-4">
     {!! Form::open(['route' => 'telegramLinkUpdate', 'method' => 'post']) !!}
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="shadow-md bg-white p-6 mt-6">
-                <div class="form-group">
-                    {!! Form::label('telegram_link', __('Telegram Link')) !!}
-                    {!! Form::text('telegram_link', $telegramLink ?? null, [
-                        'class' => 'form-control',
-                        'placeholder' => 'https://t.me/your_channel'
-                    ]) !!}
-                </div>
-
-                <button type="submit" class="tw-dw-btn tw-dw-btn-error tw-text-white">
-                    {{ __('Save Changes') }}
-                </button>
-            </div>
-        </div>
+    <div class="form-group">
+        {!! Form::label('telegram_link', __('Telegram Link')) !!}
+        {!! Form::text('telegram_link', $telegramLink ?? null, [
+            'class' => 'form-control',
+            'placeholder' => 'https://t.me/your_channel'
+        ]) !!}
     </div>
 
+    <button type="submit" class="tw-dw-btn tw-dw-btn-error tw-text-white">
+        {{ __('Save Changes') }}
+    </button>
     {!! Form::close() !!}
 </section>
 @endsection
