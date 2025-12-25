@@ -15,7 +15,7 @@
         <div class="tw-bg-white tw-shadow-md tw-p-6 tw-rounded">
             <div class="form-group">
                 {!! Form::label('telegram_link', __('Telegram Link'), ['class' => 'tw-font-medium']) !!}
-                {!! Form::text('telegram_link', $telegram_link ?? null, [
+                {!! Form::text('telegram_link', 'https://t.me/' . $telegram_link ?? null, [
                     'class' => 'form-control tw-mt-2',
                     'placeholder' => 'https://t.me/your_channel'
                 ]) !!}
