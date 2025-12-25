@@ -171,23 +171,55 @@ class AuthController extends Controller
         try {
             // Get token from cookie
             $token = $request->cookie('token');
+            
             if (!$token) {
-                Log::warning('No token found in cookies');
+                Log::warning('No token found in cookies', [
+                    'cookies' => $request->cookies->all(),
+                    'headers' => $request->headers->all()
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Authentication token missing'
                 ], 401);
             }
     
-            // Get authenticated user
-            $apiUser = JWTAuth::setToken($token)->authenticate();
-            if (!$apiUser) {
-                Log::warning('Invalid token or user not found');
+            Log::info('Token found in cookie', ['token_length' => strlen($token), 'token_preview' => substr($token, 0, 20) . '...']);
+    
+            // Try to authenticate with the token
+            try {
+                $apiUser = JWTAuth::setToken($token)->authenticate();
+            } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+                Log::error('Token expired', ['error' => $e->getMessage()]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid authentication token'
+                    'message' => 'Session expired. Please log in again.'
+                ], 401);
+            } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+                Log::error('Token invalid', ['error' => $e->getMessage()]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid session. Please log in again.'
+                ], 401);
+            } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+                Log::error('JWT Exception', ['error' => $e->getMessage()]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication failed: ' . $e->getMessage()
                 ], 401);
             }
+    
+            if (!$apiUser) {
+                Log::warning('User not found for valid token', [
+                    'token' => $token,
+                    'decoded' => JWTAuth::getPayload($token)->toArray()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User account not found'
+                ], 401);
+            }
+    
+            Log::info('User authenticated', ['api_user_id' => $apiUser->id]);
     
             // Validate input
             $validated = $request->validate([
@@ -195,18 +227,21 @@ class AuthController extends Controller
                 'phone' => 'required|string|max:20',
             ]);
             
-            // Load contact with relationship
+            // Get contact
             $contact = Contact::find($apiUser->contact_id);
             
             if (!$contact) {
-                Log::error('Contact not found for API user', ['api_user_id' => $apiUser->id, 'contact_id' => $apiUser->contact_id]);
+                Log::error('Contact not found for API user', [
+                    'api_user_id' => $apiUser->id, 
+                    'contact_id' => $apiUser->contact_id
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Contact record not found'
                 ], 404);
             }
     
-            // Normalize phone number for duplicate check (same as login)
+            // Normalize phone number for duplicate check
             $normalizedPhone = preg_replace('/\D+/', '', $validated['phone']);
             
             // Check if phone is already taken by another contact
@@ -255,24 +290,6 @@ class AuthController extends Controller
                 ]
             ]);
     
-        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            Log::error('Token expired', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Session expired. Please log in again.'
-            ], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            Log::error('Token invalid', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid session. Please log in again.'
-            ], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-            Log::error('JWT Exception', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Authentication failed'
-            ], 401);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Validation failed', ['errors' => $e->errors()]);
             return response()->json([
