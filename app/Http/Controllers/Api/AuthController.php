@@ -166,27 +166,86 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
+        Log::info('Update profile request received', ['data' => $request->all()]);
+        
         try {
+            // Get token from cookie
             $token = $request->cookie('token');
-            $apiUser = JWTAuth::setToken($token)->toUser();
-            
+            if (!$token) {
+                Log::warning('No token found in cookies');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication token missing'
+                ], 401);
+            }
+    
+            // Get authenticated user
+            $apiUser = JWTAuth::setToken($token)->authenticate();
+            if (!$apiUser) {
+                Log::warning('Invalid token or user not found');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid authentication token'
+                ], 401);
+            }
+    
+            // Validate input
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'phone' => 'required|string|max:20',
             ]);
             
-            $contact = $apiUser->contact;
+            // Load contact with relationship
+            $contact = Contact::find($apiUser->contact_id);
+            
+            if (!$contact) {
+                Log::error('Contact not found for API user', ['api_user_id' => $apiUser->id, 'contact_id' => $apiUser->contact_id]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contact record not found'
+                ], 404);
+            }
+    
+            // Normalize phone number for duplicate check (same as login)
+            $normalizedPhone = preg_replace('/\D+/', '', $validated['phone']);
+            
+            // Check if phone is already taken by another contact
+            $existingContact = Contact::where('id', '!=', $contact->id)
+                ->where(function($query) use ($normalizedPhone) {
+                    $query->where('mobile', 'LIKE', '%' . $normalizedPhone . '%')
+                          ->orWhereRaw("REPLACE(REPLACE(REPLACE(mobile, ' ', ''), '+', ''), '-', '') = ?", [$normalizedPhone]);
+                })
+                ->first();
+    
+            if ($existingContact) {
+                Log::warning('Phone number already taken', [
+                    'phone' => $normalizedPhone,
+                    'existing_contact_id' => $existingContact->id
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Phone number already registered with another account'
+                ], 409);
+            }
+    
+            // Update contact
             $contact->name = $validated['name'];
             $contact->mobile = $validated['phone'];
             $contact->save();
-            
+    
+            Log::info('Profile updated successfully', [
+                'contact_id' => $contact->id,
+                'name' => $contact->name,
+                'mobile' => $contact->mobile
+            ]);
+    
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated successfully',
                 'user' => [
                     'id' => $apiUser->id,
                     'name' => $contact->name,
-                    'phone' => $contact->mobile,
+                    'mobile' => $contact->mobile,
                     'reward_points' => [
                         'total' => $contact->total_rp ?? 0,
                         'used' => $contact->total_rp_used ?? 0,
@@ -195,10 +254,42 @@ class AuthController extends Controller
                     ],
                 ]
             ]);
-        } catch (\Exception $e) {
+    
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            Log::error('Token expired', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update profile'
+                'message' => 'Session expired. Please log in again.'
+            ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            Log::error('Token invalid', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid session. Please log in again.'
+            ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            Log::error('JWT Exception', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication failed'
+            ], 401);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation failed', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Update profile exception', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
             ], 500);
         }
     }
