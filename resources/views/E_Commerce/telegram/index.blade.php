@@ -1,10 +1,10 @@
 @extends('layouts.app')
-@section('title', __('Telegram Link'))
+@section('title', __('Telegram Username'))
 
 @section('content')
 <section class="content-header tw-py-4">
     <h1 class="tw-text-xl md:tw-text-3xl tw-font-bold tw-text-black">
-        {{ __('Telegram Link') }}
+        {{ __('Telegram Username') }}
     </h1>
 </section>
 
@@ -14,10 +14,10 @@
     <div class="tw-max-w-lg tw-mx-auto tw-mt-6">
         <div class="tw-bg-white tw-shadow-md tw-p-6 tw-rounded">
             <div class="form-group">
-                {!! Form::label('telegram_link', __('Telegram Link'), ['class' => 'tw-font-medium']) !!}
-                {!! Form::text('telegram_link', 'https://t.me/' . $telegram_link ?? null, [
+                {!! Form::label('telegram_username', __('Telegram Username'), ['class' => 'tw-font-medium']) !!}
+                {!! Form::text('telegram_username', $telegram_username ?? null, [
                     'class' => 'form-control tw-mt-2',
-                    'placeholder' => 'https://t.me/your_channel'
+                    'placeholder' => '@yourusername',
                 ]) !!}
             </div>
 

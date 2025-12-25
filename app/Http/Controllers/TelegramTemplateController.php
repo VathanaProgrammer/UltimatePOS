@@ -44,26 +44,26 @@ class TelegramTemplateController extends Controller
     public function telegramLink(){
         $business_id = auth()->user()->business_id;
 
-        $telegram_link = BusinessLocation::where('business_id', $business_id)->value('custom_field1');
-        return view('E_Commerce.telegram.index', compact('telegram_link'));
+        $telegram_username = BusinessLocation::where('business_id', $business_id)->value('custom_field1');
+        return view('E_Commerce.telegram.index', compact('telegram_username'));
     }
 
     public function telegramLinkUpdate(Request $request)
     {
         $request->validate([
-            'telegram_link' => 'required|url',
+            'telegram_username' => 'required|string|max:255',
         ]);
     
         $business_id = auth()->user()->business_id;
     
         BusinessLocation::where('business_id', $business_id)
             ->update([
-                'custom_field1' => $request->telegram_link
+                'custom_field1' => $request->telegram_username
             ]);
     
         return redirect()->back()->with('status', [
             'success' => true,
-            'msg' => __('Telegram Link updated successfully!')
+            'msg' => __('Telegram Username updated successfully!')
         ]);
     }  
 

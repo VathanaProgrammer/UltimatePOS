@@ -170,7 +170,7 @@ class AdminSidebarMenu
                         );
                         $sub->url(
                             route('telegram.index'),
-                            'Telegram Link',
+                            'Telegram Username',
                             ['icon' => '', 'active' => request()->is('e-commerce/telegram')]
                         );
                         $sub->url(
