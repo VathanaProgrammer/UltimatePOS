@@ -40,6 +40,11 @@ class TelegramTemplateController extends Controller
         return redirect()->back()->with('status', $output);
     }
 
+    public function telegramLink(){
+        $telegram_link = 'ttpjnnn';
+        return view('E_Commerce.telegram.index', compact('telegram_link'));
+    }
+
     public function telegramLinkUpdate(Request $request)
     {
         $request->validate([
