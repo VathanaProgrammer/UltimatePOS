@@ -27,7 +27,7 @@ use App\Http\Controllers\Api\TelegramController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 
-Route::get('telegram-link', [TelegramController::class, 'getTelegramLink'])->name('api.telegram');
+Route::get('/telegram-link', [TelegramController::class, 'getTelegramLink'])->name('api.telegram');
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
