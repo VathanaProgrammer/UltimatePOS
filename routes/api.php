@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\TelegramBotWebhookController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DeliveryAuthController;
 use App\Http\Controllers\Api\DeliveryController;
+use App\Http\Controllers\Api\TelegramController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 
