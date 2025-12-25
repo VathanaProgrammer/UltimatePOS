@@ -117,7 +117,7 @@ Route::middleware(['setData'])->group(function () {
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     // web.php
     // web.php
-    Route::get('/e-commerce/telegram', [TelegramTemplateController::class, 'telegramLink'])->name('telegram.index');
+    Route::get('/e-commerce/telegram', [TelegramTemplateController::class, 'telegramLink'])->name('E_Commerce.telegram.index');
     Route::post('/telegram/update', [TelegramTemplateController::class, 'telegramLinkUpdate'])->name('telegramLinkUpdate');
     Route::get('/check-mobile', [ContactController::class, 'check_mobile_realtime']);
 
